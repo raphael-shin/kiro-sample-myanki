@@ -1,0 +1,152 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  html {
+    font-family: Inter, system-ui, sans-serif;
+  }
+
+  body {
+    @apply bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100;
+    @apply transition-colors duration-200;
+  }
+
+  #root {
+    @apply min-h-screen;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg;
+    @apply transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary-200 hover:bg-secondary-300 text-secondary-800 font-medium py-2 px-4 rounded-lg;
+    @apply transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:ring-offset-2;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply dark:bg-secondary-700 dark:hover:bg-secondary-600 dark:text-secondary-100;
+  }
+
+  .card {
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700;
+    @apply transition-colors duration-200;
+  }
+
+  .input-field {
+    @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md;
+    @apply bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+    @apply transition-colors duration-200;
+  }
+}
+
+@layer components {
+  /* 플래시카드 관련 컴포넌트 스타일 */
+  .flashcard {
+    @apply card p-6 min-h-[200px] flex items-center justify-center;
+    @apply cursor-pointer select-none transform transition-transform duration-200;
+    @apply hover:scale-105 active:scale-95;
+  }
+
+  .flashcard-front {
+    @apply bg-gradient-to-br from-primary-50 to-primary-100;
+    @apply dark:from-primary-900/20 dark:to-primary-800/20;
+    @apply border-primary-200 dark:border-primary-700;
+  }
+
+  .flashcard-back {
+    @apply bg-gradient-to-br from-secondary-50 to-secondary-100;
+    @apply dark:from-secondary-900/20 dark:to-secondary-800/20;
+    @apply border-secondary-200 dark:border-secondary-700;
+  }
+
+  /* 학습 진행률 관련 스타일 */
+  .progress-bar {
+    @apply w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2;
+  }
+
+  .progress-fill {
+    @apply bg-gradient-to-r from-primary-500 to-primary-600 h-2 rounded-full;
+    @apply transition-all duration-300 ease-out;
+  }
+
+  /* 난이도 표시 스타일 */
+  .difficulty-easy {
+    @apply bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400;
+  }
+
+  .difficulty-medium {
+    @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400;
+  }
+
+  .difficulty-hard {
+    @apply bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400;
+  }
+
+  /* 통계 카드 스타일 */
+  .stat-card {
+    @apply card p-4 text-center;
+    @apply bg-gradient-to-br from-white to-gray-50;
+    @apply dark:from-gray-800 dark:to-gray-900;
+  }
+
+  .stat-number {
+    @apply text-2xl font-bold text-primary-600 dark:text-primary-400;
+  }
+
+  .stat-label {
+    @apply text-sm text-secondary-600 dark:text-secondary-400 mt-1;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* 애니메이션 유틸리티 */
+  .animate-flip {
+    animation: flip 0.6s ease-in-out;
+  }
+
+  @keyframes flip {
+    0% { transform: rotateY(0); }
+    50% { transform: rotateY(90deg); }
+    100% { transform: rotateY(0); }
+  }
+
+  /* 스크롤바 스타일링 */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(156 163 175) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: rgb(156 163 175);
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(107 114 128);
+  }
+}
