@@ -1,5 +1,7 @@
 // Database type definitions for MyAnki
 
+import { Deck, Card, StudySession } from './flashcard';
+
 export interface Setting {
   id?: number;
   key: string;
@@ -11,8 +13,11 @@ export interface Setting {
 // Database table interfaces
 export interface DatabaseTables {
   settings: Setting;
+  decks: Deck;
+  cards: Card;
+  studySessions: StudySession;
 }
 
 // Database schema version
-export const DATABASE_VERSION = 1;
+export const DATABASE_VERSION = 2;
 export const DATABASE_NAME = 'MyAnkiDB';

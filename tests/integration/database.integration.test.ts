@@ -6,14 +6,56 @@ jest.mock('dexie', () => {
       name: string;
       verno: number;
       settings: any;
+      decks: any;
+      cards: any;
+      studySessions: any;
 
       constructor(name: string) {
         this.name = name;
-        this.verno = 1;
+        this.verno = 2;
         
-        // Initialize settings table immediately
+        // Initialize all tables immediately
         this.settings = {
           name: 'settings',
+          add: jest.fn(),
+          get: jest.fn(),
+          update: jest.fn(),
+          delete: jest.fn(),
+          where: jest.fn(),
+          toArray: jest.fn(),
+          count: jest.fn(),
+          orderBy: jest.fn(),
+          hook: jest.fn().mockReturnThis()
+        };
+
+        this.decks = {
+          name: 'decks',
+          add: jest.fn(),
+          get: jest.fn(),
+          update: jest.fn(),
+          delete: jest.fn(),
+          where: jest.fn(),
+          toArray: jest.fn(),
+          count: jest.fn(),
+          orderBy: jest.fn(),
+          hook: jest.fn().mockReturnThis()
+        };
+
+        this.cards = {
+          name: 'cards',
+          add: jest.fn(),
+          get: jest.fn(),
+          update: jest.fn(),
+          delete: jest.fn(),
+          where: jest.fn(),
+          toArray: jest.fn(),
+          count: jest.fn(),
+          orderBy: jest.fn(),
+          hook: jest.fn().mockReturnThis()
+        };
+
+        this.studySessions = {
+          name: 'studySessions',
           add: jest.fn(),
           get: jest.fn(),
           update: jest.fn(),
@@ -30,7 +72,7 @@ jest.mock('dexie', () => {
         this.verno = v;
         return {
           stores: (_schema: any) => {
-            // Ensure settings table is available after stores() call
+            // Ensure all tables are available after stores() call
             if (!this.settings) {
               this.settings = {
                 name: 'settings',
@@ -66,7 +108,7 @@ describe('Dexie.js Database Integration Tests', () => {
   describe('데이터베이스 설정 검증', () => {
     it('should have correct database configuration constants', () => {
       expect(DATABASE_NAME).toBe('MyAnkiDB');
-      expect(DATABASE_VERSION).toBe(1);
+      expect(DATABASE_VERSION).toBe(2);
     });
 
     it('should have database constants with correct types', () => {
@@ -82,7 +124,7 @@ describe('Dexie.js Database Integration Tests', () => {
       const typesModule = require('../../src/types/database');
       expect(typesModule).toBeDefined();
       expect(typesModule.DATABASE_NAME).toBe('MyAnkiDB');
-      expect(typesModule.DATABASE_VERSION).toBe(1);
+      expect(typesModule.DATABASE_VERSION).toBe(2);
     });
 
     it('should export Setting interface constants', () => {
