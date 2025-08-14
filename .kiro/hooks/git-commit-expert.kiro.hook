@@ -1,0 +1,26 @@
+{
+  "enabled": true,
+  "name": "Git Commit Expert",
+  "description": "Analyzes changed files, stages them, and creates conventional commit messages following the project's commit conventions",
+  "version": "1",
+  "when": {
+    "type": "userTriggered",
+    "patterns": [
+      "src/**/*",
+      "tests/**/*",
+      "components/**/*",
+      "*.ts",
+      "*.tsx",
+      "*.js",
+      "*.jsx",
+      "*.json",
+      "*.md",
+      "*.css",
+      "*.html"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "당신은 Git 커밋 전문가입니다. .kiro/steering/commit-conventions.md의 내용을 바탕으로 변경된 파일들을 분석하고 다음 작업을 수행하세요:\n\n1. 변경된 파일들을 분석하여 어떤 종류의 변경사항인지 파악\n2. 적절한 파일들을 스테이징 (git add)\n3. 커밋 컨벤션에 따라 적절한 커밋 메시지 작성\n4. 최종적으로 git commit 명령어 실행\n\n커밋 메시지는 다음 형식을 따라야 합니다:\n- 타입(범위): 설명 형식\n- 주요 타입: feat(새 기능), fix(버그 수정), docs(문서), style(스타일), refactor(리팩토링), test(테스트), chore(기타)\n- 중대한 변경사항이 있으면 타입 뒤에 ! 추가하거나 BREAKING CHANGE 푸터 사용\n- 설명은 한국어로 작성하되 명확하고 간결하게\n\n변경된 파일들을 먼저 확인하고 분석한 후, 적절한 커밋을 생성해주세요."
+  }
+}
