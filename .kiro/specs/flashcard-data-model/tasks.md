@@ -39,61 +39,61 @@
   - 테스트 통과 확인 (Green 상태)
   - _Requirements: 1.1, 5.1_
 
-- [ ] 2-4 데이터베이스 스키마 리팩터링 (TDD Refactor)
+- [x] 2-4 데이터베이스 스키마 리팩터링 (TDD Refactor)
   - 중복된 훅 설정 코드 제거
   - 스키마 정의 메서드 추출
   - 모든 테스트 통과 확인
   - _Requirements: 5.2_
 
-- [ ] 3-1 DeckService 생성 실패 테스트 작성 (TDD Red)
+- [x] 3-1 DeckService 생성 실패 테스트 작성 (TDD Red)
   - DeckService.create() 메서드 실패 테스트 작성
   - 유효하지 않은 데이터 입력 시 에러 발생 테스트
   - 테스트 실행하여 Red 상태 확인
   - _Requirements: 2.1, 6.2_
 
-- [ ] 3-2 DeckService 생성 기능 구현 (TDD Green)
+- [x] 3-2 DeckService 생성 기능 구현 (TDD Green)
   - DeckService 클래스 생성 및 create() 메서드 구현
   - 자동 타임스탬프 설정 로직 구현
   - 테스트 통과 확인 (Green 상태)
   - _Requirements: 2.1, 6.2_
 
-- [ ] 3-3 DeckService 조회 실패 테스트 작성 (TDD Red)
+- [x] 3-3 DeckService 조회 실패 테스트 작성 (TDD Red)
   - getById() 메서드 실패 테스트 작성 (존재하지 않는 ID)
   - getAll() 메서드 빈 결과 테스트 작성
   - 테스트 실행하여 Red 상태 확인
   - _Requirements: 2.2, 6.2_
 
-- [ ] 3-4 DeckService 조회 기능 구현 (TDD Green)
+- [x] 3-4 DeckService 조회 기능 구현 (TDD Green)
   - getById() 메서드 구현
   - getAll() 메서드 구현 (생성일시 순 정렬)
   - 테스트 통과 확인 (Green 상태)
   - _Requirements: 2.2, 6.2_
 
-- [ ] 3-5 DeckService 수정 실패 테스트 작성 (TDD Red)
+- [x] 3-5 DeckService 수정 실패 테스트 작성 (TDD Red)
   - update() 메서드 실패 테스트 작성 (존재하지 않는 ID)
   - 유효하지 않은 데이터 수정 시 에러 테스트
   - 테스트 실행하여 Red 상태 확인
   - _Requirements: 2.3, 6.2_
 
-- [ ] 3-6 DeckService 수정 기능 구현 (TDD Green)
+- [x] 3-6 DeckService 수정 기능 구현 (TDD Green)
   - update() 메서드 구현
   - 자동 updatedAt 갱신 로직 구현
   - 테스트 통과 확인 (Green 상태)
   - _Requirements: 2.3, 6.2_
 
-- [ ] 3-7 DeckService 삭제 실패 테스트 작성 (TDD Red)
+- [x] 3-7 DeckService 삭제 실패 테스트 작성 (TDD Red)
   - delete() 메서드 실패 테스트 작성 (존재하지 않는 ID)
   - 연관 데이터 삭제 실패 테스트 작성
   - 테스트 실행하여 Red 상태 확인
   - _Requirements: 2.4, 6.2_
 
-- [ ] 3-8 DeckService 삭제 기능 구현 (TDD Green)
+- [x] 3-8 DeckService 삭제 기능 구현 (TDD Green)
   - delete() 메서드 구현
   - 연관 카드 및 학습 기록 삭제 로직 구현 (트랜잭션 사용)
   - 테스트 통과 확인 (Green 상태)
   - _Requirements: 2.4, 6.2_
 
-- [ ] 3-9 DeckService 기본 CRUD 리팩터링 (TDD Refactor)
+- [x] 3-9 DeckService 기본 CRUD 리팩터링 (TDD Refactor)
   - 중복된 유효성 검사 로직 추출
   - 에러 처리 로직 통합
   - 모든 테스트 통과 확인

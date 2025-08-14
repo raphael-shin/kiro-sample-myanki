@@ -12,52 +12,43 @@ export class MyAnkiDB extends Dexie {
   constructor() {
     super(DATABASE_NAME);
     
-    // 스키마 정의
+    this.defineSchema();
+    this.setupHooks();
+  }
+
+  private defineSchema() {
     this.version(DATABASE_VERSION).stores({
       settings: '++id, key, value, createdAt, updatedAt',
       decks: '++id, name, description, createdAt, updatedAt',
       cards: '++id, deckId, front, back, createdAt, updatedAt',
       studySessions: '++id, cardId, studiedAt, quality, responseTime'
     });
+  }
 
-    // 훅 설정 - 자동으로 타임스탬프 추가
-    // 테이블이 존재하는지 확인 후 훅 설정
-    if (this.settings) {
-      this.settings.hook('creating', function (_primKey, obj, _trans) {
+  private setupHooks() {
+    // 타임스탬프가 필요한 테이블들에 공통 훅 설정
+    this.setupTimestampHooks(this.settings);
+    this.setupTimestampHooks(this.decks);
+    this.setupTimestampHooks(this.cards);
+    
+    // studySessions는 특별한 처리
+    this.setupStudySessionHooks();
+  }
+
+  private setupTimestampHooks(table: Table<any>) {
+    if (table) {
+      table.hook('creating', function (_primKey, obj, _trans) {
         obj.createdAt = new Date();
         obj.updatedAt = new Date();
       });
 
-      this.settings.hook('updating', function (modifications, _primKey, _obj, _trans) {
+      table.hook('updating', function (modifications, _primKey, _obj, _trans) {
         (modifications as any).updatedAt = new Date();
       });
     }
+  }
 
-    // decks 테이블 훅 설정
-    if (this.decks) {
-      this.decks.hook('creating', function (_primKey, obj, _trans) {
-        obj.createdAt = new Date();
-        obj.updatedAt = new Date();
-      });
-
-      this.decks.hook('updating', function (modifications, _primKey, _obj, _trans) {
-        (modifications as any).updatedAt = new Date();
-      });
-    }
-
-    // cards 테이블 훅 설정
-    if (this.cards) {
-      this.cards.hook('creating', function (_primKey, obj, _trans) {
-        obj.createdAt = new Date();
-        obj.updatedAt = new Date();
-      });
-
-      this.cards.hook('updating', function (modifications, _primKey, _obj, _trans) {
-        (modifications as any).updatedAt = new Date();
-      });
-    }
-
-    // studySessions 테이블 훅 설정
+  private setupStudySessionHooks() {
     if (this.studySessions) {
       this.studySessions.hook('creating', function (_primKey, obj, _trans) {
         // studySessions는 studiedAt이 이미 설정되어 있으므로 createdAt/updatedAt 불필요

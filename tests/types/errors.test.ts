@@ -149,7 +149,7 @@ describe('Error Type System', () => {
         const error = ErrorFactory.database('insert', originalError);
 
         expect(error.code).toBe(ErrorCode.DATABASE_ERROR);
-        expect(error.message).toBe("Database operation 'insert' failed");
+        expect(error.message).toBe("Database operation 'insert' failed: Connection failed");
         expect(error.details).toEqual({ operation: 'insert', originalError: 'Connection failed' });
       });
     });

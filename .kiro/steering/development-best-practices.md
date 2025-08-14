@@ -83,20 +83,27 @@ inclusion: always
 
 ## 테스트 작성
 
+### 테스트 실행 전 필수 확인사항 🔥
+1. **테스트 도구 확인:** `package.json`에서 jest인지 vitest인지 확인
+2. **Jest 사용 시:** `--run` 옵션 절대 사용 금지 (에러 발생)
+3. **명령어 예시:**
+   - Jest: `npm test -- --testPathPattern=DeckService`
+   - Vitest: `npm test -- --run --testPathPattern=DeckService`
+
 ### 테스트 파일 생성 시
 - **React import:** 테스트에서도 프로젝트 설정에 맞게
 - **경고 메시지:** 기능에 영향 없으면 무시 가능
 - **모든 주요 기능:** 테스트 커버리지 확보
 
-### Jest vs Vitest CLI 옵션 주의사항
+### Jest vs Vitest CLI 옵션 주의사항 ⚠️ 중요!
 - **Jest:** `--run` 옵션 없음. 단일 실행이 기본값
   ```bash
   # ✅ 올바른 방식
   npm test -- --testPathPattern=integration
   npm test -- --watchAll=false
   
-  # ❌ 잘못된 방식
-  npm test -- --run  # Jest에는 --run 옵션이 없음
+  # ❌ 절대 사용하지 말 것!
+  npm test -- --run  # Jest에는 --run 옵션이 없음 - 에러 발생!
   ```
 - **Vitest:** `--run` 옵션으로 watch 모드 비활성화
   ```bash
@@ -104,6 +111,12 @@ inclusion: always
   npm test -- --run
   ```
 - **프로젝트 테스트 도구 확인:** `package.json`의 test 스크립트와 설정 파일 확인 필수
+
+### 🚨 테스트 실행 전 필수 체크
+1. **현재 프로젝트가 Jest인지 Vitest인지 확인**
+2. **Jest 프로젝트에서는 절대 `--run` 옵션 사용 금지**
+3. **단일 테스트 실행:** `npm test -- --testPathPattern=파일명`
+4. **watch 모드 비활성화:** `npm test -- --watchAll=false`
 
 ### Mock 작성 시 주의사항
 - **ESM 모듈 Mock:** Dexie.js 같은 ESM 모듈은 Jest에서 직접 import 시 오류 발생
@@ -136,5 +149,105 @@ inclusion: always
   ```
 - **Mock 생성자 패턴:** 클래스 Mock 시 생성자에서 모든 속성 초기화
 - **transformIgnorePatterns:** Jest 설정에서 ESM 모듈 변환 패턴 올바르게 설정
+
+## Service Layer 개발 (TDD)
+
+### DeckService 개발 과정에서 발생한 주요 오류들
+
+#### 1. 테스트 실패 - 에러 메시지 불일치 🔥
+**문제:** 테스트에서 기대하는 에러 메시지와 실제 구현의 에러 메시지가 다름
+```typescript
+// ❌ 문제 상황
+// 테스트: expect.stringContaining('Failed to delete related cards')
+// 실제: "Database operation 'Failed to delete related cards' failed: Failed to delete related cards"
+```
+
+**원인:** ErrorFactory.database()가 원본 에러 메시지에 접두사를 추가하여 중복 발생
+
+**해결책:** 
+```typescript
+// ✅ 올바른 방식 - MyAnkiError 직접 생성
+throw new MyAnkiError(
+  ErrorCode.DATABASE_ERROR,
+  errorMessage,
+  { operation: 'delete deck', originalError: errorMessage }
+);
+
+// ❌ 잘못된 방식 - ErrorFactory 사용 시 메시지 중복
+throw ErrorFactory.database(errorMessage, error);
+```
+
+#### 2. Mock 설정 오류 - 메서드 체인 누락 🔥
+**문제:** Dexie 메서드 체인이 Mock에서 제대로 구현되지 않음
+```typescript
+// ❌ 불완전한 Mock
+const mockCards = {
+  where: jest.fn().mockReturnValue({
+    delete: jest.fn().mockRejectedValue(new Error('...'))
+  })
+};
+// 실제 호출: tx.cards.where('deckId').equals(id).delete()
+```
+
+**원인:** `where().equals().delete()` 체인에서 `equals()` 메서드 누락
+
+**해결책:**
+```typescript
+// ✅ 완전한 Mock 체인
+const mockCards = {
+  where: jest.fn().mockReturnValue({
+    equals: jest.fn().mockReturnValue({
+      toArray: jest.fn().mockResolvedValue([{ id: 1 }]),
+      delete: jest.fn().mockRejectedValue(new Error('...'))
+    })
+  })
+};
+```
+
+#### 3. TypeScript 타입 오류 - 트랜잭션 콜백 🔥
+**문제:** IDE에서 `tx.cards`, `tx.studySessions`에 빨간줄 표시
+```typescript
+// ❌ 타입 추론 실패
+await this.db.transaction('rw', [...], async (tx) => {
+  await tx.cards.where('deckId').equals(id).delete(); // 빨간줄
+});
+```
+
+**원인:** Dexie 트랜잭션 콜백의 `tx` 매개변수 타입이 제대로 추론되지 않음
+
+**해결책:**
+```typescript
+// ✅ 타입 단언 사용
+await this.db.transaction('rw', [...], async (tx: any) => {
+  await tx.cards.where('deckId').equals(id).delete(); // 정상
+});
+```
+
+#### 4. 테스트 Mock과 실제 구현 불일치 🔥
+**문제:** `this.db` 직접 사용 시 Mock이 작동하지 않음
+```typescript
+// ❌ Mock 무시됨
+await this.db.transaction('rw', [...], async () => {
+  await this.db.cards.where('deckId').equals(id).delete(); // Mock 적용 안됨
+});
+```
+
+**원인:** 테스트에서 `tx` 객체를 Mock했는데 실제 코드에서 `this.db` 사용
+
+**해결책:**
+```typescript
+// ✅ tx 매개변수 사용으로 Mock 적용
+await this.db.transaction('rw', [...], async (tx: any) => {
+  await tx.cards.where('deckId').equals(id).delete(); // Mock 적용됨
+});
+```
+
+### Service Layer 개발 베스트 프랙티스
+
+1. **에러 메시지 일관성:** 테스트 작성 시 실제 구현의 에러 메시지와 정확히 일치시키기
+2. **Mock 완성도:** 실제 사용되는 모든 메서드 체인을 Mock에 포함
+3. **타입 안전성:** 복잡한 타입 추론이 어려운 경우 `any` 타입 단언 활용
+4. **테스트-구현 일치:** Mock 설정과 실제 구현이 동일한 API 사용하도록 보장
+5. **트랜잭션 패턴:** Dexie 트랜잭션에서는 `tx` 매개변수 사용하여 테스트 호환성 유지
 
 이 가이드라인을 따라 일관되고 효율적인 개발을 진행하세요.

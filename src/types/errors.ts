@@ -13,6 +13,7 @@ export enum ErrorCode {
   VALIDATION_ERROR = 'VALIDATION_ERROR',
   DATABASE_ERROR = 'DATABASE_ERROR',
   CONSTRAINT_VIOLATION = 'CONSTRAINT_VIOLATION',
+  INVALID_ID = 'INVALID_ID',
   
   // 덱 관련 에러
   DECK_NOT_FOUND = 'DECK_NOT_FOUND',
@@ -96,6 +97,7 @@ const ERROR_MESSAGES: Record<ErrorCode, string> = {
   [ErrorCode.VALIDATION_ERROR]: '입력한 데이터가 올바르지 않습니다.',
   [ErrorCode.DATABASE_ERROR]: '데이터베이스 오류가 발생했습니다.',
   [ErrorCode.CONSTRAINT_VIOLATION]: '데이터 제약 조건을 위반했습니다.',
+  [ErrorCode.INVALID_ID]: '잘못된 ID입니다.',
   
   // 덱 관련 에러
   [ErrorCode.DECK_NOT_FOUND]: '덱을 찾을 수 없습니다.',
@@ -161,10 +163,30 @@ export const ErrorFactory = {
    * 데이터베이스 에러 생성
    */
   database(operation: string, originalError?: Error): MyAnkiError {
+    const baseMessage = `Database operation '${operation}' failed`;
+    const message = originalError 
+      ? `${baseMessage}: ${originalError.message}`
+      : baseMessage;
+      
     return new MyAnkiError(
       ErrorCode.DATABASE_ERROR,
-      `Database operation '${operation}' failed`,
+      message,
       { operation, originalError: originalError?.message }
+    );
+  },
+
+  /**
+   * 잘못된 ID 에러 생성
+   */
+  invalidId(id: any, reason?: string): MyAnkiError {
+    const message = reason 
+      ? `Invalid ID: ${id} (${reason})`
+      : `Invalid ID: ${id}`;
+    
+    return new MyAnkiError(
+      ErrorCode.INVALID_ID,
+      message,
+      { id, reason }
     );
   },
 
