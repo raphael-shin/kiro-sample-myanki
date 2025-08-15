@@ -314,19 +314,19 @@
   - 가장 단순한 카드 표시부터 시작
   - _Requirements: 4.1, 4.2, 4.3_
 
-- [ ] 10.1 StudyInterface 메인 컴포넌트 (TDD)
+- [x] 10.1 StudyInterface 메인 컴포넌트 (TDD)
   - **(TDD Red)** 실패하는 테스트: 학습 세션 메인 인터페이스 렌더링 테스트
   - **(TDD Green)** 최소 구현: StudySessionStore와 연동된 기본 인터페이스
   - **(TDD Refactor)** 리팩터링: 카드 표시 및 답변 평가 워크플로우 구현
   - _Requirements: 4.1, 4.2, 4.3, 4.4_
 
-- [ ] 10.2 CardDisplay 컴포넌트 (TDD)
+- [x] 10.2 CardDisplay 컴포넌트 (TDD)
   - **(TDD Red)** 실패하는 테스트: 현재 학습 중인 카드의 앞면/뒷면 표시 테스트
   - **(TDD Green)** 최소 구현: 카드 앞면만 표시하는 단순한 컴포넌트
   - **(TDD Refactor)** 리팩터링: "답안 보기" 버튼 및 상태 관리 추가
   - _Requirements: 4.2_
 
-- [ ] 10.3 AnswerButtons 컴포넌트 (TDD)
+- [x] 10.3 AnswerButtons 컴포넌트 (TDD)
   - **(TDD Red)** 실패하는 테스트: 4단계 평가 버튼 (Again, Hard, Good, Easy) 렌더링 테스트
   - **(TDD Green)** 최소 구현: 4개 버튼과 기본 클릭 핸들러
   - **(TDD Refactor)** 리팩터링: 각 버튼 클릭 시 간격 반복 알고리즘 적용
