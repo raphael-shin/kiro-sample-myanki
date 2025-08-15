@@ -2,9 +2,10 @@ import { StudyQuality } from '@/types/flashcard';
 
 interface AnswerButtonsProps {
   onAnswer: (quality: StudyQuality) => void;
+  disabled?: boolean;
 }
 
-export const AnswerButtons: React.FC<AnswerButtonsProps> = ({ onAnswer }) => {
+export const AnswerButtons: React.FC<AnswerButtonsProps> = ({ onAnswer, disabled = false }) => {
   const buttons = [
     { quality: StudyQuality.AGAIN, label: 'Again', color: 'bg-red-500 hover:bg-red-600' },
     { quality: StudyQuality.HARD, label: 'Hard', color: 'bg-orange-500 hover:bg-orange-600' },
@@ -18,7 +19,12 @@ export const AnswerButtons: React.FC<AnswerButtonsProps> = ({ onAnswer }) => {
         <button
           key={quality}
           onClick={() => onAnswer(quality)}
-          className={`px-4 py-2 text-white rounded-md font-medium transition-colors ${color}`}
+          disabled={disabled}
+          className={`px-4 py-2 text-white rounded-md font-medium transition-colors ${
+            disabled 
+              ? 'bg-gray-400 cursor-not-allowed' 
+              : color
+          }`}
         >
           {label}
         </button>

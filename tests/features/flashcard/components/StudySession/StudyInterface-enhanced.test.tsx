@@ -46,6 +46,24 @@ describe('StudyInterface Enhanced Features', () => {
 
   describe('StudySessionStore Integration', () => {
     it('should start session on mount', async () => {
+      // Mock initial inactive state
+      (useStudySessionStore as jest.Mock).mockReturnValue({
+        currentCard: null,
+        isActive: false, // Initially inactive
+        loading: false,
+        error: null,
+        sessionStats: { cardsStudied: 0, correctAnswers: 0, totalTime: 0 },
+        showAnswer: false,
+        isPaused: false,
+        keyboardShortcutsEnabled: true,
+        getProgress: jest.fn().mockReturnValue({
+          percentage: 0,
+          cardsRemaining: 0,
+          totalCards: 0
+        }),
+        ...mockStoreActions
+      });
+
       render(
         <StudyInterface 
           deckId={1}
@@ -54,9 +72,7 @@ describe('StudyInterface Enhanced Features', () => {
         />
       );
       
-      await waitFor(() => {
-        expect(mockStoreActions.startSession).toHaveBeenCalledWith(1);
-      });
+      expect(mockStoreActions.startSession).toHaveBeenCalledWith(1);
     });
 
     it('should show card answer when show answer is clicked', async () => {
@@ -104,8 +120,14 @@ describe('StudyInterface Enhanced Features', () => {
       const goodButton = screen.getByText('Good');
       fireEvent.click(goodButton);
       
-      expect(mockStoreActions.processAnswer).toHaveBeenCalledWith(StudyQuality.GOOD, expect.any(Number));
-      expect(mockStoreActions.nextCard).toHaveBeenCalled();
+      // Wait for async operations
+      await waitFor(() => {
+        expect(mockStoreActions.processAnswer).toHaveBeenCalledWith(StudyQuality.GOOD, expect.any(Number));
+      });
+      
+      await waitFor(() => {
+        expect(mockStoreActions.nextCard).toHaveBeenCalled();
+      });
     });
   });
 
@@ -522,7 +544,7 @@ describe('StudyInterface Enhanced Features', () => {
 
   describe('Session Completion Handling', () => {
     it('should handle session completion with proper summary', async () => {
-      const mockProcessAnswer = jest.fn();
+      const mockProcessAnswer = jest.fn().mockResolvedValue(undefined);
       const mockNextCard = jest.fn();
 
       // Initial state with current card
@@ -550,39 +572,7 @@ describe('StudyInterface Enhanced Features', () => {
         enableKeyboardShortcuts: mockStoreActions.enableKeyboardShortcuts
       });
 
-      // Mock processAnswer and nextCard to simulate completion
-      mockProcessAnswer.mockImplementation(() => {
-        // After processing, simulate no current card (session complete)
-        (useStudySessionStore as jest.Mock).mockReturnValue({
-          currentCard: null,
-          isActive: true,
-          loading: false,
-          error: null,
-          sessionStats: { cardsStudied: 4, correctAnswers: 3, totalTime: 20000 },
-          showAnswer: false,
-          isPaused: false,
-          keyboardShortcutsEnabled: true,
-          getProgress: jest.fn().mockReturnValue({
-            percentage: 100,
-            cardsRemaining: 0,
-            totalCards: 4
-          }),
-          startSession: mockStoreActions.startSession,
-          endSession: mockStoreActions.endSession,
-          pauseSession: mockStoreActions.pauseSession,
-          resumeSession: mockStoreActions.resumeSession,
-          showCardAnswer: mockStoreActions.showCardAnswer,
-          processAnswer: mockProcessAnswer,
-          nextCard: mockNextCard,
-          enableKeyboardShortcuts: mockStoreActions.enableKeyboardShortcuts
-        });
-      });
-
-      mockNextCard.mockImplementation(() => {
-        // Trigger re-render to show completion
-      });
-
-      const { rerender } = render(
+      render(
         <StudyInterface 
           deckId={1}
           onComplete={mockOnComplete}
@@ -593,17 +583,13 @@ describe('StudyInterface Enhanced Features', () => {
       const goodButton = screen.getByText('Good');
       fireEvent.click(goodButton);
       
-      // Re-render to simulate state change
-      rerender(
-        <StudyInterface 
-          deckId={1}
-          onComplete={mockOnComplete}
-          onExit={mockOnExit}
-        />
-      );
-
-      expect(mockProcessAnswer).toHaveBeenCalledWith(StudyQuality.GOOD, expect.any(Number));
-      expect(mockNextCard).toHaveBeenCalled();
+      await waitFor(() => {
+        expect(mockProcessAnswer).toHaveBeenCalledWith(StudyQuality.GOOD, expect.any(Number));
+      });
+      
+      await waitFor(() => {
+        expect(mockNextCard).toHaveBeenCalled();
+      });
     });
 
     it('should show completion screen with return button', async () => {

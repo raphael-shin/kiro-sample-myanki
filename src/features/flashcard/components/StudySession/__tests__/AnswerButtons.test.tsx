@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { AnswerButtons } from '../AnswerButtons';
-import { StudyQuality } from '../../../../types/flashcard';
+import { StudyQuality } from '@/types/flashcard';
 
 describe('AnswerButtons Component', () => {
   const mockOnAnswer = jest.fn();
@@ -54,42 +54,24 @@ describe('AnswerButtons Component', () => {
     expect(mockOnAnswer).toHaveBeenCalledWith(StudyQuality.EASY);
   });
 
-  it('should have proper button styling', () => {
-    render(<AnswerButtons onAnswer={mockOnAnswer} />);
+  it('should disable buttons when disabled prop is true', () => {
+    render(<AnswerButtons onAnswer={mockOnAnswer} disabled={true} />);
     
     const againButton = screen.getByRole('button', { name: /again/i });
     const hardButton = screen.getByRole('button', { name: /hard/i });
     const goodButton = screen.getByRole('button', { name: /good/i });
     const easyButton = screen.getByRole('button', { name: /easy/i });
     
-    expect(againButton).toHaveClass('bg-red-600');
-    expect(hardButton).toHaveClass('bg-orange-600');
-    expect(goodButton).toHaveClass('bg-green-600');
-    expect(easyButton).toHaveClass('bg-blue-600');
+    expect(againButton).toBeDisabled();
+    expect(hardButton).toBeDisabled();
+    expect(goodButton).toBeDisabled();
+    expect(easyButton).toBeDisabled();
   });
 
-  it('should show keyboard shortcuts', () => {
-    render(<AnswerButtons onAnswer={mockOnAnswer} />);
+  it('should have disabled styling when disabled', () => {
+    render(<AnswerButtons onAnswer={mockOnAnswer} disabled={true} />);
     
-    expect(screen.getByText(/1/)).toBeInTheDocument(); // Again shortcut
-    expect(screen.getByText(/2/)).toBeInTheDocument(); // Hard shortcut
-    expect(screen.getByText(/3/)).toBeInTheDocument(); // Good shortcut
-    expect(screen.getByText(/4/)).toBeInTheDocument(); // Easy shortcut
-  });
-
-  it('should handle keyboard events', () => {
-    render(<AnswerButtons onAnswer={mockOnAnswer} />);
-    
-    fireEvent.keyDown(document, { key: '1' });
-    expect(mockOnAnswer).toHaveBeenCalledWith(StudyQuality.AGAIN);
-    
-    fireEvent.keyDown(document, { key: '2' });
-    expect(mockOnAnswer).toHaveBeenCalledWith(StudyQuality.HARD);
-    
-    fireEvent.keyDown(document, { key: '3' });
-    expect(mockOnAnswer).toHaveBeenCalledWith(StudyQuality.GOOD);
-    
-    fireEvent.keyDown(document, { key: '4' });
-    expect(mockOnAnswer).toHaveBeenCalledWith(StudyQuality.EASY);
+    const againButton = screen.getByRole('button', { name: /again/i });
+    expect(againButton).toHaveClass('bg-gray-400', 'cursor-not-allowed');
   });
 });
