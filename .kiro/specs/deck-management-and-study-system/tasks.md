@@ -343,13 +343,13 @@
   - 가장 기본적인 통계부터 시작
   - _Requirements: 5.1, 5.2_
 
-- [ ] 11.1 DeckStats 컴포넌트 (TDD)
+- [x] 11.1 DeckStats 컴포넌트 (TDD)
   - **(TDD Red)** 실패하는 테스트: 덱별 학습 통계 표시 테스트
   - **(TDD Green)** 최소 구현: 총 카드 수와 학습된 카드 수만 표시
   - **(TDD Refactor)** 리팩터링: 신규/학습중/완료 카드 수 구분 표시
   - _Requirements: 5.1, 5.2_
 
-- [ ] 11.2 ProgressTracker 컴포넌트 (TDD)
+- [x] 11.2 ProgressTracker 컴포넌트 (TDD)
   - **(TDD Red)** 실패하는 테스트: 카드별 상세 정보 표시 테스트
   - **(TDD Green)** 최소 구현: 반복 횟수, 용이도 인수, 다음 복습 날짜 표시
   - **(TDD Refactor)** 리팩터링: 학습 진행률 백분율 표시 추가
