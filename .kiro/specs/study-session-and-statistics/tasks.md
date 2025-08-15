@@ -7,19 +7,19 @@
   - StudySessionData, DeckStatistics, GlobalStatistics 등 새로운 인터페이스 정의
   - _Requirements: 1.1, 5.1, 6.1, 7.1_
 
-- [ ] 1.1 StudySessionData 인터페이스 구현 [구조적 변경]
+- [x] 1.1 StudySessionData 인터페이스 구현 [구조적 변경]
   - **RED**: StudySessionData 타입 검증 테스트 작성 (실패하는 테스트)
   - **GREEN**: src/types/flashcard.ts에 StudySessionData 인터페이스 추가하여 테스트 통과
   - **REFACTOR**: 타입 정의 구조 개선 및 중복 제거
   - _Requirements: 1.1, 1.4_
 
-- [ ] 1.2 통계 관련 인터페이스 구현 [구조적 변경]
+- [x] 1.2 통계 관련 인터페이스 구현 [구조적 변경]
   - **RED**: DeckStatistics, GlobalStatistics, DailyGoals 타입 검증 테스트 작성
   - **GREEN**: 통계 관련 인터페이스 추가하여 테스트 통과
   - **REFACTOR**: 타입 계층 구조 정리 및 공통 타입 추출
   - _Requirements: 5.1, 6.1, 7.1, 8.1_
 
-- [ ] 1.3 에러 타입 확장 [구조적 변경]
+- [x] 1.3 에러 타입 확장 [구조적 변경]
   - **RED**: 새로운 에러 타입 생성 및 처리 테스트 작성
   - **GREEN**: ErrorCode 열거형 및 ErrorFactory 메서드 추가
   - **REFACTOR**: 에러 팩토리 메서드 구조 개선

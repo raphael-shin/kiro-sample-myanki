@@ -15,6 +15,65 @@ export enum StudyQuality {
 }
 
 /**
+ * 학습 세션 상태 열거형
+ */
+export type SessionStatus = 'active' | 'paused' | 'completed' | 'abandoned';
+
+/**
+ * 세션 진행률 정보
+ */
+export interface SessionProgress {
+  totalCards: number;
+  completedCards: number;
+  currentCardIndex: number;
+}
+
+/**
+ * 세션 통계 정보
+ */
+export interface SessionStatistics {
+  correctAnswers: number;
+  totalResponseTime: number;
+  qualityScores: StudyQuality[];
+}
+
+/**
+ * 세션 설정 정보
+ */
+export interface SessionSettings {
+  keyboardShortcuts: boolean;
+  autoAdvance: boolean;
+}
+
+/**
+ * 학습 세션 데이터 인터페이스
+ * 학습 세션의 전체 데이터를 관리하는 모델
+ */
+export interface StudySessionData {
+  id: string;
+  deckId: number;
+  userId?: string; // 향후 다중 사용자 지원
+  startTime: Date;
+  endTime?: Date;
+  pausedTime: number; // 총 일시정지 시간
+  status: SessionStatus;
+  
+  // 진행률 정보
+  totalCards: number;
+  completedCards: number;
+  currentCardIndex: number;
+  
+  // 통계 정보
+  correctAnswers: number;
+  totalResponseTime: number;
+  qualityScores: StudyQuality[];
+  
+  // 설정
+  keyboardShortcuts: boolean;
+  autoAdvance: boolean;
+}
+
+/**
  * 덱(카드 묶음) 인터페이스
  */
 export interface Deck {
@@ -98,6 +157,103 @@ export interface StudyStats {
   averageResponseTime: number;
   lastStudiedAt?: Date;
   studyStreak: number;
+}
+
+/**
+ * 통계 및 진행률 추적 관련 타입들
+ */
+
+/**
+ * 기본 통계 정보 (공통 타입)
+ */
+export interface BaseStatistics {
+  totalSessions: number;
+  totalStudyTime: number;
+  averageQuality: number;
+  lastStudiedAt?: Date;
+}
+
+/**
+ * 활동 요약 정보
+ */
+export interface ActivitySummary {
+  date: Date;
+  cardsStudied: number;
+  timeSpent: number;
+  averageQuality: number;
+}
+
+/**
+ * 카드 상태 분류 (공통 타입)
+ */
+export interface CardStatusBreakdown {
+  newCards: number;
+  learningCards: number;
+  reviewCards: number;
+  completedCards: number;
+}
+
+/**
+ * 덱별 상세 통계 정보
+ */
+export interface DeckStatistics extends BaseStatistics, CardStatusBreakdown {
+  deckId: number;
+  totalCards: number;
+  averageSessionTime: number;
+  createdAt: Date;
+  
+  // 성과 지표
+  retentionRate: number;
+  difficultyRating: number;
+  masteryLevel: number;
+}
+
+/**
+ * 전체 애플리케이션 통계
+ */
+export interface GlobalStatistics {
+  // 전체 현황
+  totalDecks: number;
+  totalCards: number;
+  totalSessions: number;
+  totalStudyTime: number;
+  
+  // 학습 성과
+  overallAccuracy: number;
+  averageSessionLength: number;
+  studyStreak: number;
+  longestStreak: number;
+  
+  // 시간별 분석
+  dailyAverage: number;
+  weeklyAverage: number;
+  monthlyAverage: number;
+  
+  // 최근 활동
+  lastStudyDate?: Date;
+  recentActivity: ActivitySummary[];
+}
+
+/**
+ * 목표 진행률 (공통 타입)
+ */
+export interface GoalProgress {
+  cardsCompleted: number;
+  timeCompleted: number;
+  currentStreak: number;
+}
+
+/**
+ * 일일 학습 목표 관리
+ */
+export interface DailyGoals extends GoalProgress {
+  cardsGoal: number;
+  timeGoal: number; // 분 단위
+  streakGoal: number;
+  
+  // 목표 달성 기록
+  lastAchievedDate?: Date;
+  totalAchievements: number;
 }
 
 /**

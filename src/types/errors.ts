@@ -39,7 +39,18 @@ export enum ErrorCode {
   // 시스템 에러
   TRANSACTION_FAILED = 'TRANSACTION_FAILED',
   INDEX_ERROR = 'INDEX_ERROR',
-  MIGRATION_ERROR = 'MIGRATION_ERROR'
+  MIGRATION_ERROR = 'MIGRATION_ERROR',
+  
+  // 학습 세션 에러
+  SESSION_NOT_FOUND = 'SESSION_NOT_FOUND',
+  SESSION_ALREADY_ACTIVE = 'SESSION_ALREADY_ACTIVE',
+  SESSION_PAUSED = 'SESSION_PAUSED',
+  INVALID_SESSION_STATE = 'INVALID_SESSION_STATE',
+  
+  // 통계 에러
+  STATS_CALCULATION_FAILED = 'STATS_CALCULATION_FAILED',
+  INVALID_TIME_RANGE = 'INVALID_TIME_RANGE',
+  GOAL_UPDATE_FAILED = 'GOAL_UPDATE_FAILED'
 }
 
 /**
@@ -123,7 +134,18 @@ const ERROR_MESSAGES: Record<ErrorCode, string> = {
   // 시스템 에러
   [ErrorCode.TRANSACTION_FAILED]: '데이터베이스 트랜잭션이 실패했습니다.',
   [ErrorCode.INDEX_ERROR]: '데이터베이스 인덱스 오류가 발생했습니다.',
-  [ErrorCode.MIGRATION_ERROR]: '데이터베이스 마이그레이션 오류가 발생했습니다.'
+  [ErrorCode.MIGRATION_ERROR]: '데이터베이스 마이그레이션 오류가 발생했습니다.',
+  
+  // 학습 세션 에러
+  [ErrorCode.SESSION_NOT_FOUND]: '학습 세션을 찾을 수 없습니다.',
+  [ErrorCode.SESSION_ALREADY_ACTIVE]: '이미 활성화된 학습 세션이 있습니다.',
+  [ErrorCode.SESSION_PAUSED]: '학습 세션이 일시정지 상태입니다.',
+  [ErrorCode.INVALID_SESSION_STATE]: '잘못된 학습 세션 상태입니다.',
+  
+  // 통계 에러
+  [ErrorCode.STATS_CALCULATION_FAILED]: '통계 계산에 실패했습니다.',
+  [ErrorCode.INVALID_TIME_RANGE]: '잘못된 시간 범위입니다.',
+  [ErrorCode.GOAL_UPDATE_FAILED]: '목표 업데이트에 실패했습니다.'
 };
 
 /**
@@ -246,7 +268,7 @@ export const ErrorFactory = {
   },
 
   /**
-   * 학습 세션 관련 에러 생성
+   * 기존 학습 세션 관련 에러 생성
    */
   study: {
     notFound: (id: number): MyAnkiError => new MyAnkiError(
@@ -271,6 +293,46 @@ export const ErrorFactory = {
       ErrorCode.STUDY_INVALID_CARD,
       `Card with id ${cardId} does not exist`,
       { cardId }
+    )
+  },
+
+  /**
+   * 새로운 세션 관리 관련 에러 생성
+   */
+  session: {
+    notFound: (sessionId: string): MyAnkiError => new MyAnkiError(
+      ErrorCode.SESSION_NOT_FOUND,
+      `Study session not found: ${sessionId}`,
+      { sessionId }
+    ),
+    
+    alreadyActive: (deckId: number): MyAnkiError => new MyAnkiError(
+      ErrorCode.SESSION_ALREADY_ACTIVE,
+      `Study session already active for deck: ${deckId}`,
+      { deckId }
+    ),
+    
+    invalidState: (currentState: string, expectedState: string): MyAnkiError => new MyAnkiError(
+      ErrorCode.INVALID_SESSION_STATE,
+      `Invalid session state: ${currentState}, expected: ${expectedState}`,
+      { currentState, expectedState }
+    )
+  },
+
+  /**
+   * 통계 관련 에러 생성
+   */
+  statistics: {
+    calculationFailed: (operation: string, error: Error): MyAnkiError => new MyAnkiError(
+      ErrorCode.STATS_CALCULATION_FAILED,
+      `Statistics calculation failed: ${operation}`,
+      { operation, originalError: error.message }
+    ),
+    
+    invalidTimeRange: (timeRange: string): MyAnkiError => new MyAnkiError(
+      ErrorCode.INVALID_TIME_RANGE,
+      `Invalid time range: ${timeRange}`,
+      { timeRange }
     )
   }
 };
