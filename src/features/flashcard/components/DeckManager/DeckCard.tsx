@@ -37,9 +37,9 @@ export const DeckCard = ({ deck, cardCount, lastStudiedAt, onSelect, isSelected,
     }
   };
 
-  const baseClasses = "p-4 border rounded-lg bg-white shadow-sm";
+  const baseClasses = "p-6 border rounded-lg bg-white dark:bg-gray-800 shadow-sm h-48 flex flex-col justify-between";
   const selectedClasses = isSelected ? "ring-2 ring-blue-500" : "";
-  const interactiveClasses = onSelect ? "cursor-pointer hover:shadow-md transition-shadow" : "";
+  const interactiveClasses = onSelect ? "cursor-pointer hover:shadow-md hover:border-blue-300 transition-all duration-200" : "";
   
   const className = `${baseClasses} ${selectedClasses} ${interactiveClasses}`.trim();
 
@@ -55,21 +55,21 @@ export const DeckCard = ({ deck, cardCount, lastStudiedAt, onSelect, isSelected,
           aria-pressed={onSelect ? isSelected : undefined}
           className={onSelect ? "flex-1" : undefined}
         >
-          <h3 className="text-lg font-semibold text-gray-900">{deck.name}</h3>
-          {deck.description && (
-            <p className="mt-2 text-sm text-gray-600">{deck.description}</p>
-          )}
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">{deck.name}</h3>
+            {deck.description && (
+              <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">{deck.description}</p>
+            )}
+          </div>
           
-          {(cardCount !== undefined || lastStudiedAt) && (
-            <div className="mt-3 flex flex-col gap-1 text-xs text-gray-500">
-              {cardCount !== undefined && (
-                <span>{formatCardCount(cardCount)}</span>
-              )}
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+            <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
+              <span>{cardCount !== undefined ? formatCardCount(cardCount) : '0 cards'}</span>
               {lastStudiedAt && (
-                <span>Last studied: {formatDate(lastStudiedAt)}</span>
+                <span>Last: {formatDate(lastStudiedAt)}</span>
               )}
             </div>
-          )}
+          </div>
         </div>
 
         <button
@@ -98,21 +98,21 @@ export const DeckCard = ({ deck, cardCount, lastStudiedAt, onSelect, isSelected,
 
   return (
     <Component {...props}>
-      <h3 className="text-lg font-semibold text-gray-900">{deck.name}</h3>
-      {deck.description && (
-        <p className="mt-2 text-sm text-gray-600">{deck.description}</p>
-      )}
+      <div className="flex-1">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">{deck.name}</h3>
+        {deck.description && (
+          <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">{deck.description}</p>
+        )}
+      </div>
       
-      {(cardCount !== undefined || lastStudiedAt) && (
-        <div className="mt-3 flex flex-col gap-1 text-xs text-gray-500">
-          {cardCount !== undefined && (
-            <span>{formatCardCount(cardCount)}</span>
-          )}
+      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+        <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
+          <span>{cardCount !== undefined ? formatCardCount(cardCount) : '0 cards'}</span>
           {lastStudiedAt && (
-            <span>Last studied: {formatDate(lastStudiedAt)}</span>
+            <span>Last: {formatDate(lastStudiedAt)}</span>
           )}
         </div>
-      )}
+      </div>
     </Component>
   );
 };
