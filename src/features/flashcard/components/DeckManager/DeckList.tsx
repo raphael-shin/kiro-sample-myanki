@@ -4,9 +4,10 @@ import { DeckCard } from './DeckCard';
 interface DeckListProps {
   decks: Deck[];
   loading?: boolean;
+  onDeckSelect?: (deckId: number) => void;
 }
 
-export const DeckList = ({ decks, loading }: DeckListProps) => {
+export const DeckList = ({ decks, loading, onDeckSelect }: DeckListProps) => {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-8">
@@ -27,7 +28,10 @@ export const DeckList = ({ decks, loading }: DeckListProps) => {
     <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {decks.map((deck) => (
         <li key={deck.id}>
-          <DeckCard deck={deck} />
+          <DeckCard 
+            deck={deck} 
+            onSelect={onDeckSelect ? (selectedDeck) => onDeckSelect(selectedDeck.id!) : undefined}
+          />
         </li>
       ))}
     </ul>
