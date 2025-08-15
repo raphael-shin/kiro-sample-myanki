@@ -38,9 +38,9 @@ export const DeckManagerPage: React.FC<DeckManagerPageProps> = ({ onDeckSelect }
       <CreateDeckModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        onCreate={async (deckData) => {
+        onCreate={async (name, description) => {
           try {
-            await createDeck(deckData);
+            await createDeck({ name, description });
             setIsCreateModalOpen(false);
           } catch (error) {
             console.error('Failed to create deck:', error);
