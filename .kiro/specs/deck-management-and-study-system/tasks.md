@@ -268,42 +268,42 @@
   - **(TDD Refactor)** 리팩터링: 실시간 검증 및 사용자 친화적 메시지 개선
   - _Requirements: 1.6_
 
-- [ ] 9. 카드 편집 기본 컴포넌트 구현
+- [x] 9. 카드 편집 기본 컴포넌트 구현
   - features/flashcard/components/CardEditor 폴더 구조 생성
   - 가장 단순한 카드 편집 폼부터 시작
   - _Requirements: 2.1, 2.2_
 
-- [ ] 9.1 CardForm 기본 구조 (TDD)
+- [x] 9.1 CardForm 기본 구조 (TDD)
   - **(TDD Red)** 실패하는 테스트: 앞면/뒷면 입력 필드 렌더링 테스트
   - **(TDD Green)** 최소 구현: 두 개의 기본 텍스트 입력 필드만 구현
   - **(TDD Refactor)** 리팩터링: 폼 레이아웃 정리 및 라벨 접근성 개선
   - _Requirements: 2.1_
 
-- [ ] 9.2 카드 내용 상태 관리 (TDD)
+- [x] 9.2 카드 내용 상태 관리 (TDD)
   - **(TDD Red)** 실패하는 테스트: 입력 값 변경 시 상태 업데이트 테스트
   - **(TDD Green)** 최소 구현: useState를 사용한 기본 상태 관리만 구현
   - **(TDD Refactor)** 리팩터링: 커스텀 훅으로 폼 로직 분리
   - _Requirements: 2.1_
 
-- [ ] 9.3 카드 유효성 검사 (TDD)
+- [x] 9.3 카드 유효성 검사 (TDD)
   - **(TDD Red)** 실패하는 테스트: 빈 내용 입력 시 에러 메시지 표시 테스트
   - **(TDD Green)** 최소 구현: 기본 빈 값 검사만 구현
   - **(TDD Refactor)** 리팩터링: 유효성 검사 규칙 상수화 및 메시지 개선
   - _Requirements: 2.6_
 
-- [ ] 9.4 카드 저장 기능 (TDD)
+- [x] 9.4 카드 저장 기능 (TDD)
   - **(TDD Red)** 실패하는 테스트: 폼 제출 시 CardService.create 호출 테스트
   - **(TDD Green)** 최소 구현: 기본 저장 기능만 구현
   - **(TDD Refactor)** 리팩터링: 로딩 상태 및 성공/실패 피드백 추가
   - _Requirements: 2.1_
 
-- [ ] 9.5 CardList 컴포넌트 (TDD)
+- [x] 9.5 CardList 컴포넌트 (TDD)
   - **(TDD Red)** 실패하는 테스트: 선택된 덱의 카드 목록 표시 테스트
   - **(TDD Green)** 최소 구현: 카드 목록을 받아 표시하는 기본 컴포넌트
   - **(TDD Refactor)** 리팩터링: 카드 정렬 및 필터링 기능 추가
   - _Requirements: 2.5_
 
-- [ ] 9.6 CardPreview 컴포넌트 (TDD)
+- [x] 9.6 CardPreview 컴포넌트 (TDD)
   - **(TDD Red)** 실패하는 테스트: 입력된 내용을 미리보기로 표시하는 테스트
   - **(TDD Green)** 최소 구현: 단순한 텍스트 표시만 구현
   - **(TDD Refactor)** 리팩터링: 카드 편집 및 삭제 버튼 추가
