@@ -160,6 +160,28 @@ export interface StudyStats {
 }
 
 /**
+ * 세션 진행률 정보
+ */
+export interface SessionProgress {
+  totalCards: number;
+  completedCards: number;
+  currentCardIndex: number;
+  percentage: number;
+  remainingCards: number;
+}
+
+/**
+ * 세션 요약 정보
+ */
+export interface SessionSummary {
+  cardsStudied: number;
+  totalTime: number;
+  averageQuality: number;
+  correctAnswers: number;
+  sessionDate: Date;
+}
+
+/**
  * 통계 및 진행률 추적 관련 타입들
  */
 
