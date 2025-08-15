@@ -5,10 +5,11 @@ interface DeckListProps {
   decks: Deck[];
   loading?: boolean;
   onDeckSelect?: (deckId: number) => void;
+  onDeckDelete?: (deckId: number) => void;
   cardCounts?: Record<number, number>;
 }
 
-export const DeckList = ({ decks, loading, onDeckSelect, cardCounts }: DeckListProps) => {
+export const DeckList = ({ decks, loading, onDeckSelect, onDeckDelete, cardCounts }: DeckListProps) => {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-8">
@@ -33,6 +34,7 @@ export const DeckList = ({ decks, loading, onDeckSelect, cardCounts }: DeckListP
             deck={deck} 
             cardCount={deck.id ? cardCounts?.[deck.id] : 0}
             onSelect={onDeckSelect ? (selectedDeck) => onDeckSelect(selectedDeck.id!) : undefined}
+            onDelete={onDeckDelete ? (selectedDeck) => onDeckDelete(selectedDeck.id!) : undefined}
           />
         </li>
       ))}

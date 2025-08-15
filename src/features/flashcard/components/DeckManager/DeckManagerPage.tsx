@@ -12,8 +12,22 @@ interface DeckManagerPageProps {
 export const DeckManagerPage: React.FC<DeckManagerPageProps> = ({ onDeckSelect }) => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [cardCounts, setCardCounts] = useState<Record<number, number>>({});
-  const { decks, loading, error, createDeck, loadDecks } = useDeckStore();
+  const { decks, loading, error, createDeck, loadDecks, deleteDeck } = useDeckStore();
   const cardService = new CardService(db);
+
+  const handleDeckDelete = async (deckId: number) => {
+    try {
+      await deleteDeck(deckId);
+      // 카드 개수 상태에서도 해당 덱 제거
+      setCardCounts(prev => {
+        const newCounts = { ...prev };
+        delete newCounts[deckId];
+        return newCounts;
+      });
+    } catch (error) {
+      console.error('Failed to delete deck:', error);
+    }
+  };
 
   useEffect(() => {
     loadDecks();
@@ -63,6 +77,7 @@ export const DeckManagerPage: React.FC<DeckManagerPageProps> = ({ onDeckSelect }
         decks={decks}
         loading={loading}
         onDeckSelect={onDeckSelect}
+        onDeckDelete={handleDeckDelete}
         cardCounts={cardCounts}
       />
 
