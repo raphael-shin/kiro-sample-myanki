@@ -38,7 +38,9 @@ export const CardEditorPage: React.FC<CardEditorPageProps> = ({ deckId, onBack }
 
   const handleCardSave = async (front: string, back: string) => {
     try {
-      const newCard = await cardService.createCard({ deckId, front, back });
+      const newCardId = await cardService.create({ deckId, front, back });
+      // 새로 생성된 카드를 목록에 추가
+      const newCard = { id: newCardId, deckId, front, back, createdAt: new Date(), updatedAt: new Date() };
       setCards([...cards, newCard]);
     } catch (error) {
       console.error('Failed to create card:', error);
