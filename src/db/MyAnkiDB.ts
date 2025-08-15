@@ -1,6 +1,7 @@
 import Dexie, { Table } from 'dexie';
 import { Setting, DATABASE_VERSION, DATABASE_NAME } from '../types/database';
 import { Deck, Card, StudySession } from '../types/flashcard';
+import { SpacedRepetitionCard } from '../types/spaced-repetition';
 
 export class MyAnkiDB extends Dexie {
   // 테이블 정의
@@ -8,6 +9,7 @@ export class MyAnkiDB extends Dexie {
   decks!: Table<Deck>;
   cards!: Table<Card>;
   studySessions!: Table<StudySession>;
+  spacedRepetitionData!: Table<SpacedRepetitionCard>;
 
   constructor() {
     super(DATABASE_NAME);
@@ -21,7 +23,8 @@ export class MyAnkiDB extends Dexie {
       settings: '++id, key, value, createdAt, updatedAt',
       decks: '++id, name, description, createdAt, updatedAt',
       cards: '++id, deckId, front, back, createdAt, updatedAt',
-      studySessions: '++id, cardId, studiedAt, quality, responseTime'
+      studySessions: '++id, cardId, studiedAt, quality, responseTime',
+      spacedRepetitionData: 'cardId, easeFactor, interval, repetitions, nextReviewDate, lastReviewDate, createdAt, updatedAt'
     });
   }
 
@@ -30,6 +33,7 @@ export class MyAnkiDB extends Dexie {
     this.setupTimestampHooks(this.settings);
     this.setupTimestampHooks(this.decks);
     this.setupTimestampHooks(this.cards);
+    this.setupTimestampHooks(this.spacedRepetitionData);
     
     // studySessions는 특별한 처리
     this.setupStudySessionHooks();
