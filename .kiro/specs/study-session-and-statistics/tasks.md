@@ -32,7 +32,7 @@
   - 세션 생성, 상태 관리, 일시정지/재개 기능 제공
   - _Requirements: 1.1, 1.4_
 
-- [ ] 2.1 SessionManager 기본 구조 구현 [동작적 변경]
+- [x] 2.1 SessionManager 기본 구조 구현 [동작적 변경]
   - **RED**: 세션 생성/조회/업데이트/삭제 기능 테스트 작성 (실패)
   - **GREEN**: src/services/SessionManager.ts 파일 생성 및 기본 CRUD 메서드 구현
   - **REFACTOR**: 메서드 추출, 중복 코드 제거, 인터페이스 정리
