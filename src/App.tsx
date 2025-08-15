@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAppStore, selectTheme, selectIsLoading, selectThemeActions, selectLoadingActions } from './store/appStore';
 import { ThemeToggle } from './components/common/ThemeToggle';
 import { LoadingSpinner } from './components/common/LoadingSpinner';
+import { OfflineIndicator } from './components/common/OfflineIndicator';
 import { Card } from './components/ui/Card';
 import { DeckManagerPage } from './features/flashcard/components/DeckManager/DeckManagerPage';
 import { CardEditorPage } from './features/flashcard/components/CardEditor/CardEditorPage';
@@ -60,6 +61,9 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
+      {/* Offline Indicator */}
+      <OfflineIndicator />
+      
       {/* Header with navigation */}
       <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700">
         <div className="container mx-auto px-4 py-4">

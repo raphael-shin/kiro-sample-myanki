@@ -3,6 +3,13 @@ import { Setting, DATABASE_VERSION, DATABASE_NAME } from '../types/database';
 import { Deck, Card, StudySession } from '../types/flashcard';
 import { SpacedRepetitionCard } from '../types/spaced-repetition';
 
+export interface OfflineAction {
+  id?: number;
+  type: 'CREATE_CARD' | 'UPDATE_CARD' | 'DELETE_CARD' | 'CREATE_DECK' | 'UPDATE_DECK' | 'DELETE_DECK' | 'STUDY_SESSION';
+  data: any;
+  timestamp: Date;
+}
+
 export class MyAnkiDB extends Dexie {
   // 테이블 정의
   settings!: Table<Setting>;
@@ -10,6 +17,7 @@ export class MyAnkiDB extends Dexie {
   cards!: Table<Card>;
   studySessions!: Table<StudySession>;
   spacedRepetitionData!: Table<SpacedRepetitionCard>;
+  offlineQueue!: Table<OfflineAction>;
 
   constructor() {
     super(DATABASE_NAME);
@@ -24,7 +32,8 @@ export class MyAnkiDB extends Dexie {
       decks: '++id, name, description, createdAt, updatedAt',
       cards: '++id, deckId, front, back, createdAt, updatedAt',
       studySessions: '++id, cardId, studiedAt, quality, responseTime',
-      spacedRepetitionData: 'cardId, easeFactor, interval, repetitions, nextReviewDate, lastReviewDate, createdAt, updatedAt'
+      spacedRepetitionData: 'cardId, easeFactor, interval, repetitions, nextReviewDate, lastReviewDate, createdAt, updatedAt',
+      offlineQueue: '++id, type, data, timestamp'
     });
   }
 
