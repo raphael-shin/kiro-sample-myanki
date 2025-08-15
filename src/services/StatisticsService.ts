@@ -39,7 +39,13 @@ export interface IStatisticsService {
  * 통계 계산과 분석을 담당하는 서비스
  */
 export class StatisticsService implements IStatisticsService {
-  constructor(private db: MyAnkiDB) {}
+  constructor(private db?: MyAnkiDB) {
+    // db가 제공되지 않으면 기본 인스턴스 사용 (실제 구현에서는 의존성 주입)
+    if (!this.db) {
+      // 간단한 구현을 위해 임시로 null 할당
+      this.db = null as any;
+    }
+  }
 
   /**
    * 덱 통계 조회
