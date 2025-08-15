@@ -13,19 +13,20 @@ describe('CardDisplay Component', () => {
   };
 
   const mockOnShowAnswer = jest.fn();
+  const defaultProps = {
+    card: mockCard,
+    showAnswer: false,
+    onShowAnswer: mockOnShowAnswer,
+    cardNumber: 1,
+    totalCards: 10
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('should display front content only initially', () => {
-    render(
-      <CardDisplay 
-        card={mockCard}
-        showAnswer={false}
-        onShowAnswer={mockOnShowAnswer}
-      />
-    );
+    render(<CardDisplay {...defaultProps} />);
     
     expect(screen.getByText('Test front content')).toBeInTheDocument();
     expect(screen.queryByText('Test back content')).not.toBeInTheDocument();
@@ -33,13 +34,7 @@ describe('CardDisplay Component', () => {
   });
 
   it('should display both front and back when showAnswer is true', () => {
-    render(
-      <CardDisplay 
-        card={mockCard}
-        showAnswer={true}
-        onShowAnswer={mockOnShowAnswer}
-      />
-    );
+    render(<CardDisplay {...defaultProps} showAnswer={true} />);
     
     expect(screen.getByText('Test front content')).toBeInTheDocument();
     expect(screen.getByText('Test back content')).toBeInTheDocument();
@@ -47,13 +42,7 @@ describe('CardDisplay Component', () => {
   });
 
   it('should call onShowAnswer when show answer button clicked', () => {
-    render(
-      <CardDisplay 
-        card={mockCard}
-        showAnswer={false}
-        onShowAnswer={mockOnShowAnswer}
-      />
-    );
+    render(<CardDisplay {...defaultProps} />);
     
     const showAnswerButton = screen.getByRole('button', { name: /show answer/i });
     fireEvent.click(showAnswerButton);
@@ -62,13 +51,7 @@ describe('CardDisplay Component', () => {
   });
 
   it('should have proper card styling', () => {
-    render(
-      <CardDisplay 
-        card={mockCard}
-        showAnswer={false}
-        onShowAnswer={mockOnShowAnswer}
-      />
-    );
+    render(<CardDisplay {...defaultProps} />);
     
     const cardElement = screen.getByTestId('card-display');
     expect(cardElement).toHaveClass('bg-white', 'rounded-lg', 'shadow-lg');
@@ -81,28 +64,23 @@ describe('CardDisplay Component', () => {
       back: 'b'.repeat(500)
     };
     
-    render(
-      <CardDisplay 
-        card={longCard}
-        showAnswer={true}
-        onShowAnswer={mockOnShowAnswer}
-      />
-    );
+    render(<CardDisplay {...defaultProps} card={longCard} showAnswer={true} />);
     
     expect(screen.getByText(/aaa/)).toBeInTheDocument();
     expect(screen.getByText(/bbb/)).toBeInTheDocument();
   });
 
   it('should have accessible labels', () => {
-    render(
-      <CardDisplay 
-        card={mockCard}
-        showAnswer={true}
-        onShowAnswer={mockOnShowAnswer}
-      />
-    );
+    render(<CardDisplay {...defaultProps} showAnswer={true} />);
     
     expect(screen.getByText('Question')).toBeInTheDocument();
     expect(screen.getByText('Answer')).toBeInTheDocument();
+  });
+
+  it('should display card progress information', () => {
+    render(<CardDisplay {...defaultProps} cardNumber={3} totalCards={10} />);
+    
+    expect(screen.getByText('Card 3 of 10')).toBeInTheDocument();
+    expect(screen.getByText('30% Complete')).toBeInTheDocument();
   });
 });
