@@ -57,24 +57,24 @@
   - SM-2 알고리즘과의 통합 강화
   - _Requirements: 1.1, 3.1, 3.2, 3.3, 3.4, 3.5_
 
-- [ ] 3.1 StudyService 구조 정리 [구조적 변경]
+- [x] 3.1 StudyService 구조 정리 [구조적 변경]
   - **REFACTOR**: 기존 StudyService 메서드 정리 및 인터페이스 개선
   - **REFACTOR**: SessionManager 의존성 주입을 위한 구조 변경
   - **테스트**: 기존 테스트가 여전히 통과하는지 확인
 
-- [ ] 3.2 StudyService 세션 관리 메서드 추가 [동작적 변경]
+- [x] 3.2 StudyService 세션 관리 메서드 추가 [동작적 변경]
   - **RED**: startStudySession, endStudySession 메서드 테스트 작성 (실패)
   - **GREEN**: SessionManager와 연동하는 세션 관리 메서드 구현
   - **REFACTOR**: 세션 관리 로직 메서드 추출 및 정리
   - _Requirements: 1.1, 1.4_
 
-- [ ] 3.3 카드 큐 관리 기능 구현 [동작적 변경]
+- [x] 3.3 카드 큐 관리 기능 구현 [동작적 변경]
   - **RED**: SM-2 기반 카드 우선순위 및 큐 관리 테스트 작성 (실패)
   - **GREEN**: getNextCard 메서드 및 큐 업데이트 로직 구현
   - **REFACTOR**: 우선순위 계산 로직 메서드 추출
   - _Requirements: 1.2, 3.1_
 
-- [ ] 3.4 답변 처리 로직 확장 [동작적 변경]
+- [x] 3.4 답변 처리 로직 확장 [동작적 변경]
   - **RED**: 응답 시간 측정 및 세션 통계 업데이트 테스트 작성 (실패)
   - **GREEN**: 확장된 답변 처리 로직 구현하여 테스트 통과
   - **REFACTOR**: 답변 처리 파이프라인 정리 및 최적화

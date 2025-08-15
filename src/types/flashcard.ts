@@ -160,6 +160,15 @@ export interface StudyStats {
 }
 
 /**
+ * 세션 진행률 업데이트 정보
+ */
+export interface SessionProgressUpdate {
+  totalCards?: number;
+  completedCards?: number;
+  currentCardIndex?: number;
+}
+
+/**
  * 세션 진행률 정보
  */
 export interface SessionProgress {
