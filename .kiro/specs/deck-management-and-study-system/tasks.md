@@ -198,30 +198,30 @@
   - **(TDD Refactor)** 리팩터링: 의존성 주입 패턴으로 테스트 가능한 구조 및 에러 처리 개선
   - _Requirements: 4.1, 4.4_
 
-- [ ] 7. 덱 관리 UI 컴포넌트 구현
+- [x] 7. 덱 관리 UI 컴포넌트 구현
   - features/flashcard/components/DeckManager 폴더 구조 생성
   - 가장 단순한 덱 목록 표시부터 시작
   - _Requirements: 1.2, 1.3_
 
-- [ ] 7.1 DeckCard 기본 컴포넌트 (TDD)
+- [x] 7.1 DeckCard 기본 컴포넌트 (TDD)
   - **(TDD Red)** 실패하는 테스트: 덱 이름과 설명을 표시하는 테스트
   - **(TDD Green)** 최소 구현: 덱 정보만 표시하는 단순한 카드 컴포넌트
   - **(TDD Refactor)** 리팩터링: 스타일링 분리 및 props 타입 정의
   - _Requirements: 1.2_
 
-- [ ] 7.2 DeckCard 통계 표시 기능 (TDD)
+- [x] 7.2 DeckCard 통계 표시 기능 (TDD)
   - **(TDD Red)** 실패하는 테스트: 카드 수와 마지막 학습 날짜 표시 테스트
   - **(TDD Green)** 최소 구현: 기본 통계 정보 표시 기능 추가
   - **(TDD Refactor)** 리팩터링: 통계 포맷팅 유틸리티 함수 분리
   - _Requirements: 1.2_
 
-- [ ] 7.3 DeckList 기본 컴포넌트 (TDD)
+- [x] 7.3 DeckList 기본 컴포넌트 (TDD)
   - **(TDD Red)** 실패하는 테스트: 덱 배열을 받아 DeckCard 목록 렌더링 테스트
   - **(TDD Green)** 최소 구현: map을 사용한 단순한 목록 렌더링
   - **(TDD Refactor)** 리팩터링: 빈 상태 처리 및 로딩 상태 추가
   - _Requirements: 1.2_
 
-- [ ] 7.4 덱 선택 기능 (TDD)
+- [x] 7.4 덱 선택 기능 (TDD)
   - **(TDD Red)** 실패하는 테스트: 덱 클릭 시 onDeckSelect 콜백 호출 테스트
   - **(TDD Green)** 최소 구현: 클릭 이벤트 핸들러만 추가
   - **(TDD Refactor)** 리팩터링: 선택된 덱 시각적 표시 및 키보드 네비게이션
