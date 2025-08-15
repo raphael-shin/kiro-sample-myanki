@@ -1,6 +1,7 @@
 import { create } from 'zustand';
-import { Card, StudyQuality } from '../types/flashcard';
+import { Card, StudyQuality, StudySessionData, SessionProgress } from '../types/flashcard';
 import { SpacedRepetitionService } from '../services/SpacedRepetitionService';
+import { SessionManager, ISessionManager } from '../services/SessionManager';
 
 /**
  * 학습 세션 통계 정보
@@ -21,13 +22,10 @@ interface ProgressInfo {
 }
 
 /**
- * 학습 세션 관리를 위한 Zustand 스토어
- * 
- * 간격 반복 학습 세션의 상태를 관리합니다.
- * 현재 카드, 학습 큐, 세션 통계, 진행률 등을 추적합니다.
+ * 확장된 학습 세션 상태 인터페이스
  */
-interface StudySessionState {
-  // State
+interface EnhancedStudySessionState {
+  // 기존 상태 (그룹화)
   currentCard: Card | null;
   isActive: boolean;
   loading: boolean;
@@ -35,36 +33,56 @@ interface StudySessionState {
   sessionStats: SessionStats;
   studyQueue: Card[];
   
-  // Session Management
+  // 새로운 상태 (그룹화)
+  sessionId: string | null;
+  sessionStartTime: Date | null;
+  isPaused: boolean;
+  showAnswer: boolean;
+  answerStartTime: Date | null;
+  keyboardShortcutsEnabled: boolean;
+  
+  // 세션 관리 액션 (그룹화)
   startSession: (deckId: number) => Promise<void>;
   endSession: () => void;
+  pauseSession: () => Promise<void>;
+  resumeSession: () => Promise<void>;
   
-  // Answer Processing
+  // 답변 처리 액션 (그룹화)
   submitAnswer: (quality: StudyQuality, responseTime: number) => Promise<void>;
   processAnswer: (quality: StudyQuality, responseTime: number) => Promise<void>;
   nextCard: () => void;
+  showCardAnswer: () => void;
   
-  // Algorithm Integration
+  // 진행률 추적 액션 (그룹화)
+  getProgress: () => ProgressInfo;
+  updateProgress: () => void;
+  getEstimatedTimeRemaining: () => number;
+  
+  // 키보드 단축키 액션
+  enableKeyboardShortcuts: (enabled: boolean) => void;
+  
+  // 알고리즘 통합 (기존)
   initializeCardData: (cardId: number) => Promise<void>;
   getCardsForReview: (deckId: number) => Promise<Card[]>;
   
-  // Progress Tracking
-  getProgress: () => ProgressInfo;
-  updateProgress: () => void;
-  
-  // Testing
+  // 테스트용
   reset?: () => void;
 }
 
-// Allow dependency injection for testing
+// 의존성 주입을 위한 인스턴스들
 let spacedRepetitionServiceInstance: SpacedRepetitionService | null = null;
+let sessionManagerInstance: ISessionManager | null = null;
 
 export const setSpacedRepetitionService = (service: SpacedRepetitionService) => {
   spacedRepetitionServiceInstance = service;
 };
 
-export const useStudySessionStore = create<StudySessionState>((set, get) => {
-  // Get or create SpacedRepetitionService instance
+export const setSessionManager = (manager: ISessionManager) => {
+  sessionManagerInstance = manager;
+};
+
+export const useStudySessionStore = create<EnhancedStudySessionState>((set, get) => {
+  // 서비스 인스턴스 획득 헬퍼
   const getSpacedRepetitionService = () => {
     if (spacedRepetitionServiceInstance) {
       return spacedRepetitionServiceInstance;
@@ -72,8 +90,15 @@ export const useStudySessionStore = create<StudySessionState>((set, get) => {
     return new SpacedRepetitionService();
   };
 
+  const getSessionManager = () => {
+    if (sessionManagerInstance) {
+      return sessionManagerInstance;
+    }
+    return new SessionManager();
+  };
+
   return {
-    // Initial state
+    // 기존 상태 초기값
     currentCard: null,
     isActive: false,
     loading: false,
@@ -85,18 +110,28 @@ export const useStudySessionStore = create<StudySessionState>((set, get) => {
     },
     studyQueue: [],
     
-    // Session management
+    // 새로운 상태 초기값
+    sessionId: null,
+    sessionStartTime: null,
+    isPaused: false,
+    showAnswer: false,
+    answerStartTime: null,
+    keyboardShortcutsEnabled: true,
+    
+    // 세션 관리 액션들
     startSession: async (deckId: number) => {
       set({ loading: true, error: null });
       
       try {
-        const spacedRepetitionService = getSpacedRepetitionService();
-        const cardIds = await spacedRepetitionService.getCardsForReview();
+        const sessionManager = getSessionManager();
+        const sessionData = await sessionManager.createSession(deckId);
         
-        // TODO: Load actual cards from CardService using cardIds
         set({ 
+          sessionId: sessionData.id,
+          sessionStartTime: sessionData.startTime,
           isActive: true, 
           loading: false,
+          isPaused: false,
           sessionStats: { cardsStudied: 0, correctAnswers: 0, totalTime: 0 }
         });
       } catch (error) {
@@ -109,14 +144,49 @@ export const useStudySessionStore = create<StudySessionState>((set, get) => {
     
     endSession: () => {
       set({
+        sessionId: null,
+        sessionStartTime: null,
         isActive: false,
+        isPaused: false,
         currentCard: null,
         studyQueue: [],
+        showAnswer: false,
+        answerStartTime: null,
         sessionStats: { cardsStudied: 0, correctAnswers: 0, totalTime: 0 }
       });
     },
+
+    pauseSession: async () => {
+      const { sessionId } = get();
+      if (!sessionId) return;
+
+      try {
+        const sessionManager = getSessionManager();
+        await sessionManager.pauseSession(sessionId);
+        set({ isPaused: true });
+      } catch (error) {
+        set({ 
+          error: error instanceof Error ? error.message : 'Failed to pause session'
+        });
+      }
+    },
+
+    resumeSession: async () => {
+      const { sessionId } = get();
+      if (!sessionId) return;
+
+      try {
+        const sessionManager = getSessionManager();
+        await sessionManager.resumeSession(sessionId);
+        set({ isPaused: false });
+      } catch (error) {
+        set({ 
+          error: error instanceof Error ? error.message : 'Failed to resume session'
+        });
+      }
+    },
     
-    // Answer processing
+    // 답변 처리 액션들
     submitAnswer: async (quality: StudyQuality, responseTime: number) => {
       const { sessionStats } = get();
       const isCorrect = quality === StudyQuality.GOOD || quality === StudyQuality.EASY;
@@ -132,10 +202,8 @@ export const useStudySessionStore = create<StudySessionState>((set, get) => {
     
     processAnswer: async (quality: StudyQuality, responseTime: number) => {
       try {
-        // Update session stats first
         await get().submitAnswer(quality, responseTime);
         
-        // Apply SM2 algorithm if there's a current card
         const { currentCard } = get();
         if (currentCard?.id) {
           const spacedRepetitionService = getSpacedRepetitionService();
@@ -155,47 +223,24 @@ export const useStudySessionStore = create<StudySessionState>((set, get) => {
         const [nextCard, ...remainingQueue] = studyQueue;
         set({
           currentCard: nextCard,
-          studyQueue: remainingQueue
+          studyQueue: remainingQueue,
+          showAnswer: false,
+          answerStartTime: new Date()
         });
       } else {
-        set({ currentCard: null });
-      }
-    },
-    
-    // Algorithm integration
-    initializeCardData: async (cardId: number) => {
-      try {
-        const spacedRepetitionService = getSpacedRepetitionService();
-        const existingData = await spacedRepetitionService.getByCardId(cardId);
-        
-        // If no existing data, it will be created when first answer is processed
-        if (!existingData) {
-          // Data will be initialized on first processAnswer call
-        }
-      } catch (error) {
         set({ 
-          error: error instanceof Error ? error.message : 'Failed to initialize card data'
+          currentCard: null,
+          showAnswer: false,
+          answerStartTime: null
         });
       }
     },
-    
-    getCardsForReview: async (deckId: number) => {
-      try {
-        const spacedRepetitionService = getSpacedRepetitionService();
-        const cardIds = await spacedRepetitionService.getCardsForReview();
-        
-        // TODO: Filter by deckId and load actual Card objects
-        // For now, return empty array
-        return [];
-      } catch (error) {
-        set({ 
-          error: error instanceof Error ? error.message : 'Failed to get cards for review'
-        });
-        return [];
-      }
+
+    showCardAnswer: () => {
+      set({ showAnswer: true });
     },
     
-    // Progress tracking
+    // 진행률 추적 액션들
     getProgress: () => {
       const { sessionStats, studyQueue } = get();
       const totalCards = sessionStats.cardsStudied + studyQueue.length;
@@ -209,11 +254,50 @@ export const useStudySessionStore = create<StudySessionState>((set, get) => {
     },
     
     updateProgress: () => {
-      // Placeholder for triggering progress updates
-      // Actual progress is calculated dynamically in getProgress()
+      // 진행률은 getProgress()에서 동적으로 계산됨
+    },
+
+    getEstimatedTimeRemaining: () => {
+      const { sessionStats, studyQueue } = get();
+      if (sessionStats.cardsStudied === 0 || studyQueue.length === 0) {
+        return 0;
+      }
+      
+      const averageTimePerCard = sessionStats.totalTime / sessionStats.cardsStudied;
+      return Math.round(averageTimePerCard * studyQueue.length);
+    },
+
+    // 키보드 단축키 액션
+    enableKeyboardShortcuts: (enabled: boolean) => {
+      set({ keyboardShortcutsEnabled: enabled });
     },
     
-    // Reset for testing
+    // 기존 알고리즘 통합 메서드들
+    initializeCardData: async (cardId: number) => {
+      try {
+        const spacedRepetitionService = getSpacedRepetitionService();
+        await spacedRepetitionService.getByCardId(cardId);
+      } catch (error) {
+        set({ 
+          error: error instanceof Error ? error.message : 'Failed to initialize card data'
+        });
+      }
+    },
+    
+    getCardsForReview: async (deckId: number) => {
+      try {
+        const spacedRepetitionService = getSpacedRepetitionService();
+        await spacedRepetitionService.getCardsForReview();
+        return [];
+      } catch (error) {
+        set({ 
+          error: error instanceof Error ? error.message : 'Failed to get cards for review'
+        });
+        return [];
+      }
+    },
+    
+    // 테스트용 리셋
     reset: () => set({
       currentCard: null,
       isActive: false,
@@ -224,7 +308,13 @@ export const useStudySessionStore = create<StudySessionState>((set, get) => {
         correctAnswers: 0,
         totalTime: 0
       },
-      studyQueue: []
+      studyQueue: [],
+      sessionId: null,
+      sessionStartTime: null,
+      isPaused: false,
+      showAnswer: false,
+      answerStartTime: null,
+      keyboardShortcutsEnabled: true
     })
   };
 });
