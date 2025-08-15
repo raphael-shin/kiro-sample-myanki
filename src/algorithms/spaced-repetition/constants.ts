@@ -1,0 +1,10 @@
+/**
+ * SM-2 알고리즘 상수 정의
+ */
+export const SM2_CONSTANTS = {
+  DEFAULT_EASE_FACTOR: 2.5,
+  MIN_EASE_FACTOR: 1.3,
+  FIRST_INTERVAL: 1,
+  SECOND_INTERVAL: 6,
+  MIN_INTERVAL_MINUTES: 1
+} as const;

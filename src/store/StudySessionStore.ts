@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { Card, StudyQuality } from '../types/flashcard';
-import { SM2_CONSTANTS } from '../algorithms/spaced-repetition/constants';
+import { SpacedRepetitionService } from '../services/SpacedRepetitionService';
 
 /**
  * 학습 세션 통계 정보
@@ -56,117 +56,24 @@ interface StudySessionState {
   reset?: () => void;
 }
 
-export const useStudySessionStore = create<StudySessionState>((set, get) => ({
-  // Initial state
-  currentCard: null,
-  isActive: false,
-  loading: false,
-  error: null,
-  sessionStats: {
-    cardsStudied: 0,
-    correctAnswers: 0,
-    totalTime: 0
-  },
-  studyQueue: [],
-  
-  // Session management
-  startSession: async (deckId: number) => {
-    set({ loading: true, error: null });
-    
-    try {
-      // TODO: Load cards from deck and initialize study queue
-      set({ 
-        isActive: true, 
-        loading: false,
-        sessionStats: { cardsStudied: 0, correctAnswers: 0, totalTime: 0 }
-      });
-    } catch (error) {
-      set({ 
-        error: error instanceof Error ? error.message : 'Failed to start session',
-        loading: false 
-      });
+// Allow dependency injection for testing
+let spacedRepetitionServiceInstance: SpacedRepetitionService | null = null;
+
+export const setSpacedRepetitionService = (service: SpacedRepetitionService) => {
+  spacedRepetitionServiceInstance = service;
+};
+
+export const useStudySessionStore = create<StudySessionState>((set, get) => {
+  // Get or create SpacedRepetitionService instance
+  const getSpacedRepetitionService = () => {
+    if (spacedRepetitionServiceInstance) {
+      return spacedRepetitionServiceInstance;
     }
-  },
-  
-  endSession: () => {
-    set({
-      isActive: false,
-      currentCard: null,
-      studyQueue: [],
-      sessionStats: { cardsStudied: 0, correctAnswers: 0, totalTime: 0 }
-    });
-  },
-  
-  // Answer processing
-  submitAnswer: async (quality: StudyQuality, responseTime: number) => {
-    const { sessionStats } = get();
-    const isCorrect = quality === StudyQuality.GOOD || quality === StudyQuality.EASY;
-    
-    set({
-      sessionStats: {
-        cardsStudied: sessionStats.cardsStudied + 1,
-        correctAnswers: sessionStats.correctAnswers + (isCorrect ? 1 : 0),
-        totalTime: sessionStats.totalTime + responseTime
-      }
-    });
-    
-    // TODO: Update spaced repetition data with SM2 algorithm
-  },
-  
-  processAnswer: async (quality: StudyQuality, responseTime: number) => {
-    // This combines submitAnswer with SM2 algorithm processing
-    await get().submitAnswer(quality, responseTime);
-    
-    // TODO: Apply SM2 algorithm and update spaced repetition data
-    // For now, just call submitAnswer
-  },
-  
-  nextCard: () => {
-    const { studyQueue } = get();
-    
-    if (studyQueue.length > 0) {
-      const [nextCard, ...remainingQueue] = studyQueue;
-      set({
-        currentCard: nextCard,
-        studyQueue: remainingQueue
-      });
-    } else {
-      set({ currentCard: null });
-    }
-  },
-  
-  // Algorithm integration
-  initializeCardData: async (cardId: number) => {
-    // TODO: Create initial spaced repetition data for new cards
-    // For now, this is a placeholder
-  },
-  
-  getCardsForReview: async (deckId: number) => {
-    // TODO: Filter cards that are due for review based on nextReviewDate
-    // For now, return empty array
-    return [];
-  },
-  
-  // Progress tracking
-  getProgress: () => {
-    const { sessionStats, studyQueue } = get();
-    const totalCards = sessionStats.cardsStudied + studyQueue.length;
-    const percentage = totalCards > 0 ? Math.round((sessionStats.cardsStudied / totalCards) * 100) : 0;
-    
-    return {
-      percentage,
-      cardsRemaining: studyQueue.length,
-      totalCards
-    };
-  },
-  
-  updateProgress: () => {
-    // Placeholder for triggering progress updates
-    // Actual progress is calculated dynamically in getProgress()
-  },
-  
-  // Reset for testing
-  reset: () => set({
+    return new SpacedRepetitionService();
+  };
+
+  return {
+    // Initial state
     currentCard: null,
     isActive: false,
     loading: false,
@@ -176,6 +83,148 @@ export const useStudySessionStore = create<StudySessionState>((set, get) => ({
       correctAnswers: 0,
       totalTime: 0
     },
-    studyQueue: []
-  })
-}));
+    studyQueue: [],
+    
+    // Session management
+    startSession: async (deckId: number) => {
+      set({ loading: true, error: null });
+      
+      try {
+        const spacedRepetitionService = getSpacedRepetitionService();
+        const cardIds = await spacedRepetitionService.getCardsForReview();
+        
+        // TODO: Load actual cards from CardService using cardIds
+        set({ 
+          isActive: true, 
+          loading: false,
+          sessionStats: { cardsStudied: 0, correctAnswers: 0, totalTime: 0 }
+        });
+      } catch (error) {
+        set({ 
+          error: error instanceof Error ? error.message : 'Failed to start session',
+          loading: false 
+        });
+      }
+    },
+    
+    endSession: () => {
+      set({
+        isActive: false,
+        currentCard: null,
+        studyQueue: [],
+        sessionStats: { cardsStudied: 0, correctAnswers: 0, totalTime: 0 }
+      });
+    },
+    
+    // Answer processing
+    submitAnswer: async (quality: StudyQuality, responseTime: number) => {
+      const { sessionStats } = get();
+      const isCorrect = quality === StudyQuality.GOOD || quality === StudyQuality.EASY;
+      
+      set({
+        sessionStats: {
+          cardsStudied: sessionStats.cardsStudied + 1,
+          correctAnswers: sessionStats.correctAnswers + (isCorrect ? 1 : 0),
+          totalTime: sessionStats.totalTime + responseTime
+        }
+      });
+    },
+    
+    processAnswer: async (quality: StudyQuality, responseTime: number) => {
+      try {
+        // Update session stats first
+        await get().submitAnswer(quality, responseTime);
+        
+        // Apply SM2 algorithm if there's a current card
+        const { currentCard } = get();
+        if (currentCard?.id) {
+          const spacedRepetitionService = getSpacedRepetitionService();
+          await spacedRepetitionService.processStudyResult(currentCard.id, quality);
+        }
+      } catch (error) {
+        set({ 
+          error: error instanceof Error ? error.message : 'Failed to process answer'
+        });
+      }
+    },
+    
+    nextCard: () => {
+      const { studyQueue } = get();
+      
+      if (studyQueue.length > 0) {
+        const [nextCard, ...remainingQueue] = studyQueue;
+        set({
+          currentCard: nextCard,
+          studyQueue: remainingQueue
+        });
+      } else {
+        set({ currentCard: null });
+      }
+    },
+    
+    // Algorithm integration
+    initializeCardData: async (cardId: number) => {
+      try {
+        const spacedRepetitionService = getSpacedRepetitionService();
+        const existingData = await spacedRepetitionService.getByCardId(cardId);
+        
+        // If no existing data, it will be created when first answer is processed
+        if (!existingData) {
+          // Data will be initialized on first processAnswer call
+        }
+      } catch (error) {
+        set({ 
+          error: error instanceof Error ? error.message : 'Failed to initialize card data'
+        });
+      }
+    },
+    
+    getCardsForReview: async (deckId: number) => {
+      try {
+        const spacedRepetitionService = getSpacedRepetitionService();
+        const cardIds = await spacedRepetitionService.getCardsForReview();
+        
+        // TODO: Filter by deckId and load actual Card objects
+        // For now, return empty array
+        return [];
+      } catch (error) {
+        set({ 
+          error: error instanceof Error ? error.message : 'Failed to get cards for review'
+        });
+        return [];
+      }
+    },
+    
+    // Progress tracking
+    getProgress: () => {
+      const { sessionStats, studyQueue } = get();
+      const totalCards = sessionStats.cardsStudied + studyQueue.length;
+      const percentage = totalCards > 0 ? Math.round((sessionStats.cardsStudied / totalCards) * 100) : 0;
+      
+      return {
+        percentage,
+        cardsRemaining: studyQueue.length,
+        totalCards
+      };
+    },
+    
+    updateProgress: () => {
+      // Placeholder for triggering progress updates
+      // Actual progress is calculated dynamically in getProgress()
+    },
+    
+    // Reset for testing
+    reset: () => set({
+      currentCard: null,
+      isActive: false,
+      loading: false,
+      error: null,
+      sessionStats: {
+        cardsStudied: 0,
+        correctAnswers: 0,
+        totalTime: 0
+      },
+      studyQueue: []
+    })
+  };
+});

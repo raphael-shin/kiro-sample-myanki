@@ -1,8 +1,29 @@
-import { useStudySessionStore } from '../StudySessionStore';
+import { useStudySessionStore, setSpacedRepetitionService } from '../StudySessionStore';
+import { SpacedRepetitionService } from '../../services/SpacedRepetitionService';
 
 describe('StudySessionStore - Session Management', () => {
+  let mockSpacedRepetitionService: jest.Mocked<SpacedRepetitionService>;
+
   beforeEach(() => {
     useStudySessionStore.getState().reset?.();
+    
+    // Create mock SpacedRepetitionService
+    mockSpacedRepetitionService = {
+      processStudyResult: jest.fn(),
+      getCardsForReview: jest.fn(),
+      getByCardId: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn()
+    } as any;
+    
+    // Inject mock service
+    setSpacedRepetitionService(mockSpacedRepetitionService);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+    setSpacedRepetitionService(null as any);
   });
 
   it('should have startSession action', () => {
@@ -13,6 +34,8 @@ describe('StudySessionStore - Session Management', () => {
 
   it('should set isActive to true when startSession is called', async () => {
     const { startSession } = useStudySessionStore.getState();
+    
+    mockSpacedRepetitionService.getCardsForReview.mockResolvedValue([1, 2, 3]);
     
     await startSession(123);
     
@@ -25,11 +48,13 @@ describe('StudySessionStore - Session Management', () => {
     expect(typeof state.endSession).toBe('function');
   });
 
-  it('should set isActive to false when endSession is called', () => {
+  it('should set isActive to false when endSession is called', async () => {
     const { startSession, endSession } = useStudySessionStore.getState();
     
+    mockSpacedRepetitionService.getCardsForReview.mockResolvedValue([1, 2, 3]);
+    
     // First start a session
-    startSession(123);
+    await startSession(123);
     expect(useStudySessionStore.getState().isActive).toBe(true);
     
     // Then end it

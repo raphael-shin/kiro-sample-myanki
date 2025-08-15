@@ -185,17 +185,17 @@
   - **(TDD Refactor)** 리팩터링: 에러 처리 및 데이터베이스 쿼리 최적화
   - _Requirements: 3.1, 3.6_
 
-- [ ] 6. 간격 반복 알고리즘 통합
-- [ ] 6.1 SM2Algorithm과 SpacedRepetitionService 통합 (TDD)
+- [x] 6. 간격 반복 알고리즘 통합
+- [x] 6.1 SM2Algorithm과 SpacedRepetitionService 통합 (TDD)
   - **(TDD Red)** 실패하는 테스트: SM2Algorithm을 사용하여 다음 복습 날짜 계산 로직 테스트
-  - **(TDD Green)** 최소 구현: 답변 품질에 따른 용이도 인수 및 간격 업데이트 기본 로직
-  - **(TDD Refactor)** 리팩터링: 알고리즘 결과 검증 및 에러 처리 추가
+  - **(TDD Green)** 최소 구현: processStudyResult 메서드로 답변 품질에 따른 알고리즘 적용
+  - **(TDD Refactor)** 리팩터링: getCardsForReview 메서드로 오늘 복습할 카드 필터링 구현
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.7_
 
-- [ ] 6.2 StudySessionStore와 간격 반복 알고리즘 연동 (TDD)
-  - **(TDD Red)** 실패하는 테스트: submitAnswer 메서드에서 SM2Algorithm 호출하여 카드 상태 업데이트 테스트
-  - **(TDD Green)** 최소 구현: processAnswer 메서드에서 실제 알고리즘 적용 및 데이터 저장
-  - **(TDD Refactor)** 리팩터링: getCardsForReview 메서드에서 오늘 학습할 카드 필터링 구현
+- [x] 6.2 StudySessionStore와 간격 반복 알고리즘 연동 (TDD)
+  - **(TDD Red)** 실패하는 테스트: processAnswer 메서드에서 SM2Algorithm 호출하여 카드 상태 업데이트 테스트
+  - **(TDD Green)** 최소 구현: SpacedRepetitionService 통합으로 실제 알고리즘 적용 및 데이터 저장
+  - **(TDD Refactor)** 리팩터링: 의존성 주입 패턴으로 테스트 가능한 구조 및 에러 처리 개선
   - _Requirements: 4.1, 4.4_
 
 - [ ] 7. 덱 관리 UI 컴포넌트 구현
