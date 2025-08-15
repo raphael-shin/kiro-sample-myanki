@@ -332,7 +332,7 @@
   - **(TDD Refactor)** 리팩터링: 각 버튼 클릭 시 간격 반복 알고리즘 적용
   - _Requirements: 4.3, 4.4_
 
-- [ ] 10.4 StudyProgress 컴포넌트 (TDD)
+- [x] 10.4 StudyProgress 컴포넌트 (TDD)
   - **(TDD Red)** 실패하는 테스트: 학습 진행률 표시 (현재/전체 카드 수) 테스트
   - **(TDD Green)** 최소 구현: 기본 진행률 표시만 구현
   - **(TDD Refactor)** 리팩터링: 세션 통계 정보 표시 추가
