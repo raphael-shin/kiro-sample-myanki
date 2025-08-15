@@ -16,7 +16,7 @@ export const CardList = ({ cards, onEdit, onDelete, isLoading }: CardListProps) 
     );
   }
 
-  if (cards.length === 0) {
+  if (!cards || cards.length === 0) {
     return (
       <div className="text-center py-8">
         <p className="text-gray-500">No cards found</p>

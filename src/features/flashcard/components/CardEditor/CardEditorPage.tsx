@@ -1,6 +1,9 @@
+import { useEffect, useState } from 'react';
 import { CardForm } from './CardForm';
 import { CardList } from './CardList';
 import { useDeckStore } from '@/store/DeckStore';
+import { Card } from '@/types/flashcard';
+import { CardService } from '@/services/CardService';
 
 interface CardEditorPageProps {
   deckId: number;
@@ -8,7 +11,43 @@ interface CardEditorPageProps {
 }
 
 export const CardEditorPage: React.FC<CardEditorPageProps> = ({ deckId, onBack }) => {
-  const { currentDeck } = useDeckStore();
+  const { decks } = useDeckStore();
+  const [cards, setCards] = useState<Card[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  const currentDeck = decks.find(deck => deck.id === deckId);
+  const cardService = new CardService();
+
+  useEffect(() => {
+    const loadCards = async () => {
+      try {
+        setLoading(true);
+        const deckCards = await cardService.getCardsByDeckId(deckId);
+        setCards(deckCards);
+      } catch (error) {
+        console.error('Failed to load cards:', error);
+        setCards([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCards();
+  }, [deckId]);
+
+  const handleCardEdit = (card: Card) => {
+    // TODO: Implement card editing
+    console.log('Edit card:', card);
+  };
+
+  const handleCardDelete = async (card: Card) => {
+    try {
+      await cardService.deleteCard(card.id!);
+      setCards(cards.filter(c => c.id !== card.id));
+    } catch (error) {
+      console.error('Failed to delete card:', error);
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -43,7 +82,12 @@ export const CardEditorPage: React.FC<CardEditorPageProps> = ({ deckId, onBack }
           <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
             카드 목록
           </h2>
-          <CardList deckId={deckId} />
+          <CardList 
+            cards={cards}
+            onEdit={handleCardEdit}
+            onDelete={handleCardDelete}
+            isLoading={loading}
+          />
         </div>
       </div>
     </div>
