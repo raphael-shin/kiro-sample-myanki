@@ -191,6 +191,115 @@ export interface SessionSummary {
 }
 
 /**
+ * 일일 진행률 정보
+ */
+export interface DailyProgress {
+  date: Date;
+  cardsStudied: number;
+  timeSpent: number;
+  averageQuality: number;
+  sessionsCompleted: number;
+  goalProgress: {
+    cardsGoal: number;
+    cardsAchieved: number;
+    timeGoal: number;
+    timeAchieved: number;
+  };
+}
+
+/**
+ * 주간 트렌드 정보
+ */
+export interface WeeklyTrend {
+  weekStart: Date;
+  weekEnd: Date;
+  dailyData: Array<{
+    date: Date;
+    cardsStudied: number;
+    timeSpent: number;
+    averageQuality: number;
+  }>;
+  totalCards: number;
+  totalTime: number;
+  averageDaily: number;
+  bestDay: Date;
+  consistency: number;
+}
+
+/**
+ * 월간 리포트 정보
+ */
+export interface MonthlyReport {
+  period: 'month';
+  month: number;
+  year: number;
+  totalStudySessions: number;
+  totalCardsStudied: number;
+  totalTimeSpent: number;
+  averageSessionsPerDay: number;
+  averageCardsPerDay: number;
+  bestWeek: {
+    weekStart: Date;
+    cardsStudied: number;
+  };
+  achievements: string[];
+  recommendations: string[];
+}
+
+/**
+ * 카드별 통계 정보
+ */
+export interface CardStatistics {
+  cardId: number;
+  totalReviews: number;
+  averageQuality: number;
+  averageResponseTime: number;
+  currentInterval: number;
+  easeFactor: number;
+  lastReviewDate?: Date;
+  nextReviewDate?: Date;
+  difficultyLevel: 'easy' | 'medium' | 'hard';
+}
+
+/**
+ * 학습 곡선 데이터
+ */
+export interface LearningCurveData {
+  cardId: number;
+  qualityProgression: Array<{ date: Date; quality: number }>;
+  responseTimeProgression: Array<{ date: Date; responseTime: number }>;
+  improvementTrend: 'improving' | 'stable' | 'declining';
+  masteryScore: number;
+}
+
+/**
+ * 시간 범위 타입
+ */
+export type TimeRange = 'day' | 'week' | 'month' | 'year';
+
+/**
+ * 트렌드 데이터 포인트
+ */
+export interface TrendDataPoint {
+  date: Date;
+  value: number;
+  label?: string;
+}
+
+/**
+ * 트렌드 데이터
+ */
+export interface TrendData {
+  period: TimeRange;
+  dataPoints: TrendDataPoint[];
+  summary: {
+    total: number;
+    average: number;
+    trend: 'up' | 'down' | 'stable';
+  };
+}
+
+/**
  * 통계 및 진행률 추적 관련 타입들
  */
 
@@ -272,6 +381,24 @@ export interface GoalProgress {
   cardsCompleted: number;
   timeCompleted: number;
   currentStreak: number;
+}
+
+/**
+ * 목표 달성 정보
+ */
+export interface GoalAchievement {
+  date: Date;
+  cardsGoalAchieved: boolean;
+  timeGoalAchieved: boolean;
+  streakGoalAchieved: boolean;
+  overallProgress: number;
+  achievements: string[];
+  nextMilestone?: {
+    type: 'cards' | 'time' | 'streak';
+    target: number;
+    current: number;
+    remaining: number;
+  };
 }
 
 /**
