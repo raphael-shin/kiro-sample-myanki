@@ -37,7 +37,7 @@ export const DeckCard = ({ deck, cardCount, lastStudiedAt, onSelect, isSelected,
     }
   };
 
-  const baseClasses = "p-6 border rounded-lg bg-white dark:bg-gray-800 shadow-sm h-48 flex flex-col justify-between";
+  const baseClasses = "w-full p-6 border rounded-lg bg-white dark:bg-gray-800 shadow-sm h-48 flex flex-col justify-between";
   const selectedClasses = isSelected ? "ring-2 ring-blue-500" : "";
   const interactiveClasses = onSelect ? "cursor-pointer hover:shadow-md hover:border-blue-300 transition-all duration-200" : "";
   
