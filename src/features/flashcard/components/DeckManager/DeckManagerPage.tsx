@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { DeckList } from './DeckList';
 import { CreateDeckModal } from '../CreateDeckModal/CreateDeckModal';
 import { useDeckStore } from '@/store/DeckStore';
+import { CardService } from '@/services/CardService';
+import { db } from '@/db/MyAnkiDB';
 
 interface DeckManagerPageProps {
   onDeckSelect?: (deckId: number) => void;
@@ -9,11 +11,35 @@ interface DeckManagerPageProps {
 
 export const DeckManagerPage: React.FC<DeckManagerPageProps> = ({ onDeckSelect }) => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [cardCounts, setCardCounts] = useState<Record<number, number>>({});
   const { decks, loading, error, createDeck, loadDecks } = useDeckStore();
+  const cardService = new CardService(db);
 
   useEffect(() => {
     loadDecks();
   }, [loadDecks]);
+
+  useEffect(() => {
+    const loadCardCounts = async () => {
+      const counts: Record<number, number> = {};
+      for (const deck of decks) {
+        if (deck.id) {
+          try {
+            const count = await cardService.getCardCount(deck.id);
+            counts[deck.id] = count;
+          } catch (error) {
+            console.error(`Failed to load card count for deck ${deck.id}:`, error);
+            counts[deck.id] = 0;
+          }
+        }
+      }
+      setCardCounts(counts);
+    };
+
+    if (decks.length > 0) {
+      loadCardCounts();
+    }
+  }, [decks]);
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -37,6 +63,7 @@ export const DeckManagerPage: React.FC<DeckManagerPageProps> = ({ onDeckSelect }
         decks={decks}
         loading={loading}
         onDeckSelect={onDeckSelect}
+        cardCounts={cardCounts}
       />
 
       <CreateDeckModal
