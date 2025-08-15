@@ -4,6 +4,7 @@ import { CardList } from './CardList';
 import { useDeckStore } from '@/store/DeckStore';
 import { Card } from '@/types/flashcard';
 import { CardService } from '@/services/CardService';
+import { db } from '@/db/MyAnkiDB';
 
 interface CardEditorPageProps {
   deckId: number;
@@ -16,7 +17,7 @@ export const CardEditorPage: React.FC<CardEditorPageProps> = ({ deckId, onBack }
   const [loading, setLoading] = useState(true);
   
   const currentDeck = decks.find(deck => deck.id === deckId);
-  const cardService = new CardService();
+  const cardService = new CardService(db);
 
   useEffect(() => {
     const loadCards = async () => {
@@ -34,6 +35,19 @@ export const CardEditorPage: React.FC<CardEditorPageProps> = ({ deckId, onBack }
 
     loadCards();
   }, [deckId]);
+
+  const handleCardSave = async (front: string, back: string) => {
+    try {
+      const newCard = await cardService.createCard({ deckId, front, back });
+      setCards([...cards, newCard]);
+    } catch (error) {
+      console.error('Failed to create card:', error);
+    }
+  };
+
+  const handleCardCancel = () => {
+    // Card form cancel logic if needed
+  };
 
   const handleCardEdit = (card: Card) => {
     // TODO: Implement card editing
@@ -75,7 +89,10 @@ export const CardEditorPage: React.FC<CardEditorPageProps> = ({ deckId, onBack }
           <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
             새 카드 추가
           </h2>
-          <CardForm deckId={deckId} />
+          <CardForm 
+            onSave={handleCardSave}
+            onCancel={handleCardCancel}
+          />
         </div>
         
         <div>

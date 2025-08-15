@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DeckList } from './DeckList';
 import { CreateDeckModal } from '../CreateDeckModal/CreateDeckModal';
 import { useDeckStore } from '@/store/DeckStore';
@@ -9,7 +9,11 @@ interface DeckManagerPageProps {
 
 export const DeckManagerPage: React.FC<DeckManagerPageProps> = ({ onDeckSelect }) => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const { decks, loading, error, createDeck } = useDeckStore();
+  const { decks, loading, error, createDeck, loadDecks } = useDeckStore();
+
+  useEffect(() => {
+    loadDecks();
+  }, [loadDecks]);
 
   return (
     <div className="container mx-auto px-4 py-6">
