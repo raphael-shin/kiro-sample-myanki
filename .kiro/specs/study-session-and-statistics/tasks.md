@@ -247,7 +247,7 @@
 
 ## 9. 구조적 변경 - CardDisplay 컴포넌트 분리 후 동작적 변경
 
-- [ ] 9. CardDisplay 컴포넌트 확장 [구조적 + 동작적 변경]
+- [x] 9. CardDisplay 컴포넌트 확장 [구조적 + 동작적 변경]
   - 기존 카드 표시 로직을 확장하여 더 나은 사용자 경험 제공
   - 카드 번호, 진행률 표시 기능 추가
   - _Requirements: 2.1, 2.2, 4.1, 4.2_
@@ -271,18 +271,18 @@
 
 ## 10. 동작적 변경 - StudyProgress 컴포넌트 구현
 
-- [ ] 10. StudyProgress 컴포넌트 구현 [동작적 변경]
+- [x] 10. StudyProgress 컴포넌트 구현 [동작적 변경]
   - 학습 진행률을 시각적으로 표시하는 새로운 컴포넌트 구현
   - 시간 정보, 예상 완료 시간 표시 기능 포함
   - _Requirements: 4.1, 4.2, 4.3, 4.4_
 
-- [ ] 10.1 StudyProgress 기본 구조 구현 [동작적 변경]
+- [x] 10.1 StudyProgress 기본 구조 구현 [동작적 변경]
   - **RED**: 진행률 바 및 백분율 표시 테스트 작성 (실패)
   - **GREEN**: src/features/flashcard/components/StudySession/StudyProgress.tsx 확장하여 기본 UI 구현
   - **REFACTOR**: 진행률 표시 로직 정리 및 시각적 개선
   - _Requirements: 4.1, 4.2_
 
-- [ ] 10.2 시간 정보 표시 기능 구현 [동작적 변경]
+- [x] 10.2 시간 정보 표시 기능 구현 [동작적 변경]
   - **RED**: 경과 시간 및 예상 완료 시간 표시 테스트 작성 (실패)
   - **GREEN**: 시간 계산 및 표시 로직 구현
   - **REFACTOR**: 시간 계산 로직 최적화 및 실시간 업데이트 개선
@@ -290,14 +290,28 @@
 
 ## 11. 동작적 변경 - StatsDashboard 컴포넌트 구현
 
-- [ ] 11. StatsDashboard 컴포넌트 구현 [동작적 변경]
+- [x] 11. StatsDashboard 컴포넌트 구현 [동작적 변경]
   - 전체 학습 통계를 표시하는 대시보드 컴포넌트 구현
   - 시간 범위별 통계 조회 기능 포함
   - _Requirements: 7.1, 7.2, 7.3, 7.4_
 
-- [ ] 11.1 StatsDashboard 기본 구조 구현 [동작적 변경]
+- [x] 11.1 StatsDashboard 기본 구조 구현 [동작적 변경]
   - **RED**: 전체 통계 표시 및 StatisticsStore 연동 테스트 작성 (실패)
   - **GREEN**: src/features/flashcard/components/Statistics/StatsDashboard.tsx 파일 생성 및 기본 UI 구현
+  - **REFACTOR**: 대시보드 레이아웃 정리 및 컴포넌트 구조 개선
+  - _Requirements: 7.1, 7.2_
+
+- [x] 11.2 시간 범위별 통계 조회 구현 [동작적 변경]
+  - **RED**: 시간 범위 선택 및 데이터 업데이트 테스트 작성 (실패)
+  - **GREEN**: 시간 범위 선택 UI 및 데이터 업데이트 로직 구현
+  - **REFACTOR**: 시간 범위 처리 로직 최적화 및 사용자 경험 개선
+  - _Requirements: 7.3, 7.4_
+
+- [x] 11.3 통계 차트 표시 기능 구현 [동작적 변경]
+  - **RED**: 트렌드 차트 및 비교 차트 렌더링 테스트 작성 (실패)
+  - **GREEN**: 학습 활동 트렌드 및 덱별 비교 차트 구현
+  - **REFACTOR**: 차트 컴포넌트 최적화 및 접근성 개선
+  - _Requirements: 7.4_
   - **REFACTOR**: 대시보드 레이아웃 정리 및 컴포넌트 구조 개선
   - _Requirements: 7.1, 7.2_
 

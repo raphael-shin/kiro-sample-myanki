@@ -1,11 +1,30 @@
 interface StudyProgressProps {
   current: number;
   total: number;
+  percentage: number;
+  timeElapsed?: number;
+  estimatedTimeRemaining?: number;
 }
 
-export const StudyProgress: React.FC<StudyProgressProps> = ({ current, total }) => {
-  const percentage = total > 0 ? Math.round((current / total) * 100) : 0;
+const formatTime = (milliseconds: number): string => {
+  const totalSeconds = Math.floor(milliseconds / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
 
+  if (hours > 0) {
+    return `${hours}h ${minutes}m ${seconds}s`;
+  }
+  return `${minutes}m ${seconds}s`;
+};
+
+export const StudyProgress: React.FC<StudyProgressProps> = ({ 
+  current, 
+  total, 
+  percentage,
+  timeElapsed,
+  estimatedTimeRemaining
+}) => {
   return (
     <div className="w-full max-w-md mx-auto">
       <div className="flex justify-between items-center mb-2">
@@ -27,6 +46,18 @@ export const StudyProgress: React.FC<StudyProgressProps> = ({ current, total }) 
           {percentage}%
         </span>
       </div>
+      
+      {/* Time Information */}
+      {(timeElapsed !== undefined || estimatedTimeRemaining !== undefined) && (
+        <div className="flex justify-between items-center mt-3 text-xs text-gray-500">
+          {timeElapsed !== undefined && (
+            <span>Elapsed: {formatTime(timeElapsed)}</span>
+          )}
+          {estimatedTimeRemaining !== undefined && (
+            <span>Remaining: ~{formatTime(estimatedTimeRemaining)}</span>
+          )}
+        </div>
+      )}
     </div>
   );
 };
