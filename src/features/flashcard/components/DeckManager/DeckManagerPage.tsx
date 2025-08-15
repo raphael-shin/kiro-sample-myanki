@@ -9,7 +9,7 @@ interface DeckManagerPageProps {
 
 export const DeckManagerPage: React.FC<DeckManagerPageProps> = ({ onDeckSelect }) => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const { decks, loading, error } = useDeckStore();
+  const { decks, loading, error, createDeck } = useDeckStore();
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -38,6 +38,14 @@ export const DeckManagerPage: React.FC<DeckManagerPageProps> = ({ onDeckSelect }
       <CreateDeckModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
+        onCreate={async (deckData) => {
+          try {
+            await createDeck(deckData);
+            setIsCreateModalOpen(false);
+          } catch (error) {
+            console.error('Failed to create deck:', error);
+          }
+        }}
       />
     </div>
   );

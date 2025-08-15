@@ -29,14 +29,10 @@ function App() {
     }
   }, [theme]);
 
-  // Simulate loading state for demonstration
+  // Initialize app - remove loading simulation
   useEffect(() => {
-    setLoading(true);
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-
-    return () => clearTimeout(timer);
+    // App is ready immediately
+    setLoading(false);
   }, [setLoading]);
 
   const handleDeckSelect = (deckId: number) => {
