@@ -24,7 +24,7 @@ describe('AnswerButtons Component', () => {
     const againButton = screen.getByRole('button', { name: /again/i });
     fireEvent.click(againButton);
     
-    expect(mockOnAnswer).toHaveBeenCalledWith(StudyQuality.AGAIN);
+    expect(mockOnAnswer).toHaveBeenCalledWith(StudyQuality.AGAIN, expect.any(Number));
   });
 
   it('should call onAnswer with HARD when hard button clicked', () => {
@@ -33,7 +33,7 @@ describe('AnswerButtons Component', () => {
     const hardButton = screen.getByRole('button', { name: /hard/i });
     fireEvent.click(hardButton);
     
-    expect(mockOnAnswer).toHaveBeenCalledWith(StudyQuality.HARD);
+    expect(mockOnAnswer).toHaveBeenCalledWith(StudyQuality.HARD, expect.any(Number));
   });
 
   it('should call onAnswer with GOOD when good button clicked', () => {
@@ -42,7 +42,7 @@ describe('AnswerButtons Component', () => {
     const goodButton = screen.getByRole('button', { name: /good/i });
     fireEvent.click(goodButton);
     
-    expect(mockOnAnswer).toHaveBeenCalledWith(StudyQuality.GOOD);
+    expect(mockOnAnswer).toHaveBeenCalledWith(StudyQuality.GOOD, expect.any(Number));
   });
 
   it('should call onAnswer with EASY when easy button clicked', () => {
@@ -51,7 +51,7 @@ describe('AnswerButtons Component', () => {
     const easyButton = screen.getByRole('button', { name: /easy/i });
     fireEvent.click(easyButton);
     
-    expect(mockOnAnswer).toHaveBeenCalledWith(StudyQuality.EASY);
+    expect(mockOnAnswer).toHaveBeenCalledWith(StudyQuality.EASY, expect.any(Number));
   });
 
   it('should disable buttons when disabled prop is true', () => {

@@ -24,16 +24,16 @@ describe('AnswerButtons', () => {
     render(<AnswerButtons onAnswer={mockOnAnswer} />);
     
     await user.click(screen.getByText('Again'));
-    expect(mockOnAnswer).toHaveBeenCalledWith(StudyQuality.AGAIN);
+    expect(mockOnAnswer).toHaveBeenCalledWith(StudyQuality.AGAIN, expect.any(Number));
     
     await user.click(screen.getByText('Hard'));
-    expect(mockOnAnswer).toHaveBeenCalledWith(StudyQuality.HARD);
+    expect(mockOnAnswer).toHaveBeenCalledWith(StudyQuality.HARD, expect.any(Number));
     
     await user.click(screen.getByText('Good'));
-    expect(mockOnAnswer).toHaveBeenCalledWith(StudyQuality.GOOD);
+    expect(mockOnAnswer).toHaveBeenCalledWith(StudyQuality.GOOD, expect.any(Number));
     
     await user.click(screen.getByText('Easy'));
-    expect(mockOnAnswer).toHaveBeenCalledWith(StudyQuality.EASY);
+    expect(mockOnAnswer).toHaveBeenCalledWith(StudyQuality.EASY, expect.any(Number));
     
     expect(mockOnAnswer).toHaveBeenCalledTimes(4);
   });

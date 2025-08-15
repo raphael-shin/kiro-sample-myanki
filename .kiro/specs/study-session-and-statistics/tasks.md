@@ -227,19 +227,19 @@
   - 응답 시간 측정 기능 포함
   - _Requirements: 2.2, 3.1, 3.2, 3.3, 3.4, 3.5_
 
-- [ ] 8.1 AnswerButtons 기본 구조 구현 [동작적 변경]
+- [x] 8.1 AnswerButtons 기본 구조 구현 [동작적 변경]
   - **RED**: 4단계 답변 버튼 렌더링 및 클릭 이벤트 테스트 작성 (실패)
   - **GREEN**: src/features/flashcard/components/StudySession/AnswerButtons.tsx 확장하여 기본 UI 구현
   - **REFACTOR**: 버튼 컴포넌트 구조 정리 및 스타일링 개선
   - _Requirements: 2.2, 3.1_
 
-- [ ] 8.2 응답 시간 측정 기능 구현 [동작적 변경]
+- [x] 8.2 응답 시간 측정 기능 구현 [동작적 변경]
   - **RED**: 응답 시간 측정 및 콜백 전달 테스트 작성 (실패)
   - **GREEN**: 시간 측정 로직 및 onAnswer 콜백 구현
   - **REFACTOR**: 시간 측정 로직 훅으로 추출 및 정확도 개선
   - _Requirements: 3.5_
 
-- [ ] 8.3 버튼 상태 관리 구현 [동작적 변경]
+- [x] 8.3 버튼 상태 관리 구현 [동작적 변경]
   - **RED**: 버튼 비활성화 및 로딩 상태 테스트 작성 (실패)
   - **GREEN**: 버튼 상태 관리 로직 구현
   - **REFACTOR**: 상태 관리 로직 정리 및 접근성 개선

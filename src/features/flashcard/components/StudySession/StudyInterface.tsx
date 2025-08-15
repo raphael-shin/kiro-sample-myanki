@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useStudySessionStore } from '../../../../store/StudySessionStore';
 import { StudyQuality } from '../../../../types/flashcard';
 import { CardDisplay } from './CardDisplay';
@@ -20,6 +20,8 @@ interface SessionSummary {
 }
 
 export const StudyInterface = ({ deckId, onComplete, onExit }: StudyInterfaceProps) => {
+  const answerStartTimeRef = useRef<number>(Date.now());
+  
   const {
     currentCard,
     isActive,
@@ -47,6 +49,13 @@ export const StudyInterface = ({ deckId, onComplete, onExit }: StudyInterfacePro
     }
   }, [deckId, isActive, startSession]);
 
+  // 답변 시작 시간 초기화
+  useEffect(() => {
+    if (showAnswer) {
+      answerStartTimeRef.current = Date.now();
+    }
+  }, [showAnswer]);
+
   // 키보드 단축키 처리
   useEffect(() => {
     if (!keyboardShortcutsEnabled) return;
@@ -55,6 +64,8 @@ export const StudyInterface = ({ deckId, onComplete, onExit }: StudyInterfacePro
       if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
         return; // 입력 필드에서는 단축키 비활성화
       }
+
+      const calculateResponseTime = () => Date.now() - answerStartTimeRef.current;
 
       switch (event.key) {
         case ' ':
@@ -65,22 +76,22 @@ export const StudyInterface = ({ deckId, onComplete, onExit }: StudyInterfacePro
           break;
         case '1':
           if (showAnswer) {
-            handleAnswer(StudyQuality.AGAIN);
+            handleAnswer(StudyQuality.AGAIN, calculateResponseTime());
           }
           break;
         case '2':
           if (showAnswer) {
-            handleAnswer(StudyQuality.HARD);
+            handleAnswer(StudyQuality.HARD, calculateResponseTime());
           }
           break;
         case '3':
           if (showAnswer) {
-            handleAnswer(StudyQuality.GOOD);
+            handleAnswer(StudyQuality.GOOD, calculateResponseTime());
           }
           break;
         case '4':
           if (showAnswer) {
-            handleAnswer(StudyQuality.EASY);
+            handleAnswer(StudyQuality.EASY, calculateResponseTime());
           }
           break;
       }
@@ -90,8 +101,7 @@ export const StudyInterface = ({ deckId, onComplete, onExit }: StudyInterfacePro
     return () => document.removeEventListener('keydown', handleKeyPress);
   }, [keyboardShortcutsEnabled, showAnswer, showCardAnswer]);
 
-  const handleAnswer = async (quality: StudyQuality) => {
-    const responseTime = Date.now() - (Date.now() - 3000); // 간단한 구현
+  const handleAnswer = async (quality: StudyQuality, responseTime: number) => {
     await processAnswer(quality, responseTime);
     nextCard();
     
