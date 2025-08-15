@@ -22,7 +22,7 @@ export const CardEditorPage: React.FC<CardEditorPageProps> = ({ deckId, onBack }
     const loadCards = async () => {
       try {
         setLoading(true);
-        const deckCards = await cardService.getCardsByDeckId(deckId);
+        const deckCards = await cardService.getCardsByDeck(deckId);
         setCards(deckCards);
       } catch (error) {
         console.error('Failed to load cards:', error);
