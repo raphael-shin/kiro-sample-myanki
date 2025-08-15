@@ -252,6 +252,7 @@ export interface MonthlyReport {
 export interface CardStatistics {
   cardId: number;
   totalReviews: number;
+  correctAnswers: number;
   averageQuality: number;
   averageResponseTime: number;
   currentInterval: number;
@@ -259,6 +260,14 @@ export interface CardStatistics {
   lastReviewDate?: Date;
   nextReviewDate?: Date;
   difficultyLevel: 'easy' | 'medium' | 'hard';
+  learningHistory: Array<{
+    sessionId: string;
+    reviewedAt: Date;
+    quality: number;
+    responseTime: number;
+    easeFactor: number;
+    interval: number;
+  }>;
 }
 
 /**
