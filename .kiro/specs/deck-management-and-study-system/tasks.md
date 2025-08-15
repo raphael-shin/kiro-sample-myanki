@@ -360,24 +360,24 @@
   - 컴포넌트들을 메인 애플리케이션에 통합
   - _Requirements: 전체_
 
-- [ ] 12.1 features/flashcard 폴더 구조 생성 (구조적 변경)
+- [x] 12.1 features/flashcard 폴더 구조 생성 (구조적 변경)
   - 설계 문서에 따른 폴더 구조 생성
   - 컴포넌트들을 적절한 폴더로 구조화
   - _Requirements: 전체_
 
-- [ ] 12.2 DeckManager 메인 페이지 통합 (TDD)
+- [x] 12.2 DeckManager 메인 페이지 통합 (TDD)
   - **(TDD Red)** 실패하는 테스트: DeckManager 컴포넌트 렌더링 테스트
   - **(TDD Green)** 최소 구현: DeckList, CreateDeckModal을 조합한 페이지
   - **(TDD Refactor)** 리팩터링: 레이아웃 정리 및 반응형 디자인 적용
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6_
 
-- [ ] 12.3 CardEditor 페이지 통합 (TDD)
+- [x] 12.3 CardEditor 페이지 통합 (TDD)
   - **(TDD Red)** 실패하는 테스트: 선택된 덱의 카드 편집 페이지 테스트
   - **(TDD Green)** 최소 구현: CardForm과 CardList를 조합한 페이지
   - **(TDD Refactor)** 리팩터링: 덱 선택 상태 관리 및 네비게이션 추가
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6_
 
-- [ ] 12.4 App.tsx에 메인 라우팅 및 레이아웃 구현 (TDD)
+- [x] 12.4 App.tsx에 메인 라우팅 및 레이아웃 구현 (TDD)
   - **(TDD Red)** 실패하는 테스트: 덱 관리, 카드 편집, 학습 세션 간 네비게이션 테스트
   - **(TDD Green)** 최소 구현: 기본 라우팅과 네비게이션 구조
   - **(TDD Refactor)** 리팩터링: 전체 애플리케이션 레이아웃 구성
