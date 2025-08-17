@@ -10,7 +10,7 @@ interface DeckListProps {
   cardCounts?: Record<number, number>;
   cardStats?: Record<number, CardStats>;
   selectedDeckId?: number | null;
-  onDeckEdit?: (deckId: number) => void;
+  onDeckEdit?: (deck: { id: number; name: string }) => void;
   onDeckStudy?: (deckId: number) => void;
 }
 
@@ -41,7 +41,7 @@ export const DeckList = ({ decks, loading, onDeckSelect, onDeckDelete, cardCount
             cardStats={deck.id ? cardStats?.[deck.id] : undefined}
             onSelect={onDeckSelect ? (selectedDeck) => onDeckSelect(selectedDeck.id!) : undefined}
             onDelete={onDeckDelete ? (selectedDeck) => onDeckDelete(selectedDeck.id!) : undefined}
-            onEdit={onDeckEdit ? (selectedDeck) => onDeckEdit(selectedDeck.id!) : undefined}
+            onEdit={onDeckEdit ? (selectedDeck) => onDeckEdit({ id: selectedDeck.id!, name: selectedDeck.name }) : undefined}
             onStudy={onDeckStudy ? (selectedDeck) => onDeckStudy(selectedDeck.id!) : undefined}
             isSelected={deck.id === selectedDeckId}
           />

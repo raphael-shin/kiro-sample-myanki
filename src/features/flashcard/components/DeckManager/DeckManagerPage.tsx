@@ -9,7 +9,7 @@ import { calculateCardStats, CardStats } from '@/utils/cardStats';
 interface DeckManagerPageProps {
   onDeckSelect?: (deckId: number) => void;
   selectedDeckId?: number | null;
-  onDeckEdit?: (deckId: number) => void;
+  onDeckEdit?: (deck: { id: number; name: string }) => void;
   onDeckStudy?: (deckId: number) => void;
 }
 

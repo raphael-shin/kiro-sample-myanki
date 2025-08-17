@@ -13,6 +13,7 @@ type AppView = 'deck-management' | 'card-editor' | 'study-session';
 function App() {
   const [currentView, setCurrentView] = useState<AppView>('deck-management');
   const [selectedDeckId, setSelectedDeckId] = useState<number | null>(null);
+  const [selectedDeck, setSelectedDeck] = useState<{ name: string } | null>(null);
   
   // Zustand state management integration
   const theme = useAppStore(selectTheme);
@@ -40,8 +41,9 @@ function App() {
     // 자동 네비게이션 제거 - 사용자가 직접 선택하도록 함
   };
 
-  const handleDeckEdit = (deckId: number) => {
-    setSelectedDeckId(deckId);
+  const handleDeckEdit = (deck: { id: number; name: string }) => {
+    setSelectedDeckId(deck.id);
+    setSelectedDeck({ name: deck.name });
     setCurrentView('card-editor');
   };
 
@@ -94,7 +96,8 @@ function App() {
         )}
         {currentView === 'card-editor' && selectedDeckId && (
           <CardEditorPage 
-            deckId={selectedDeckId} 
+            deckId={selectedDeckId}
+            deckName={selectedDeck?.name || ''}
             onBack={() => setCurrentView('deck-management')}
           />
         )}
