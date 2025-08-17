@@ -12,6 +12,9 @@ src/
 │       ├── components/ # Feature-specific components
 │       │   ├── DeckManager/     # Deck management components
 │       │   ├── CardEditor/      # Card editing components
+│       │   │   ├── CardEditorPage.tsx    # Main card editing interface
+│       │   │   ├── CardTable.tsx         # Inline editing table
+│       │   │   └── CreateCardModal.tsx   # New card creation modal
 │       │   ├── StudySession/    # Study session components
 │       │   ├── Statistics/      # Statistics and progress components
 │       │   └── CreateDeckModal/ # Deck creation modal

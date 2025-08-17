@@ -52,7 +52,11 @@
 - **공통 컴포넌트**: 앱 전체에서 사용되는 컴포넌트 (ThemeToggle, LoadingSpinner, OfflineIndicator)
 - **모달 시스템**: 덱 생성 및 편집 모달 (CreateDeckModal)
 - **덱 관리**: DeckManagerPage, DeckList, DeckCard
-- **카드 편집**: CardEditorPage, CardForm, CardList, CardPreview
+- **카드 편집**: CardEditorPage, CardTable, CreateCardModal
+  - 인라인 편집 시스템
+  - 실시간 검색 및 필터링
+  - 배치 작업 지원
+  - 키보드 단축키 통합
 - **학습 세션**: StudyInterface, CardDisplay, AnswerButtons, StudyProgress
 - **통계**: StatsDashboard, DeckStats, ProgressTracker, StudyHistory, GoalTracker
 
