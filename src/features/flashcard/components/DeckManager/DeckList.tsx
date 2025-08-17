@@ -12,9 +12,10 @@ interface DeckListProps {
   selectedDeckId?: number | null;
   onDeckEdit?: (deck: { id: number; name: string }) => void;
   onDeckStudy?: (deckId: number) => void;
+  onDeckStats?: (deck: { id: number; name: string }) => void;
 }
 
-export const DeckList = ({ decks, loading, onDeckSelect, onDeckDelete, cardCounts, cardStats, selectedDeckId, onDeckEdit, onDeckStudy }: DeckListProps) => {
+export const DeckList = ({ decks, loading, onDeckSelect, onDeckDelete, cardCounts, cardStats, selectedDeckId, onDeckEdit, onDeckStudy, onDeckStats }: DeckListProps) => {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-8">
@@ -43,6 +44,7 @@ export const DeckList = ({ decks, loading, onDeckSelect, onDeckDelete, cardCount
             onDelete={onDeckDelete ? (selectedDeck) => onDeckDelete(selectedDeck.id!) : undefined}
             onEdit={onDeckEdit ? (selectedDeck) => onDeckEdit({ id: selectedDeck.id!, name: selectedDeck.name }) : undefined}
             onStudy={onDeckStudy ? (selectedDeck) => onDeckStudy(selectedDeck.id!) : undefined}
+            onStats={onDeckStats ? (selectedDeck) => onDeckStats({ id: selectedDeck.id!, name: selectedDeck.name }) : undefined}
             isSelected={deck.id === selectedDeckId}
           />
         </li>

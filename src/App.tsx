@@ -7,8 +7,10 @@ import { Card } from './components/ui/Card';
 import { DeckManagerPage } from './features/flashcard/components/DeckManager/DeckManagerPage';
 import { CardEditorPage } from './features/flashcard/components/CardEditor/CardEditorPage';
 import { StudyInterface } from './features/flashcard/components/StudySession/StudyInterface';
+import { CardStatsPage } from './features/flashcard/components/Statistics/CardStatsPage';
+import './utils/resetDatabase'; // 개발 환경에서 전역 함수 노출
 
-type AppView = 'deck-management' | 'card-editor' | 'study-session';
+type AppView = 'deck-management' | 'card-editor' | 'study-session' | 'card-stats';
 
 function App() {
   const [currentView, setCurrentView] = useState<AppView>('deck-management');
@@ -52,6 +54,12 @@ function App() {
     setCurrentView('study-session');
   };
 
+  const handleDeckStats = (deck: { id: number; name: string }) => {
+    setSelectedDeckId(deck.id);
+    setSelectedDeck({ name: deck.name });
+    setCurrentView('card-stats');
+  };
+
   const handleStartStudy = (deckId: number) => {
     setSelectedDeckId(deckId);
     setCurrentView('study-session');
@@ -92,10 +100,18 @@ function App() {
             selectedDeckId={selectedDeckId}
             onDeckEdit={handleDeckEdit}
             onDeckStudy={handleDeckStudy}
+            onDeckStats={handleDeckStats}
           />
         )}
         {currentView === 'card-editor' && selectedDeckId && (
           <CardEditorPage 
+            deckId={selectedDeckId}
+            deckName={selectedDeck?.name || ''}
+            onBack={() => setCurrentView('deck-management')}
+          />
+        )}
+        {currentView === 'card-stats' && selectedDeckId && (
+          <CardStatsPage
             deckId={selectedDeckId}
             deckName={selectedDeck?.name || ''}
             onBack={() => setCurrentView('deck-management')}

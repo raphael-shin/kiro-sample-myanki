@@ -11,9 +11,10 @@ interface DeckManagerPageProps {
   selectedDeckId?: number | null;
   onDeckEdit?: (deck: { id: number; name: string }) => void;
   onDeckStudy?: (deckId: number) => void;
+  onDeckStats?: (deck: { id: number; name: string }) => void;
 }
 
-export const DeckManagerPage: React.FC<DeckManagerPageProps> = ({ onDeckSelect, selectedDeckId, onDeckEdit, onDeckStudy }) => {
+export const DeckManagerPage: React.FC<DeckManagerPageProps> = ({ onDeckSelect, selectedDeckId, onDeckEdit, onDeckStudy, onDeckStats }) => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [cardCounts, setCardCounts] = useState<Record<number, number>>({});
   const [cardStats, setCardStats] = useState<Record<number, CardStats>>({});
@@ -93,6 +94,7 @@ export const DeckManagerPage: React.FC<DeckManagerPageProps> = ({ onDeckSelect, 
         selectedDeckId={selectedDeckId}
         onDeckEdit={onDeckEdit}
         onDeckStudy={onDeckStudy}
+        onDeckStats={onDeckStats}
       />
 
       <CreateDeckModal

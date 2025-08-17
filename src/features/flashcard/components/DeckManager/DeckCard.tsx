@@ -16,9 +16,10 @@ interface DeckCardProps {
   onDelete?: (deck: Deck) => void;
   onEdit?: (deck: Deck) => void;
   onStudy?: (deck: Deck) => void;
+  onStats?: (deck: Deck) => void;
 }
 
-export const DeckCard = ({ deck, cardCount, cardStats, lastStudiedAt, onSelect, isSelected, onDelete, onEdit, onStudy }: DeckCardProps) => {
+export const DeckCard = ({ deck, cardCount, cardStats, lastStudiedAt, onSelect, isSelected, onDelete, onEdit, onStudy, onStats }: DeckCardProps) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const isSelectable = !!onSelect;
@@ -52,12 +53,17 @@ export const DeckCard = ({ deck, cardCount, cardStats, lastStudiedAt, onSelect, 
   // Kebab 메뉴 아이템들
   const menuItems = [
     ...(onEdit ? [{
-      label: 'Edit',
+      label: '카드 편집',
       onClick: () => onEdit(deck),
       className: 'text-gray-700 dark:text-gray-300'
     }] : []),
+    ...(onStats ? [{
+      label: '카드 통계',
+      onClick: () => onStats(deck),
+      className: 'text-gray-700 dark:text-gray-300'
+    }] : []),
     ...(onDelete ? [{
-      label: 'Delete',
+      label: '덱 삭제',
       onClick: handleDelete,
       className: 'text-red-600 dark:text-red-400'
     }] : [])
