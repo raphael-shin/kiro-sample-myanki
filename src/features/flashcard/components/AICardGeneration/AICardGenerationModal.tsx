@@ -1,25 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { CardGenerationRequest, GeneratedCard, CardDirection } from '@/types/ai-generation';
+import { CardGenerationRequest, CardDirection } from '@/types/ai-generation';
 import { CardDirectionSelector } from './CardDirectionSelector';
 import { AWSSettingsModal } from './AWSSettingsModal';
-import { AICardGenerationService } from '@/services/AICardGenerationService';
+import { ProgressTracker } from './ProgressTracker';
+import { CardPreviewGrid } from './CardPreviewGrid';
+import { useAICardGenerationStore } from '@/store/AICardGenerationStore';
 
 interface AICardGenerationModalProps {
   deckId: number;
   isOpen: boolean;
   onClose: () => void;
-  onCardsGenerated: (cards: GeneratedCard[]) => void;
+  onCardsGenerated: () => void;
 }
 
 type ModalStep = 'form' | 'generating' | 'preview' | 'settings';
-
-interface GenerationProgress {
-  step: 'analyzing' | 'generating' | 'validating' | 'complete';
-  percentage: number;
-  message: string;
-}
 
 export function AICardGenerationModal({ 
   deckId, 
@@ -29,11 +25,6 @@ export function AICardGenerationModal({
 }: AICardGenerationModalProps) {
   const [currentStep, setCurrentStep] = useState<ModalStep>('form');
   const [showAWSSettings, setShowAWSSettings] = useState(false);
-  const [progress, setProgress] = useState<GenerationProgress>({
-    step: 'analyzing',
-    percentage: 0,
-    message: ''
-  });
   
   const [formData, setFormData] = useState<CardGenerationRequest>({
     topic: '',
@@ -48,79 +39,105 @@ export function AICardGenerationModal({
     }
   });
 
-  const [generatedCards, setGeneratedCards] = useState<GeneratedCard[]>([]);
-  const [selectedCards, setSelectedCards] = useState<Set<string>>(new Set());
-  const [aiService] = useState(() => new AICardGenerationService());
+  const {
+    isAWSConfigured,
+    isGenerating,
+    generationProgress,
+    generatedCards,
+    selectedCards,
+    error,
+    setAWSCredentials,
+    checkAWSConfiguration,
+    startGeneration,
+    toggleCardSelection,
+    selectAllCards,
+    updateCard,
+    saveSelectedCards,
+    clearError,
+    reset
+  } = useAICardGenerationStore();
+
+  useEffect(() => {
+    if (isOpen) {
+      checkAWSConfiguration();
+      reset();
+      setCurrentStep('form');
+    }
+  }, [isOpen, checkAWSConfiguration, reset]);
+
+  useEffect(() => {
+    if (isGenerating) {
+      setCurrentStep('generating');
+    } else if (generatedCards.length > 0 && !isGenerating) {
+      setCurrentStep('preview');
+    }
+  }, [isGenerating, generatedCards.length]);
 
   if (!isOpen) return null;
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // AWS 설정 확인
-    const isConfigured = await aiService.isConfigured();
-    if (!isConfigured) {
+    if (!isAWSConfigured) {
       setShowAWSSettings(true);
       return;
     }
 
-    setCurrentStep('generating');
-    
     try {
-      // 진행률 시뮬레이션
-      setProgress({ step: 'analyzing', percentage: 10, message: '주제 분석 중...' });
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setProgress({ step: 'generating', percentage: 50, message: '카드 생성 중...' });
-      const cards = await aiService.generateCards(formData);
-      
-      setProgress({ step: 'validating', percentage: 80, message: '내용 검증 중...' });
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      setProgress({ step: 'complete', percentage: 100, message: '생성 완료!' });
-      
-      setGeneratedCards(cards);
-      setSelectedCards(new Set(cards.map(card => card.id)));
-      setCurrentStep('preview');
+      await startGeneration(formData);
     } catch (error) {
       console.error('카드 생성 실패:', error);
-      alert('카드 생성에 실패했습니다. 다시 시도해주세요.');
-      setCurrentStep('form');
     }
   };
 
   const handleAWSCredentialsSaved = async (credentials: any) => {
     try {
-      await aiService.setAWSCredentials(credentials);
+      await setAWSCredentials(credentials);
       setShowAWSSettings(false);
       // 자동으로 생성 시작
-      handleFormSubmit(new Event('submit') as any);
+      await startGeneration(formData);
     } catch (error) {
-      alert('AWS 설정 저장에 실패했습니다.');
+      console.error('AWS 설정 저장 실패:', error);
     }
   };
 
-  const handleCardToggle = (cardId: string) => {
-    setSelectedCards(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(cardId)) {
-        newSet.delete(cardId);
-      } else {
-        newSet.add(cardId);
-      }
-      return newSet;
-    });
+  const handleSaveCards = async () => {
+    try {
+      await saveSelectedCards(deckId);
+      onCardsGenerated();
+      onClose();
+    } catch (error) {
+      console.error('카드 저장 실패:', error);
+    }
   };
 
-  const handleSaveCards = () => {
-    const cardsToSave = generatedCards.filter(card => selectedCards.has(card.id));
-    onCardsGenerated(cardsToSave);
-    onClose();
+  const handleCancel = () => {
+    if (isGenerating) {
+      // 생성 중 취소 확인
+      if (confirm('카드 생성을 취소하시겠습니까?')) {
+        reset();
+        setCurrentStep('form');
+      }
+    } else {
+      onClose();
+    }
   };
 
   const renderForm = () => (
     <Card className="w-full max-w-2xl p-6">
       <h2 className="text-xl font-semibold mb-4">AI 카드 생성</h2>
+      
+      {error && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+          <p className="text-red-600 text-sm">{error}</p>
+          <button 
+            onClick={clearError}
+            className="text-red-600 text-xs underline mt-1"
+          >
+            닫기
+          </button>
+        </div>
+      )}
       
       <form onSubmit={handleFormSubmit} className="space-y-4">
         <div>
@@ -197,58 +214,23 @@ export function AICardGenerationModal({
 
   const renderGenerating = () => (
     <Card className="w-full max-w-md p-6">
-      <h2 className="text-xl font-semibold mb-4">카드 생성 중</h2>
-      
-      <div className="space-y-4">
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div 
-            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${progress.percentage}%` }}
-          />
-        </div>
-        
-        <div className="text-center">
-          <div className="text-sm text-gray-600">{progress.message}</div>
-          <div className="text-xs text-gray-500 mt-1">{progress.percentage}%</div>
-        </div>
-      </div>
+      <ProgressTracker 
+        progress={generationProgress}
+        onCancel={handleCancel}
+      />
     </Card>
   );
 
   const renderPreview = () => (
     <Card className="w-full max-w-4xl p-6 max-h-[80vh] overflow-y-auto">
-      <h2 className="text-xl font-semibold mb-4">
-        생성된 카드 ({selectedCards.size}/{generatedCards.length}개 선택)
-      </h2>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        {generatedCards.map(card => (
-          <div 
-            key={card.id}
-            className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-              selectedCards.has(card.id) 
-                ? 'border-blue-500 bg-blue-50' 
-                : 'border-gray-300 hover:border-gray-400'
-            }`}
-            onClick={() => handleCardToggle(card.id)}
-          >
-            <div className="flex items-start gap-2">
-              <input
-                type="checkbox"
-                checked={selectedCards.has(card.id)}
-                onChange={() => handleCardToggle(card.id)}
-                className="mt-1"
-              />
-              <div className="flex-1">
-                <div className="font-medium mb-2">{card.front}</div>
-                <div className="text-sm text-gray-600 whitespace-pre-line">{card.back}</div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+      <CardPreviewGrid
+        cards={generatedCards}
+        selectedCards={selectedCards}
+        onSelectionChange={toggleCardSelection}
+        onCardEdit={updateCard}
+      />
 
-      <div className="flex gap-2">
+      <div className="flex gap-2 mt-6">
         <Button variant="outline" onClick={() => setCurrentStep('form')} className="flex-1">
           다시 생성
         </Button>
