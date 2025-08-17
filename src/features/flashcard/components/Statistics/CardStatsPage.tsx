@@ -66,61 +66,28 @@ export const CardStatsPage = ({ deckId, deckName, onBack }: CardStatsPageProps) 
     }
   };
 
-  // 차트 데이터 생성 (Recharts 형식)
+  // 차트 데이터 생성 (실제 데이터만 사용)
   const chartData = useMemo(() => {
     const days = getDaysForPeriod(timePeriod);
     const today = new Date();
     const data: ChartData[] = [];
-    let cumulativeMinutes = 0;
 
+    // 실제 학습 데이터가 없으므로 빈 데이터 반환
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
       
-      // 실제 데이터가 없으므로 시뮬레이션 데이터 생성
-      const hasStudy = Math.random() > 0.3; // 70% 확률로 학습
-      
-      if (hasStudy) {
-        const totalCards = Math.floor(Math.random() * 80) + 20; // 20-100장
-        const totalMinutes = Math.floor(Math.random() * 400) + 100; // 100-500분
-        
-        const easyCards = Math.floor(totalCards * (0.3 + Math.random() * 0.3)); // 30-60%
-        const goodCards = Math.floor(totalCards * (0.2 + Math.random() * 0.3)); // 20-50%
-        const hardCards = Math.floor(totalCards * (0.1 + Math.random() * 0.2)); // 10-30%
-        const againCards = Math.max(0, totalCards - easyCards - goodCards - hardCards);
-        
-        // 각 난이도별 시간 분배
-        const easyTime = Math.round((easyCards / totalCards) * totalMinutes);
-        const goodTime = Math.round((goodCards / totalCards) * totalMinutes);
-        const hardTime = Math.round((hardCards / totalCards) * totalMinutes);
-        const againTime = totalMinutes - easyTime - goodTime - hardTime;
-        
-        cumulativeMinutes += totalMinutes;
-        
-        data.push({
-          day: -i,
-          date: date.toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' }),
-          easyTime,
-          goodTime,
-          hardTime,
-          againTime,
-          totalTime: totalMinutes,
-          cumulativeTime: cumulativeMinutes,
-          cumulativeDays: Math.round(cumulativeMinutes / (24 * 60) * 100) / 100
-        });
-      } else {
-        data.push({
-          day: -i,
-          date: date.toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' }),
-          easyTime: 0,
-          goodTime: 0,
-          hardTime: 0,
-          againTime: 0,
-          totalTime: 0,
-          cumulativeTime: cumulativeMinutes,
-          cumulativeDays: Math.round(cumulativeMinutes / (24 * 60) * 100) / 100
-        });
-      }
+      data.push({
+        day: -i,
+        date: date.toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' }),
+        easyTime: 0,
+        goodTime: 0,
+        hardTime: 0,
+        againTime: 0,
+        totalTime: 0,
+        cumulativeTime: 0,
+        cumulativeDays: 0
+      });
     }
 
     return data;
@@ -131,18 +98,17 @@ export const CardStatsPage = ({ deckId, deckName, onBack }: CardStatsPageProps) 
     const totalDays = chartData.length;
     const studiedDays = chartData.filter(day => day.totalTime > 0).length;
     const totalMinutes = chartData.reduce((sum, day) => sum + day.totalTime, 0);
-    const totalCards = chartData.reduce((sum, day) => 
-      sum + Math.round((day.easyTime + day.goodTime + day.hardTime + day.againTime) / 5), 0); // 분당 5분 가정
+    const totalCards = 0; // 실제 데이터가 없으므로 0
     
     return {
       daysStudied: studiedDays,
       totalDays,
-      studyPercentage: Math.round((studiedDays / totalDays) * 100),
-      totalDaysTime: Math.round(totalMinutes / (24 * 60) * 100) / 100,
+      studyPercentage: studiedDays > 0 ? Math.round((studiedDays / totalDays) * 100) : 0,
+      totalDaysTime: totalMinutes > 0 ? Math.round(totalMinutes / (24 * 60) * 100) / 100 : 0,
       avgMinutesStudied: studiedDays > 0 ? Math.round(totalMinutes / studiedDays) : 0,
-      avgMinutesOverall: Math.round(totalMinutes / totalDays),
-      avgAnswerTime: totalCards > 0 ? Math.round((totalMinutes * 60) / totalCards * 100) / 100 : 0,
-      cardsPerMinute: totalMinutes > 0 ? Math.round((totalCards / totalMinutes) * 100) / 100 : 0
+      avgMinutesOverall: totalDays > 0 ? Math.round(totalMinutes / totalDays) : 0,
+      avgAnswerTime: 0,
+      cardsPerMinute: 0
     };
   }, [chartData]);
 
@@ -214,78 +180,100 @@ export const CardStatsPage = ({ deckId, deckName, onBack }: CardStatsPageProps) 
       {/* 차트 영역 */}
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-          {/* Recharts 차트 */}
-          <div className="h-96 mb-8">
-            <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart
-                data={chartData}
-                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+          {summaryStats.daysStudied === 0 ? (
+            /* 데이터 없음 상태 */
+            <div className="text-center py-16">
+              <div className="text-6xl mb-4">📊</div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                아직 학습 기록이 없습니다
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                카드를 학습하면 여기에 통계가 표시됩니다
+              </p>
+              <button
+                onClick={onBack}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium"
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                <XAxis 
-                  dataKey="day"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 12, fill: '#6B7280' }}
-                />
-                <YAxis 
-                  yAxisId="time"
-                  orientation="left"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 12, fill: '#6B7280' }}
-                  tickFormatter={(value) => `${(value / 60).toFixed(1)}h`}
-                />
-                <YAxis 
-                  yAxisId="cumulative"
-                  orientation="right"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 12, fill: '#6B7280' }}
-                  tickFormatter={(value) => `${value.toFixed(1)}d`}
-                />
-                
-                {/* 스택 막대 그래프 */}
-                <Bar yAxisId="time" dataKey="easyTime" stackId="a" fill="#10B981" name="쉬움" />
-                <Bar yAxisId="time" dataKey="goodTime" stackId="a" fill="#3B82F6" name="보통" />
-                <Bar yAxisId="time" dataKey="hardTime" stackId="a" fill="#F59E0B" name="어려움" />
-                <Bar yAxisId="time" dataKey="againTime" stackId="a" fill="#EF4444" name="다시" />
-                
-                {/* 누적 시간 라인 */}
-                <Line 
-                  yAxisId="cumulative"
-                  type="monotone" 
-                  dataKey="cumulativeDays" 
-                  stroke="#6B7280" 
-                  strokeWidth={2}
-                  strokeDasharray="5 5"
-                  dot={{ fill: '#6B7280', r: 2 }}
-                  name="누적 시간"
-                />
-                
-                <Legend />
-              </ComposedChart>
-            </ResponsiveContainer>
-          </div>
+                덱으로 돌아가기
+              </button>
+            </div>
+          ) : (
+            /* 차트 표시 */
+            <>
+              {/* Recharts 차트 */}
+              <div className="h-96 mb-8">
+                <ResponsiveContainer width="100%" height="100%">
+                  <ComposedChart
+                    data={chartData}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                    <XAxis 
+                      dataKey="day"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 12, fill: '#6B7280' }}
+                    />
+                    <YAxis 
+                      yAxisId="time"
+                      orientation="left"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 12, fill: '#6B7280' }}
+                      tickFormatter={(value) => `${(value / 60).toFixed(1)}h`}
+                    />
+                    <YAxis 
+                      yAxisId="cumulative"
+                      orientation="right"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 12, fill: '#6B7280' }}
+                      tickFormatter={(value) => `${value.toFixed(1)}d`}
+                    />
+                    
+                    {/* 스택 막대 그래프 */}
+                    <Bar yAxisId="time" dataKey="easyTime" stackId="a" fill="#10B981" name="쉬움" />
+                    <Bar yAxisId="time" dataKey="goodTime" stackId="a" fill="#3B82F6" name="보통" />
+                    <Bar yAxisId="time" dataKey="hardTime" stackId="a" fill="#F59E0B" name="어려움" />
+                    <Bar yAxisId="time" dataKey="againTime" stackId="a" fill="#EF4444" name="다시" />
+                    
+                    {/* 누적 시간 라인 */}
+                    <Line 
+                      yAxisId="cumulative"
+                      type="monotone" 
+                      dataKey="cumulativeDays" 
+                      stroke="#6B7280" 
+                      strokeWidth={2}
+                      strokeDasharray="5 5"
+                      dot={{ fill: '#6B7280', r: 2 }}
+                      name="누적 시간"
+                    />
+                    
+                    <Legend />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </div>
 
-          {/* 요약 통계 */}
-          <div className="text-center space-y-2 text-gray-700 dark:text-gray-300">
-            <div className="text-lg font-semibold">
-              학습한 날: {summaryStats.daysStudied} / {summaryStats.totalDays} ({summaryStats.studyPercentage}%)
-            </div>
-            <div className="text-lg font-semibold">
-              총 학습 시간: {summaryStats.totalDaysTime}일
-            </div>
-            <div>
-              학습한 날 평균: {summaryStats.avgMinutesStudied}분/일
-            </div>
-            <div>
-              전체 기간 평균: {summaryStats.avgMinutesOverall}분/일
-            </div>
-            <div>
-              평균 답변 시간: {summaryStats.avgAnswerTime}초 ({summaryStats.cardsPerMinute} 카드/분)
-            </div>
-          </div>
+              {/* 요약 통계 */}
+              <div className="text-center space-y-2 text-gray-700 dark:text-gray-300">
+                <div className="text-lg font-semibold">
+                  학습한 날: {summaryStats.daysStudied} / {summaryStats.totalDays} ({summaryStats.studyPercentage}%)
+                </div>
+                <div className="text-lg font-semibold">
+                  총 학습 시간: {summaryStats.totalDaysTime}일
+                </div>
+                <div>
+                  학습한 날 평균: {summaryStats.avgMinutesStudied}분/일
+                </div>
+                <div>
+                  전체 기간 평균: {summaryStats.avgMinutesOverall}분/일
+                </div>
+                <div>
+                  평균 답변 시간: {summaryStats.avgAnswerTime}초 ({summaryStats.cardsPerMinute} 카드/분)
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
