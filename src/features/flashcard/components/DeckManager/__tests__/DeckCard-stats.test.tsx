@@ -22,7 +22,7 @@ describe('DeckCard Component - Statistics', () => {
     
     render(<DeckCard deck={mockDeck} lastStudiedAt={lastStudiedDate} />);
     
-    expect(screen.getByText(/Last studied:/)).toBeInTheDocument();
+    expect(screen.getByText(/Last:/)).toBeInTheDocument();
   });
 
   it('should display both card count and last studied date', () => {
@@ -37,7 +37,7 @@ describe('DeckCard Component - Statistics', () => {
     );
     
     expect(screen.getByText('10 cards')).toBeInTheDocument();
-    expect(screen.getByText(/Last studied:/)).toBeInTheDocument();
+    expect(screen.getByText(/Last:/)).toBeInTheDocument();
   });
 
   it('should handle zero card count', () => {
@@ -52,10 +52,10 @@ describe('DeckCard Component - Statistics', () => {
     expect(screen.getByText('1 card')).toBeInTheDocument();
   });
 
-  it('should not display statistics when not provided', () => {
+  it('should display default card count when not provided', () => {
     render(<DeckCard deck={mockDeck} />);
     
-    expect(screen.queryByText(/cards/)).not.toBeInTheDocument();
-    expect(screen.queryByText(/Last studied:/)).not.toBeInTheDocument();
+    expect(screen.getByText('0 cards')).toBeInTheDocument();
+    expect(screen.queryByText(/Last:/)).not.toBeInTheDocument();
   });
 });

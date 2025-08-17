@@ -118,6 +118,13 @@ export interface ICardService extends CRUDService<Card, CreateCardInput, UpdateC
    * @returns 카드 개수
    */
   getCardCount(deckId: number): Promise<number>;
+
+  /**
+   * 덱의 모든 카드 조회
+   * @param deckId 덱 ID
+   * @returns 카드 배열
+   */
+  getCardsByDeckId(deckId: number): Promise<Card[]>;
 }
 
 /**

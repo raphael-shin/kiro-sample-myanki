@@ -22,6 +22,7 @@ export default {
   setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^@/db/MyAnkiDB$': '<rootDir>/tests/__mocks__/MyAnkiDB.ts',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy'
   },
   extensionsToTreatAsEsm: ['.ts', '.tsx'],

@@ -23,26 +23,50 @@ export const AnswerButtons: React.FC<AnswerButtonsProps> = ({ onAnswer, disabled
   };
 
   const buttons = [
-    { quality: StudyQuality.AGAIN, label: 'Again', color: 'bg-red-500 hover:bg-red-600' },
-    { quality: StudyQuality.HARD, label: 'Hard', color: 'bg-orange-500 hover:bg-orange-600' },
-    { quality: StudyQuality.GOOD, label: 'Good', color: 'bg-green-500 hover:bg-green-600' },
-    { quality: StudyQuality.EASY, label: 'Easy', color: 'bg-blue-500 hover:bg-blue-600' }
+    { 
+      quality: StudyQuality.AGAIN, 
+      label: '다시', 
+      shortcut: '1',
+      color: 'bg-red-600 hover:bg-red-700' 
+    },
+    { 
+      quality: StudyQuality.HARD, 
+      label: '어려움', 
+      shortcut: '2',
+      color: 'bg-orange-600 hover:bg-orange-700' 
+    },
+    { 
+      quality: StudyQuality.GOOD, 
+      label: '보통', 
+      shortcut: '3',
+      color: 'bg-green-600 hover:bg-green-700' 
+    },
+    { 
+      quality: StudyQuality.EASY, 
+      label: '쉬움', 
+      shortcut: '4',
+      color: 'bg-blue-600 hover:bg-blue-700' 
+    }
   ];
 
   return (
-    <div className="flex gap-2 justify-center">
-      {buttons.map(({ quality, label, color }) => (
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6">
+      {buttons.map((button) => (
         <button
-          key={quality}
-          onClick={() => handleAnswer(quality)}
+          key={button.quality}
+          onClick={() => handleAnswer(button.quality)}
           disabled={disabled}
-          className={`px-4 py-2 text-white rounded-md font-medium transition-colors ${
-            disabled 
-              ? 'bg-gray-400 cursor-not-allowed' 
-              : color
-          }`}
+          className={`
+            px-4 py-4 text-white rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
+            transform hover:scale-105 active:scale-95
+            ${disabled ? 'bg-gray-400' : button.color}
+          `}
+          title={`${button.label} (${button.shortcut})`}
         >
-          {label}
+          <div className="text-center">
+            <div className="font-semibold text-base">{button.label}</div>
+            <div className="text-xs opacity-80 mt-1">({button.shortcut})</div>
+          </div>
         </button>
       ))}
     </div>

@@ -25,25 +25,42 @@
 ## 구현된 아키텍처
 
 ### 알고리즘 레이어
-- **SM-2 간격 반복 알고리즘**: 과학적 학습 최적화
-- **날짜 유틸리티**: 복습 스케줄링 계산
+- **SM-2 간격 반복 알고리즘**: 과학적 학습 최적화 (`src/algorithms/spaced-repetition/SM2Algorithm.ts`)
+- **날짜 유틸리티**: 복습 스케줄링 계산 (`src/utils/date-utils.ts`)
 - **용이도 인수 관리**: 개인화된 학습 패턴
+- **알고리즘 상수**: 최소 간격 및 기본값 관리 (`src/algorithms/spaced-repetition/constants.ts`)
 
 ### 서비스 레이어
-- **DeckService**: 덱 CRUD 작업
-- **CardService**: 카드 관리
-- **SpacedRepetitionService**: 알고리즘 통합
-- **StudyService**: 학습 세션 관리
+- **DeckService**: 덱 CRUD 작업 및 관련 카드 관리
+- **CardService**: 카드 생성, 수정, 삭제 및 유효성 검사
+- **StudyService**: 학습 세션 관리 및 진행률 추적
+- **SpacedRepetitionService**: SM-2 알고리즘 통합 및 복습 스케줄링
+- **StatisticsService**: 학습 통계 계산 및 분석
+- **SessionManager**: 학습 세션 생명주기 관리
+- **OfflineStatisticsService**: 오프라인 통계 계산
+- **OfflineSyncService**: 오프라인 작업 큐 관리
 
 ### 상태 관리
-- **DeckStore**: 덱 관리 상태 (Zustand)
-- **StudySessionStore**: 학습 세션 상태 (Zustand)
-- **appStore**: 애플리케이션 전역 상태 (테마, 로딩)
+- **DeckStore**: 덱 관리 상태 (Zustand) - 덱 목록, 선택, CRUD 작업
+- **StudySessionStore**: 학습 세션 상태 (Zustand) - 현재 카드, 진행률, 답변 처리
+- **StatisticsStore**: 통계 데이터 상태 관리
+- **appStore**: 애플리케이션 전역 상태 (테마, 로딩, 네트워크 상태)
 
 ### 컴포넌트 아키텍처
 - **Feature-based 구조**: flashcard 기능별 컴포넌트 그룹화
-- **UI 컴포넌트**: 재사용 가능한 기본 컴포넌트
-- **모달 시스템**: 덱 생성 및 편집 모달
+- **UI 컴포넌트**: 재사용 가능한 기본 컴포넌트 (Button, Card, Input)
+- **공통 컴포넌트**: 앱 전체에서 사용되는 컴포넌트 (ThemeToggle, LoadingSpinner, OfflineIndicator)
+- **모달 시스템**: 덱 생성 및 편집 모달 (CreateDeckModal)
+- **덱 관리**: DeckManagerPage, DeckList, DeckCard
+- **카드 편집**: CardEditorPage, CardForm, CardList, CardPreview
+- **학습 세션**: StudyInterface, CardDisplay, AnswerButtons, StudyProgress
+- **통계**: StatsDashboard, DeckStats, ProgressTracker, StudyHistory, GoalTracker
+
+### 데이터베이스 레이어
+- **MyAnkiDB**: Dexie.js 기반 IndexedDB 래퍼
+- **테이블 구조**: settings, decks, cards, studySessions, spacedRepetitionData, offlineQueue
+- **자동 타임스탬프**: 생성/수정 시간 자동 관리
+- **트랜잭션 지원**: 복합 작업의 원자성 보장
 
 ## 일반적인 명령어
 

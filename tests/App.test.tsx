@@ -30,9 +30,7 @@ describe('App', () => {
       expect(screen.getByText('MyAnki')).toBeInTheDocument();
     });
     
-    // Check navigation buttons
-    expect(screen.getByRole('button', { name: '덱 관리' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '카드 편집' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '학습 세션' })).toBeInTheDocument();
+    // Check main app title
+    expect(screen.getByRole('heading', { name: 'MyAnki' })).toBeInTheDocument();
   });
 });

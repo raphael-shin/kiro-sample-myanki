@@ -37,7 +37,17 @@ function App() {
 
   const handleDeckSelect = (deckId: number) => {
     setSelectedDeckId(deckId);
+    // 자동 네비게이션 제거 - 사용자가 직접 선택하도록 함
+  };
+
+  const handleDeckEdit = (deckId: number) => {
+    setSelectedDeckId(deckId);
     setCurrentView('card-editor');
+  };
+
+  const handleDeckStudy = (deckId: number) => {
+    setSelectedDeckId(deckId);
+    setCurrentView('study-session');
   };
 
   const handleStartStudy = (deckId: number) => {
@@ -69,55 +79,18 @@ function App() {
             </h1>
             <ThemeToggle />
           </div>
-          
-          {/* Navigation */}
-          <nav className="mt-4">
-            <div className="flex space-x-4">
-              <button
-                onClick={() => setCurrentView('deck-management')}
-                className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                  currentView === 'deck-management'
-                    ? 'bg-primary-600 text-white'
-                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                }`}
-              >
-                덱 관리
-              </button>
-              <button
-                onClick={() => selectedDeckId && setCurrentView('card-editor')}
-                disabled={!selectedDeckId}
-                className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                  currentView === 'card-editor'
-                    ? 'bg-primary-600 text-white'
-                    : selectedDeckId
-                    ? 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                    : 'text-gray-400 cursor-not-allowed'
-                }`}
-              >
-                카드 편집
-              </button>
-              <button
-                onClick={() => selectedDeckId && setCurrentView('study-session')}
-                disabled={!selectedDeckId}
-                className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                  currentView === 'study-session'
-                    ? 'bg-primary-600 text-white'
-                    : selectedDeckId
-                    ? 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                    : 'text-gray-400 cursor-not-allowed'
-                }`}
-              >
-                학습 세션
-              </button>
-            </div>
-          </nav>
         </div>
       </header>
 
       {/* Main content */}
       <main className="flex-1">
         {currentView === 'deck-management' && (
-          <DeckManagerPage onDeckSelect={handleDeckSelect} />
+          <DeckManagerPage 
+            onDeckSelect={handleDeckSelect}
+            selectedDeckId={selectedDeckId}
+            onDeckEdit={handleDeckEdit}
+            onDeckStudy={handleDeckStudy}
+          />
         )}
         {currentView === 'card-editor' && selectedDeckId && (
           <CardEditorPage 
@@ -129,6 +102,7 @@ function App() {
           <StudyInterface 
             deckId={selectedDeckId}
             onComplete={() => setCurrentView('deck-management')}
+            onExit={() => setCurrentView('deck-management')}
           />
         )}
       </main>

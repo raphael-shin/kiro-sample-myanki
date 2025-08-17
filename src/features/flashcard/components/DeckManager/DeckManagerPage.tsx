@@ -4,14 +4,19 @@ import { CreateDeckModal } from '../CreateDeckModal/CreateDeckModal';
 import { useDeckStore } from '@/store/DeckStore';
 import { CardService } from '@/services/CardService';
 import { db } from '@/db/MyAnkiDB';
+import { calculateCardStats, CardStats } from '@/utils/cardStats';
 
 interface DeckManagerPageProps {
   onDeckSelect?: (deckId: number) => void;
+  selectedDeckId?: number | null;
+  onDeckEdit?: (deckId: number) => void;
+  onDeckStudy?: (deckId: number) => void;
 }
 
-export const DeckManagerPage: React.FC<DeckManagerPageProps> = ({ onDeckSelect }) => {
+export const DeckManagerPage: React.FC<DeckManagerPageProps> = ({ onDeckSelect, selectedDeckId, onDeckEdit, onDeckStudy }) => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [cardCounts, setCardCounts] = useState<Record<number, number>>({});
+  const [cardStats, setCardStats] = useState<Record<number, CardStats>>({});
   const { decks, loading, error, createDeck, loadDecks, deleteDeck } = useDeckStore();
   const cardService = new CardService(db);
 
@@ -34,24 +39,29 @@ export const DeckManagerPage: React.FC<DeckManagerPageProps> = ({ onDeckSelect }
   }, [loadDecks]);
 
   useEffect(() => {
-    const loadCardCounts = async () => {
+    const loadCardData = async () => {
       const counts: Record<number, number> = {};
+      const stats: Record<number, CardStats> = {};
+      
       for (const deck of decks) {
         if (deck.id) {
           try {
-            const count = await cardService.getCardCount(deck.id);
-            counts[deck.id] = count;
+            const cards = await cardService.getCardsByDeckId(deck.id);
+            counts[deck.id] = cards.length;
+            stats[deck.id] = calculateCardStats(cards);
           } catch (error) {
-            console.error(`Failed to load card count for deck ${deck.id}:`, error);
+            console.error(`Failed to load card data for deck ${deck.id}:`, error);
             counts[deck.id] = 0;
+            stats[deck.id] = { total: 0, new: 0, learning: 0, mastered: 0, dueToday: 0 };
           }
         }
       }
       setCardCounts(counts);
+      setCardStats(stats);
     };
 
     if (decks.length > 0) {
-      loadCardCounts();
+      loadCardData();
     }
   }, [decks]);
 
@@ -79,6 +89,10 @@ export const DeckManagerPage: React.FC<DeckManagerPageProps> = ({ onDeckSelect }
         onDeckSelect={onDeckSelect}
         onDeckDelete={handleDeckDelete}
         cardCounts={cardCounts}
+        cardStats={cardStats}
+        selectedDeckId={selectedDeckId}
+        onDeckEdit={onDeckEdit}
+        onDeckStudy={onDeckStudy}
       />
 
       <CreateDeckModal

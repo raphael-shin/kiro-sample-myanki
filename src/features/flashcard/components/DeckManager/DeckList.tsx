@@ -1,5 +1,6 @@
 import { Deck } from '../../../../types/flashcard';
 import { DeckCard } from './DeckCard';
+import { CardStats } from '../../../../utils/cardStats';
 
 interface DeckListProps {
   decks: Deck[];
@@ -7,9 +8,13 @@ interface DeckListProps {
   onDeckSelect?: (deckId: number) => void;
   onDeckDelete?: (deckId: number) => void;
   cardCounts?: Record<number, number>;
+  cardStats?: Record<number, CardStats>;
+  selectedDeckId?: number | null;
+  onDeckEdit?: (deckId: number) => void;
+  onDeckStudy?: (deckId: number) => void;
 }
 
-export const DeckList = ({ decks, loading, onDeckSelect, onDeckDelete, cardCounts }: DeckListProps) => {
+export const DeckList = ({ decks, loading, onDeckSelect, onDeckDelete, cardCounts, cardStats, selectedDeckId, onDeckEdit, onDeckStudy }: DeckListProps) => {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-8">
@@ -33,8 +38,12 @@ export const DeckList = ({ decks, loading, onDeckSelect, onDeckDelete, cardCount
           <DeckCard 
             deck={deck} 
             cardCount={deck.id ? cardCounts?.[deck.id] : 0}
+            cardStats={deck.id ? cardStats?.[deck.id] : undefined}
             onSelect={onDeckSelect ? (selectedDeck) => onDeckSelect(selectedDeck.id!) : undefined}
             onDelete={onDeckDelete ? (selectedDeck) => onDeckDelete(selectedDeck.id!) : undefined}
+            onEdit={onDeckEdit ? (selectedDeck) => onDeckEdit(selectedDeck.id!) : undefined}
+            onStudy={onDeckStudy ? (selectedDeck) => onDeckStudy(selectedDeck.id!) : undefined}
+            isSelected={deck.id === selectedDeckId}
           />
         </li>
       ))}

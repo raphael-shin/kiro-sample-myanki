@@ -174,6 +174,18 @@ export class CardService implements ICardService {
   }
 
   /**
+   * 덱의 모든 카드 조회
+   */
+  async getCardsByDeckId(deckId: number): Promise<Card[]> {
+    return this.handleDatabaseOperation('get cards by deck', async () => {
+      // ID 유효성 검사
+      this.validateId(deckId);
+      
+      return await this.db.cards.where('deckId').equals(deckId).toArray();
+    });
+  }
+
+  /**
    * 카드 내용 유효성 검사 (공통 로직)
    */
   private validateCardContent(content: string, type: 'front' | 'back'): void {

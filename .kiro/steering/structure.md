@@ -46,18 +46,25 @@ tests/
 ## Architecture Patterns
 
 ### Component Organization
-- **UI Components**: Basic, reusable primitives in `src/components/ui/`
-- **Common Components**: App-specific shared components in `src/components/common/`
+- **UI Components**: Basic, reusable primitives in `src/components/ui/` (Button, Card, Input)
+- **Common Components**: App-specific shared components in `src/components/common/` (ThemeToggle, LoadingSpinner, OfflineIndicator)
 - **Feature Components**: Feature-specific components in `src/features/flashcard/components/`
-- **Component Grouping**: Related components grouped by functionality (DeckManager, CardEditor, etc.)
+- **Component Grouping**: Related components grouped by functionality:
+  - `DeckManager/`: DeckManagerPage, DeckList, DeckCard
+  - `CardEditor/`: CardEditorPage, CardForm, CardList, CardPreview
+  - `StudySession/`: StudyInterface, CardDisplay, AnswerButtons, StudyProgress
+  - `Statistics/`: StatsDashboard, DeckStats, ProgressTracker, StudyHistory, GoalTracker
+  - `CreateDeckModal/`: CreateDeckModal
 
 ### State Management
 - **Global State**: Zustand stores in `src/store/`
-  - `DeckStore`: Deck management state
-  - `StudySessionStore`: Study session state
-  - `appStore`: Application-wide state (theme, loading)
+  - `DeckStore`: Deck management state (deck list, selection, CRUD operations)
+  - `StudySessionStore`: Study session state (current card, progress, answer handling)
+  - `StatisticsStore`: Statistics data state management
+  - `appStore`: Application-wide state (theme, loading, network status)
 - **Selectors**: Export optimized selectors from store files
 - **Local State**: Use React hooks for component-specific state
+- **Custom Hooks**: Feature-specific hooks in `src/hooks/` (useNetworkStatus, useToggle, etc.)
 
 ### Algorithm Layer
 - **SM-2 Implementation**: Spaced repetition algorithm in `src/algorithms/spaced-repetition/`
@@ -66,11 +73,16 @@ tests/
 
 ### Service Layer
 - **Business Logic**: Service classes for data operations
-  - `DeckService`: Deck CRUD operations
-  - `CardService`: Card management
-  - `SpacedRepetitionService`: Algorithm integration
-- **Database Integration**: Services handle database interactions
-- **Error Handling**: Centralized error handling in services
+  - `DeckService`: Deck CRUD operations and related card management
+  - `CardService`: Card creation, modification, deletion and validation
+  - `StudyService`: Study session management and progress tracking
+  - `SpacedRepetitionService`: SM-2 algorithm integration and review scheduling
+  - `StatisticsService`: Learning statistics calculation and analysis
+  - `SessionManager`: Study session lifecycle management
+  - `OfflineStatisticsService`: Offline statistics calculation
+  - `OfflineSyncService`: Offline action queue management
+- **Database Integration**: Services handle database interactions with transaction support
+- **Error Handling**: Centralized error handling with custom error types
 
 ### Database Layer
 - **Schema**: Defined in `src/db/MyAnkiDB.ts`
@@ -79,10 +91,13 @@ tests/
 - **Singleton**: Single database instance exported as `db`
 
 ### Type Definitions
-- **Flashcard Types**: Core flashcard types in `src/types/flashcard.ts`
-- **Database Types**: Database schema types in `src/types/database.ts`
+- **Flashcard Types**: Core flashcard types in `src/types/flashcard.ts` (Deck, Card, StudySession)
+- **Database Types**: Database schema types in `src/types/database.ts` (Setting, DATABASE_VERSION)
 - **Store Types**: State management types in `src/types/store.ts`
-- **Algorithm Types**: Spaced repetition algorithm types
+- **Algorithm Types**: Spaced repetition algorithm types in `src/types/spaced-repetition.ts`
+- **Component Types**: UI component prop types in `src/types/components.ts`
+- **Common Types**: Shared utility types in `src/types/common.ts`
+- **Error Types**: Custom error definitions in `src/types/errors.ts`
 
 ## Naming Conventions
 

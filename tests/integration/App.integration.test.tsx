@@ -24,54 +24,29 @@ describe('App Integration Tests', () => {
     it('should render main app components correctly', async () => {
       render(<App />);
       
-      // Wait for loading to complete first
-      await waitFor(() => {
-        expect(screen.getByText('환영합니다!')).toBeInTheDocument();
-      }, { timeout: 2000 });
-      
       // Check header elements
       expect(screen.getByText('MyAnki')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /테마 토글/i })).toBeInTheDocument();
       
-      // Check main content
-      expect(screen.getByText('모든 기술 스택이 성공적으로 통합되었습니다.')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Zustand 테스트/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /테마 변경/i })).toBeInTheDocument();
+      // Check main app title
+      expect(screen.getByRole('heading', { name: /MyAnki/i })).toBeInTheDocument();
       
-      // Check technology stack status
-      expect(screen.getByText('통합 완료된 기술 스택:')).toBeInTheDocument();
-      expect(screen.getByText('React 18 + TypeScript')).toBeInTheDocument();
-      expect(screen.getByText('Vite 빌드 도구')).toBeInTheDocument();
-      expect(screen.getByText('Tailwind CSS')).toBeInTheDocument();
-      expect(screen.getByText('Zustand 상태 관리')).toBeInTheDocument();
-      expect(screen.getByText('Dexie.js 데이터베이스')).toBeInTheDocument();
-      expect(screen.getByText('Jest 테스팅 환경')).toBeInTheDocument();
+      // Check main content - deck management page (use heading role to be specific)
+      expect(screen.getByRole('heading', { name: '덱 관리' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /새 덱 만들기/i })).toBeInTheDocument();
       
-      // Check footer
-      expect(screen.getByText('MyAnki - 간격 반복 학습 애플리케이션')).toBeInTheDocument();
-    });
-
-    it('should show loading spinner initially', () => {
-      render(<App />);
-      
-      // Should show loading spinner initially
-      expect(screen.getByText('MyAnki 로딩 중...')).toBeInTheDocument();
-      expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
-    });
-
-    it('should hide loading spinner after timeout', async () => {
-      render(<App />);
-      
-      // Initially loading
-      expect(screen.getByText('MyAnki 로딩 중...')).toBeInTheDocument();
-      
-      // Wait for loading to complete
+      // Wait for deck loading to complete and check empty state
       await waitFor(() => {
-        expect(screen.queryByText('MyAnki 로딩 중...')).not.toBeInTheDocument();
-      }, { timeout: 2000 });
+        expect(screen.getByText('No decks found. Create your first deck to get started!')).toBeInTheDocument();
+      });
+    });
+
+    it('should show main content by default', () => {
+      render(<App />);
       
-      // Main content should be visible
-      expect(screen.getByText('환영합니다!')).toBeInTheDocument();
+      // Should show main content immediately (no loading state by default)
+      expect(screen.getByRole('heading', { name: '덱 관리' })).toBeInTheDocument();
+      expect(screen.queryByText('MyAnki 로딩 중...')).not.toBeInTheDocument();
     });
   });
 
@@ -79,25 +54,18 @@ describe('App Integration Tests', () => {
     it('should display current theme state correctly', async () => {
       render(<App />);
       
-      // Wait for loading to complete
-      await waitFor(() => {
-        expect(screen.getByText('환영합니다!')).toBeInTheDocument();
-      });
+      // Check that theme toggle button is present
+      expect(screen.getByRole('button', { name: /테마 토글/i })).toBeInTheDocument();
       
-      // Check initial theme state display
-      expect(screen.getByText('라이트 모드')).toBeInTheDocument();
+      // Check that the app is in light mode initially (no dark class)
+      expect(document.documentElement.classList.contains('dark')).toBe(false);
     });
 
     it('should update theme state when theme toggle is clicked', async () => {
       render(<App />);
       
-      // Wait for loading to complete
-      await waitFor(() => {
-        expect(screen.getByText('환영합니다!')).toBeInTheDocument();
-      });
-      
       // Initial state should be light mode
-      expect(screen.getByText('라이트 모드')).toBeInTheDocument();
+      expect(document.documentElement.classList.contains('dark')).toBe(false);
       
       // Click theme toggle button
       const themeToggleButton = screen.getByRole('button', { name: /테마 토글/i });
@@ -105,66 +73,24 @@ describe('App Integration Tests', () => {
       
       // Should switch to dark mode
       await waitFor(() => {
-        expect(screen.getByText('다크 모드')).toBeInTheDocument();
-      });
-      
-      // Document should have dark class
-      expect(document.documentElement.classList.contains('dark')).toBe(true);
-    });
-
-    it('should update theme state when theme change button is clicked', async () => {
-      render(<App />);
-      
-      // Wait for loading to complete
-      await waitFor(() => {
-        expect(screen.getByText('환영합니다!')).toBeInTheDocument();
-      });
-      
-      // Click theme change button
-      const themeChangeButton = screen.getByRole('button', { name: /테마 변경/i });
-      fireEvent.click(themeChangeButton);
-      
-      // Should switch to dark mode
-      await waitFor(() => {
-        expect(screen.getByText('다크 모드')).toBeInTheDocument();
+        expect(document.documentElement.classList.contains('dark')).toBe(true);
       });
     });
 
-    it('should handle loading state correctly when Zustand test button is clicked', async () => {
+    it('should handle navigation correctly', async () => {
       render(<App />);
       
-      // Wait for initial loading to complete
-      await waitFor(() => {
-        expect(screen.getByText('환영합니다!')).toBeInTheDocument();
-      }, { timeout: 2000 });
+      // Check initial state - deck management is the default view
+      expect(screen.getByRole('heading', { name: /덱 관리/i })).toBeInTheDocument();
       
-      // Initial loading state should be complete
-      expect(screen.getByText('완료')).toBeInTheDocument();
-      
-      // Click Zustand test button
-      const zustandTestButton = screen.getByRole('button', { name: /Zustand 테스트/i });
-      
-      // Use act to wrap the click and state change
-      act(() => {
-        fireEvent.click(zustandTestButton);
-      });
-      
-      // Should show loading state briefly, then return to complete
-      // Since the timeout is 1000ms, we'll just verify the final state
-      await waitFor(() => {
-        expect(screen.getByText('완료')).toBeInTheDocument();
-      }, { timeout: 2000 });
+      // Navigation is now completely removed - all actions via deck cards
+      expect(screen.getByRole('heading', { name: /MyAnki/i })).toBeInTheDocument();
     });
   });
 
   describe('테마 시스템 통합', () => {
     it('should apply dark class to document root when theme is dark', async () => {
       render(<App />);
-      
-      // Wait for loading to complete
-      await waitFor(() => {
-        expect(screen.getByText('환영합니다!')).toBeInTheDocument();
-      });
       
       // Initially should not have dark class
       expect(document.documentElement.classList.contains('dark')).toBe(false);
@@ -188,11 +114,6 @@ describe('App Integration Tests', () => {
       
       render(<App />);
       
-      // Wait for loading to complete
-      await waitFor(() => {
-        expect(screen.getByText('환영합니다!')).toBeInTheDocument();
-      });
-      
       // Should have dark class initially
       expect(document.documentElement.classList.contains('dark')).toBe(true);
       
@@ -212,26 +133,20 @@ describe('App Integration Tests', () => {
     it('should integrate all UI components correctly', async () => {
       render(<App />);
       
-      // Wait for loading to complete
-      await waitFor(() => {
-        expect(screen.getByText('환영합니다!')).toBeInTheDocument();
-      });
-      
       // Check that all major UI components are rendered
       const buttons = screen.getAllByRole('button');
       expect(buttons.length).toBeGreaterThan(0);
       
-      // Check Card components (they don't have article role by default)
-      // Instead, check for the card container elements
-      const cardElements = document.querySelectorAll('.rounded-lg');
-      expect(cardElements.length).toBeGreaterThan(0);
+      // Check main app components - navigation removed
+      expect(screen.getByRole('heading', { name: /MyAnki/i })).toBeInTheDocument();
       
       // Check that theme toggle component is working
       const themeToggle = screen.getByRole('button', { name: /테마 토글/i });
       expect(themeToggle).toBeInTheDocument();
       
-      // Check that loading spinner component was shown initially
-      // (it should be gone by now, but we tested it earlier)
+      // Check main content area (use heading role to be specific)
+      expect(screen.getByRole('heading', { name: '덱 관리' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /새 덱 만들기/i })).toBeInTheDocument();
     });
   });
 });

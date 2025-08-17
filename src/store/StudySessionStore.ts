@@ -58,9 +58,6 @@ interface EnhancedStudySessionState {
   updateProgress: () => void;
   getEstimatedTimeRemaining: () => number;
   
-  // 키보드 단축키 액션
-  enableKeyboardShortcuts: (enabled: boolean) => void;
-  
   // 알고리즘 통합 (기존)
   initializeCardData: (cardId: number) => Promise<void>;
   getCardsForReview: (deckId: number) => Promise<Card[]>;
@@ -120,18 +117,40 @@ export const useStudySessionStore = create<EnhancedStudySessionState>((set, get)
     
     // 세션 관리 액션들
     startSession: async (deckId: number) => {
+      console.log('🎯 Starting study session for deck:', deckId);
       set({ loading: true, error: null });
       
       try {
         const sessionManager = getSessionManager();
-        const sessionData = await sessionManager.createSession(deckId);
+        const sessionId = await sessionManager.createSession(deckId);
+        
+        // 카드 로드
+        const spacedRepetitionService = getSpacedRepetitionService();
+        const cards = await spacedRepetitionService.getCardsForReview(deckId);
+        console.log('📚 Cards loaded:', cards.length, 'cards');
+        console.log('📋 Card details:', cards.map(c => ({ id: c.id, front: c.front, lastReviewDate: c.lastReviewDate, repetitions: c.repetitions })));
+        
+        if (cards.length === 0) {
+          console.log('⚠️ No cards available for study');
+          set({ 
+            error: 'No cards available for study',
+            loading: false 
+          });
+          return;
+        }
+        
+        const [firstCard, ...remainingCards] = cards;
+        console.log('🎴 First card:', firstCard?.front, 'Remaining:', remainingCards.length);
         
         set({ 
-          sessionId: sessionData.id,
-          sessionStartTime: sessionData.startTime,
+          sessionId,
+          sessionStartTime: new Date(),
           isActive: true, 
           loading: false,
           isPaused: false,
+          currentCard: firstCard,
+          studyQueue: remainingCards,
+          showAnswer: false,
           sessionStats: { cardsStudied: 0, correctAnswers: 0, totalTime: 0 }
         });
       } catch (error) {
@@ -242,13 +261,13 @@ export const useStudySessionStore = create<EnhancedStudySessionState>((set, get)
     
     // 진행률 추적 액션들
     getProgress: () => {
-      const { sessionStats, studyQueue } = get();
-      const totalCards = sessionStats.cardsStudied + studyQueue.length;
+      const { sessionStats, studyQueue, currentCard } = get();
+      const totalCards = sessionStats.cardsStudied + studyQueue.length + (currentCard ? 1 : 0);
       const percentage = totalCards > 0 ? Math.round((sessionStats.cardsStudied / totalCards) * 100) : 0;
       
       return {
         percentage,
-        cardsRemaining: studyQueue.length,
+        cardsRemaining: studyQueue.length + (currentCard ? 1 : 0),
         totalCards
       };
     },
@@ -267,11 +286,6 @@ export const useStudySessionStore = create<EnhancedStudySessionState>((set, get)
       return Math.round(averageTimePerCard * studyQueue.length);
     },
 
-    // 키보드 단축키 액션
-    enableKeyboardShortcuts: (enabled: boolean) => {
-      set({ keyboardShortcutsEnabled: enabled });
-    },
-    
     // 기존 알고리즘 통합 메서드들
     initializeCardData: async (cardId: number) => {
       try {
@@ -287,8 +301,7 @@ export const useStudySessionStore = create<EnhancedStudySessionState>((set, get)
     getCardsForReview: async (deckId: number) => {
       try {
         const spacedRepetitionService = getSpacedRepetitionService();
-        await spacedRepetitionService.getCardsForReview();
-        return [];
+        return await spacedRepetitionService.getCardsForReview(deckId);
       } catch (error) {
         set({ 
           error: error instanceof Error ? error.message : 'Failed to get cards for review'
