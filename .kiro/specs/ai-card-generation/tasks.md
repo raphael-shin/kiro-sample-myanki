@@ -1,30 +1,30 @@
 # Implementation Plan
 
-- [ ] 1. AWS SDK 설정 및 Bedrock 클라이언트 구현
+- [x] 1. AWS SDK 설정 및 Bedrock 클라이언트 구현
   - AWS SDK for JavaScript v3 설치 및 설정
   - BedrockRuntimeClient 래퍼 클래스 구현
   - 연결 테스트 및 에러 처리 구현
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6_
 
-- [ ] 2. 데이터 모델 및 타입 정의 구현
+- [x] 2. 데이터 모델 및 타입 정의 구현
   - AI 카드 생성 관련 TypeScript 타입 정의
   - IndexedDB 스키마 확장 (aiGenerationHistory, awsSettings 테이블)
   - 카드 방향 및 생성 요청 인터페이스 구현
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6_
 
-- [ ] 3. AWS 인증 정보 관리 시스템 구현
+- [x] 3. AWS 인증 정보 관리 시스템 구현
   - 클라이언트 측 암호화 유틸리티 구현
   - AWS 인증 정보 저장/조회/삭제 서비스 구현
   - 인증 정보 유효성 검사 및 연결 테스트 구현
   - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8_
 
-- [ ] 4. 프롬프트 엔지니어링 시스템 구현
+- [x] 4. 프롬프트 엔지니어링 시스템 구현
   - 카드 타입별 프롬프트 템플릿 작성
   - 카드 방향별 프롬프트 변형 로직 구현
   - 응답 파싱 및 유효성 검사 구현
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6_
 
-- [ ] 5. AI 카드 생성 서비스 구현
+- [x] 5. AI 카드 생성 서비스 구현
   - AICardGenerationService 클래스 구현
   - Bedrock API 호출 및 응답 처리 로직 구현
   - 에러 처리 및 재시도 메커니즘 구현
