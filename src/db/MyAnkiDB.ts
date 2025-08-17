@@ -2,6 +2,7 @@ import Dexie, { Table } from 'dexie';
 import { Setting, DATABASE_VERSION, DATABASE_NAME } from '../types/database';
 import { Deck, Card, StudySession } from '../types/flashcard';
 import { SpacedRepetitionCard } from '../types/spaced-repetition';
+import { AIGenerationHistory, AWSSettings } from '../types/ai-generation';
 
 export interface OfflineAction {
   id?: number;
@@ -18,6 +19,8 @@ export class MyAnkiDB extends Dexie {
   studySessions!: Table<StudySession>;
   spacedRepetitionData!: Table<SpacedRepetitionCard>;
   offlineQueue!: Table<OfflineAction>;
+  aiGenerationHistory!: Table<AIGenerationHistory>;
+  awsSettings!: Table<AWSSettings>;
 
   constructor() {
     super(DATABASE_NAME);
@@ -33,7 +36,9 @@ export class MyAnkiDB extends Dexie {
       cards: '++id, deckId, front, back, createdAt, updatedAt',
       studySessions: '++id, cardId, studiedAt, quality, responseTime',
       spacedRepetitionData: 'cardId, easeFactor, interval, repetitions, nextReviewDate, lastReviewDate, createdAt, updatedAt',
-      offlineQueue: '++id, type, data, timestamp'
+      offlineQueue: '++id, type, data, timestamp',
+      aiGenerationHistory: '++id, topic, cardCount, cardType, difficulty, generatedAt, deckId',
+      awsSettings: '++id, encryptedCredentials, region, lastUpdated'
     });
   }
 
@@ -43,9 +48,13 @@ export class MyAnkiDB extends Dexie {
     this.setupTimestampHooks(this.decks);
     this.setupTimestampHooks(this.cards);
     this.setupTimestampHooks(this.spacedRepetitionData);
+    this.setupTimestampHooks(this.awsSettings);
     
     // studySessions는 특별한 처리
     this.setupStudySessionHooks();
+    
+    // aiGenerationHistory는 generatedAt 필드 사용
+    this.setupAIGenerationHistoryHooks();
   }
 
   private setupTimestampHooks(table: Table<any>) {
@@ -70,6 +79,16 @@ export class MyAnkiDB extends Dexie {
 
       this.studySessions.hook('updating', function (modifications, _primKey, _obj, _trans) {
         // studySessions는 일반적으로 수정되지 않지만 훅은 설정
+      });
+    }
+  }
+
+  private setupAIGenerationHistoryHooks() {
+    if (this.aiGenerationHistory) {
+      this.aiGenerationHistory.hook('creating', function (_primKey, obj, _trans) {
+        if (!obj.generatedAt) {
+          obj.generatedAt = new Date();
+        }
       });
     }
   }
