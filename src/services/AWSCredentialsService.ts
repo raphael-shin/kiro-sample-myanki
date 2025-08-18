@@ -8,24 +8,33 @@ export class AWSCredentialsService {
 
   async saveCredentials(credentials: AWSCredentials): Promise<void> {
     try {
+      console.log('Starting to save AWS credentials...');
+      
       // 인증 정보 유효성 검사
       await this.validateCredentials(credentials);
+      console.log('Credentials validation passed');
 
       // 기존 설정 삭제
       await db.awsSettings.clear();
+      console.log('Cleared existing AWS settings');
 
       // 새 설정 저장
       const encryptedData = encryptCredentials(JSON.stringify(credentials));
-      await db.awsSettings.add({
+      console.log('Credentials encrypted successfully');
+      
+      const result = await db.awsSettings.add({
         encryptedCredentials: encryptedData,
         region: credentials.region,
         lastUpdated: new Date(),
         isActive: true,
       });
+      console.log('AWS settings saved with ID:', result);
 
       // 메모리에서 인증 정보 제거
       clearMemory(credentials);
+      console.log('Memory cleared successfully');
     } catch (error) {
+      console.error('Error in saveCredentials:', error);
       throw new AIGenerationError(
         AIGenerationErrorCode.AWS_CREDENTIALS_INVALID,
         'Failed to save AWS credentials',

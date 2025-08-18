@@ -1,10 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Card, CreateCardInput, UpdateCardInput } from '@/types/flashcard';
+import { AIGenerationHistory } from '@/types/ai-generation';
 import { CardService } from '@/services/CardService';
+import { AICardGenerationService } from '@/services/AICardGenerationService';
 import { db } from '@/db/MyAnkiDB';
 import { calculateCardStats } from '@/utils/cardStats';
 import { CardTable } from './CardTable';
 import { CreateCardModal } from './CreateCardModal';
+import { AICardGenerationModal } from '../AICardGeneration/AICardGenerationModal';
 
 interface CardEditorPageProps {
   deckId: number;
@@ -26,9 +29,12 @@ export const CardEditorPage = ({ deckId, deckName, onBack }: CardEditorPageProps
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [selectedCards, setSelectedCards] = useState<Set<number>>(new Set());
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showAIGenerationModal, setShowAIGenerationModal] = useState(false);
+  const [aiGenerationHistory, setAIGenerationHistory] = useState<AIGenerationHistory[]>([]);
   const [error, setError] = useState<string>('');
 
   const cardService = new CardService(db);
+  const aiService = new AICardGenerationService();
 
   // 카드 통계 계산
   const cardStats = useMemo(() => {
@@ -38,6 +44,7 @@ export const CardEditorPage = ({ deckId, deckName, onBack }: CardEditorPageProps
   // 초기 데이터 로드
   useEffect(() => {
     loadCards();
+    loadAIGenerationHistory();
   }, [deckId]);
 
   // 검색 및 필터링
@@ -63,6 +70,16 @@ export const CardEditorPage = ({ deckId, deckName, onBack }: CardEditorPageProps
     }
   };
 
+  const loadAIGenerationHistory = async () => {
+    try {
+      const history = await aiService.getGenerationHistory();
+      const deckHistory = history.filter(h => h.deckId === deckId).slice(0, 5);
+      setAIGenerationHistory(deckHistory);
+    } catch (err) {
+      console.error('Failed to load AI generation history:', err);
+    }
+  };
+
   const searchCards = async () => {
     try {
       const results = await cardService.searchCards(deckId, searchQuery.trim());
@@ -82,15 +99,13 @@ export const CardEditorPage = ({ deckId, deckName, onBack }: CardEditorPageProps
 
     // 상태 필터 적용
     if (statusFilter !== 'all') {
-      const stats = calculateCardStats(cardList);
       filtered = filtered.filter(card => {
-        const cardId = card.id!;
         if (statusFilter === 'new') {
-          return !card.lastReviewDate || card.repetitions === 0;
+          return !card.lastReviewDate || (card.repetitions || 0) === 0;
         } else if (statusFilter === 'learning') {
-          return card.repetitions > 0 && (card.repetitions < 3 || card.easinessFactor < 2.5);
+          return (card.repetitions || 0) > 0 && ((card.repetitions || 0) < 3 || (card.easinessFactor || 2.5) < 2.5);
         } else if (statusFilter === 'mastered') {
-          return card.repetitions >= 3 && card.easinessFactor >= 2.5;
+          return (card.repetitions || 0) >= 3 && (card.easinessFactor || 2.5) >= 2.5;
         }
         return true;
       });
@@ -106,13 +121,13 @@ export const CardEditorPage = ({ deckId, deckName, onBack }: CardEditorPageProps
           bValue = b.front.toLowerCase();
           break;
         case 'createdAt':
-          aValue = new Date(a.createdAt);
-          bValue = new Date(b.createdAt);
+          aValue = new Date(a.createdAt || 0);
+          bValue = new Date(b.createdAt || 0);
           break;
         case 'updatedAt':
         default:
-          aValue = new Date(a.updatedAt);
-          bValue = new Date(b.updatedAt);
+          aValue = new Date(a.updatedAt || 0);
+          bValue = new Date(b.updatedAt || 0);
           break;
       }
 
@@ -208,9 +223,15 @@ export const CardEditorPage = ({ deckId, deckName, onBack }: CardEditorPageProps
     }
   };
 
+  const handleAICardsGenerated = () => {
+    setShowAIGenerationModal(false);
+    loadCards(); // 새로 생성된 카드들을 다시 로드
+    loadAIGenerationHistory(); // 생성 기록도 업데이트
+  };
+
   const getStatusText = (card: Card) => {
-    if (!card.lastReviewDate || card.repetitions === 0) return '신규';
-    if (card.repetitions < 3 || card.easinessFactor < 2.5) return '학습중';
+    if (!card.lastReviewDate || (card.repetitions || 0) === 0) return '신규';
+    if ((card.repetitions || 0) < 3 || (card.easinessFactor || 2.5) < 2.5) return '학습중';
     return '완료';
   };
 
@@ -305,12 +326,23 @@ export const CardEditorPage = ({ deckId, deckName, onBack }: CardEditorPageProps
               </select>
             </div>
 
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium"
-            >
-              + 새 카드
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowAIGenerationModal(true)}
+                className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 font-medium flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                AI 카드 생성
+              </button>
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium"
+              >
+                + 새 카드
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -353,6 +385,42 @@ export const CardEditorPage = ({ deckId, deckName, onBack }: CardEditorPageProps
 
       {/* 카드 테이블 */}
       <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* AI 생성 기록 */}
+        {aiGenerationHistory.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">최근 AI 생성 기록</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                {aiGenerationHistory.map((history) => (
+                  <div key={history.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm font-medium text-gray-900 dark:text-white">
+                            {history.topic}
+                          </span>
+                          <span className="px-2 py-1 text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 rounded">
+                            {history.cardType}
+                          </span>
+                          <span className="px-2 py-1 text-xs bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200 rounded">
+                            {history.difficulty}
+                          </span>
+                        </div>
+                        <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                          {history.cardCount}개 카드 생성 • {new Date(history.generatedAt).toLocaleDateString('ko-KR')}
+                        </div>
+                      </div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        {history.metadata?.tokensUsed ? `${history.metadata.tokensUsed} 토큰` : ''}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         <CardTable
           cards={filteredCards}
           selectedCards={selectedCards}
@@ -370,6 +438,16 @@ export const CardEditorPage = ({ deckId, deckName, onBack }: CardEditorPageProps
           deckId={deckId}
           onClose={() => setShowCreateModal(false)}
           onSubmit={handleCardCreate}
+        />
+      )}
+
+      {/* AI 카드 생성 모달 */}
+      {showAIGenerationModal && (
+        <AICardGenerationModal
+          deckId={deckId}
+          isOpen={showAIGenerationModal}
+          onClose={() => setShowAIGenerationModal(false)}
+          onCardsGenerated={handleAICardsGenerated}
         />
       )}
     </div>

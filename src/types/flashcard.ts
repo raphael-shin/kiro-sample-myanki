@@ -92,6 +92,13 @@ export interface Card {
   deckId: number;
   front: string;    // 앞면 내용
   back: string;     // 뒷면 내용
+  
+  // Spaced Repetition 관련 필드
+  repetitions?: number;        // 반복 횟수
+  easinessFactor?: number;     // 용이도 인수
+  lastReviewDate?: Date;       // 마지막 복습 날짜
+  nextReviewDate?: Date;       // 다음 복습 날짜
+  
   createdAt?: Date;
   updatedAt?: Date;
 }

@@ -21,5 +21,5 @@ export interface DatabaseTables {
 }
 
 // Database schema version
-export const DATABASE_VERSION = 3;
+export const DATABASE_VERSION = 4;
 export const DATABASE_NAME = 'MyAnkiDB';

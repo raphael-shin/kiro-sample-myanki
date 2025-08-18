@@ -30,7 +30,18 @@ export class MyAnkiDB extends Dexie {
   }
 
   private defineSchema() {
-    this.version(DATABASE_VERSION).stores({
+    // 기존 버전 3 스키마
+    this.version(3).stores({
+      settings: '++id, key, value, createdAt, updatedAt',
+      decks: '++id, name, description, createdAt, updatedAt',
+      cards: '++id, deckId, front, back, createdAt, updatedAt',
+      studySessions: '++id, cardId, studiedAt, quality, responseTime',
+      spacedRepetitionData: 'cardId, easeFactor, interval, repetitions, nextReviewDate, lastReviewDate, createdAt, updatedAt',
+      offlineQueue: '++id, type, data, timestamp'
+    });
+
+    // 새 버전 4 스키마 - AI 기능 추가
+    this.version(4).stores({
       settings: '++id, key, value, createdAt, updatedAt',
       decks: '++id, name, description, createdAt, updatedAt',
       cards: '++id, deckId, front, back, createdAt, updatedAt',
@@ -38,7 +49,7 @@ export class MyAnkiDB extends Dexie {
       spacedRepetitionData: 'cardId, easeFactor, interval, repetitions, nextReviewDate, lastReviewDate, createdAt, updatedAt',
       offlineQueue: '++id, type, data, timestamp',
       aiGenerationHistory: '++id, topic, cardCount, cardType, difficulty, generatedAt, deckId',
-      awsSettings: '++id, encryptedCredentials, region, lastUpdated'
+      awsSettings: '++id, encryptedCredentials, region, lastUpdated, isActive'
     });
   }
 

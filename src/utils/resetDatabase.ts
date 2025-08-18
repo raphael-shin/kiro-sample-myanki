@@ -7,22 +7,9 @@ export const resetDatabase = async (): Promise<void> => {
   try {
     console.log('데이터베이스 초기화 시작...');
     
-    // 모든 테이블 데이터 삭제
-    await db.transaction('rw', [
-      db.settings,
-      db.decks,
-      db.cards,
-      db.studySessions,
-      db.spacedRepetitionData,
-      db.offlineQueue
-    ], async () => {
-      await db.settings.clear();
-      await db.decks.clear();
-      await db.cards.clear();
-      await db.studySessions.clear();
-      await db.spacedRepetitionData.clear();
-      await db.offlineQueue.clear();
-    });
+    // 데이터베이스 완전 삭제 후 재생성
+    await db.delete();
+    await db.open();
     
     console.log('데이터베이스 초기화 완료!');
   } catch (error) {

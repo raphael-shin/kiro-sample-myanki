@@ -7,6 +7,7 @@ import {
 } from '@/types/ai-generation';
 import { AICardGenerationService } from '@/services/AICardGenerationService';
 import { CardService } from '@/services/CardService';
+import { db } from '@/db/MyAnkiDB';
 
 interface GenerationProgress {
   step: 'analyzing' | 'generating' | 'validating' | 'complete';
@@ -58,7 +59,7 @@ const initialProgress: GenerationProgress = {
 
 export const useAICardGenerationStore = create<AICardGenerationState>((set, get) => {
   const aiService = new AICardGenerationService();
-  const cardService = new CardService();
+  const cardService = new CardService(db);
 
   return {
     // Initial state
@@ -192,7 +193,7 @@ export const useAICardGenerationStore = create<AICardGenerationState>((set, get)
       
       try {
         for (const generatedCard of cardsToSave) {
-          await cardService.createCard({
+          await cardService.create({
             deckId,
             front: generatedCard.front,
             back: generatedCard.back,

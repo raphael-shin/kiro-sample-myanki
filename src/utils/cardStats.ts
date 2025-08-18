@@ -24,10 +24,10 @@ export function calculateCardStats(cards: Card[]): CardStats {
     }
 
     // 카드 상태 분류
-    if (!card.lastReviewDate || card.repetitions === 0) {
+    if (!card.lastReviewDate || (card.repetitions || 0) === 0) {
       // 신규: 한 번도 학습하지 않음
       newCount++;
-    } else if (card.repetitions < 3 || card.easinessFactor < 2.5) {
+    } else if ((card.repetitions || 0) < 3 || (card.easinessFactor || 2.5) < 2.5) {
       // 학습중: 아직 충분히 반복하지 않았거나 어려워함
       learningCount++;
     } else {

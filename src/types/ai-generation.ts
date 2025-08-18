@@ -53,7 +53,7 @@ export interface BedrockModelConfig {
 }
 
 export const DEFAULT_MODEL_CONFIG: BedrockModelConfig = {
-  modelId: 'anthropic.claude-3-5-sonnet-20241022-v2:0',
+  modelId: 'anthropic.claude-3-5-sonnet-20240620-v1:0',
   maxTokens: 4000,
   temperature: 0.7,
   topP: 0.9,
