@@ -16,24 +16,54 @@ own conventions (see `.kiro/steering/` and `README.md`). Skip style preferences 
 speculative "consider" remarks. Each finding needs a file path and line number from
 the head revision and one concrete suggested fix.
 
-Write the review in Korean. Keep code, file paths and identifiers as they are.
+Write the prose in Korean. Keep code, file paths, identifiers and the English
+structural labels (`BLOCKING`, `NON-BLOCKING`, `Trigger`, `Outcome`, `Anchor`,
+`Fix`) exactly as they are spelled below.
 
-Your final answer must be exactly one block in this format and nothing after it:
+## Output format
 
+Your final answer must be exactly one block in the format below and nothing after
+it. `<SHA>` is the full commit SHA given to you under "Review context" at the end of
+this prompt — write it out in full, every time, never shortened and never a
+different commit.
+
+```
 <<<REVIEW>>>
-Verdict: PASS | CHANGES_REQUESTED
+**<가장 중요한 문제를 한 문장으로. 굵게 한 줄만.>**
 
-**한 줄 요약**
+**BLOCKING — path/to/file.ts:42**
+`문제가 되는 코드 한 줄을 그대로 인용`
+Trigger: 이 문제가 실제로 발생하는 조건.
+Outcome: 그래서 사용자나 시스템에 무슨 일이 일어나는지.
+Anchor: defect
+Fix: 구체적인 수정 방법. 필요하면 코드로.
 
-### 지적 사항
-1. **`path/to/file.ts:42` — 제목**
-   문제 설명.
-   수정 제안.
+**NON-BLOCKING — path/to/other.ts:7**
+`문제가 되는 코드 한 줄을 그대로 인용`
+Trigger: ...
+Outcome: ...
+Anchor: convention
+Fix: ...
 
-(지적 사항이 없으면 "없음"이라고 쓴다.)
-
-### 참고
-- 막지는 않지만 알아두면 좋은 점. 없으면 "없음".
+[BLOCK-MERGE] <SHA>
+[<TAG>-REVIEWED] <SHA>
 <<<END>>>
+```
 
-Use `CHANGES_REQUESTED` only when there is at least one finding under 지적 사항.
+Rules for that block:
+
+- One `**BLOCKING — <path>:<line>**` or `**NON-BLOCKING — <path>:<line>**` section
+  per finding, in that order (all blocking ones first). Use `BLOCKING` only for a
+  problem that must be fixed before merge: wrong behaviour, data loss, a security
+  issue, or a broken test. Everything else is `NON-BLOCKING`.
+- `Anchor:` is exactly one of `defect`, `risk`, `convention`, `test`, `security`.
+- The opening bold line is a single sentence naming the most important problem. With
+  no findings at all, write `**지적 사항 없음.**` and nothing between it and the
+  markers.
+- Emit `[BLOCK-MERGE] <SHA>` only when there is at least one `BLOCKING` finding.
+  Never emit it otherwise — that line is what blocks the merge verdict.
+- Always emit `[<TAG>-REVIEWED] <SHA>` as the last line before `<<<END>>>`, with
+  `<TAG>` replaced by the review tag given under "Review context". Without it the
+  workflow treats the review as not produced.
+- Do not add headings, a verdict line, or any text outside the two markers' own
+  lines. The workflow derives the verdict from the markers alone.
