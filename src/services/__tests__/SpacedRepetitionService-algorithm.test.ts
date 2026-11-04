@@ -8,6 +8,10 @@ jest.mock('../../db/MyAnkiDB', () => ({
     spacedRepetitionData: {
       add: jest.fn(),
       where: jest.fn()
+    },
+    cards: {
+      update: jest.fn(),
+      where: jest.fn()
     }
   }
 }));
@@ -17,11 +21,14 @@ import { db } from '../../db/MyAnkiDB';
 describe('SpacedRepetitionService - Algorithm Integration', () => {
   let service: SpacedRepetitionService;
   let mockDb: any;
+  let mockCards: any;
 
   beforeEach(() => {
     service = new SpacedRepetitionService();
     mockDb = db.spacedRepetitionData;
+    mockCards = db.cards;
     jest.clearAllMocks();
+    mockCards.update.mockResolvedValue(1);
   });
 
   it('should have processStudyResult method', () => {
@@ -53,6 +60,12 @@ describe('SpacedRepetitionService - Algorithm Integration', () => {
       createdAt: expect.any(Date),
       updatedAt: expect.any(Date)
     });
+    // The cards table is kept in sync with the scheduling result
+    expect(mockCards.update).toHaveBeenCalledWith(cardId, expect.objectContaining({
+      repetitions: 1,
+      easinessFactor: SM2_CONSTANTS.DEFAULT_EASE_FACTOR,
+      nextReviewDate: expect.any(Date)
+    }));
   });
 
   it('should update existing card data using SM2 algorithm', async () => {
@@ -125,9 +138,20 @@ describe('SpacedRepetitionService - Algorithm Integration', () => {
       })
     });
 
+    const cards = [
+      { id: 1, deckId: 1, front: 'Q1', back: 'A1' },
+      { id: 2, deckId: 1, front: 'Q2', back: 'A2' }
+    ];
+    const anyOf = jest.fn().mockReturnValue({
+      toArray: jest.fn().mockResolvedValue(cards)
+    });
+    mockCards.where.mockReturnValue({ anyOf });
+
     const result = await service.getCardsForReview();
     
     expect(mockDb.where).toHaveBeenCalledWith('nextReviewDate');
-    expect(result).toEqual([1, 2]); // Should return cardIds
+    expect(mockCards.where).toHaveBeenCalledWith('id');
+    expect(anyOf).toHaveBeenCalledWith([1, 2]);
+    expect(result).toEqual(cards); // Should return the due Card records
   });
 });

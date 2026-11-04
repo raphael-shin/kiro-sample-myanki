@@ -22,21 +22,8 @@ describe('StudySessionStore - SM2 Algorithm Integration', () => {
     
     // Create mock SessionManager
     mockSessionManager = {
-      createSession: jest.fn().mockResolvedValue({
-        id: 'test-session-1',
-        deckId: 1,
-        startTime: new Date(),
-        status: 'active',
-        totalCards: 0,
-        completedCards: 0,
-        currentCardIndex: 0,
-        correctAnswers: 0,
-        totalResponseTime: 0,
-        qualityScores: [],
-        keyboardShortcuts: true,
-        autoAdvance: false,
-        pausedTime: 0
-      }),
+      // ISessionManager.createSession resolves to the new session id
+      createSession: jest.fn().mockResolvedValue('test-session-1'),
       getSessionData: jest.fn(),
       updateSession: jest.fn(),
       deleteSession: jest.fn(),
@@ -108,13 +95,22 @@ describe('StudySessionStore - SM2 Algorithm Integration', () => {
 
   it('should start session using SessionManager', async () => {
     const { startSession } = useStudySessionStore.getState();
+    const cards = [
+      { id: 1, deckId: 1, front: 'Q1', back: 'A1' },
+      { id: 2, deckId: 1, front: 'Q2', back: 'A2' }
+    ];
+    mockSpacedRepetitionService.getCardsForReview.mockResolvedValue(cards as any);
     
     await startSession(1);
     
     // SessionManager가 사용되었는지 확인
-    const { sessionId, isActive } = useStudySessionStore.getState();
-    expect(sessionId).toBeDefined();
+    const { sessionId, isActive, currentCard, studyQueue } = useStudySessionStore.getState();
+    expect(mockSessionManager.createSession).toHaveBeenCalledWith(1);
+    expect(mockSpacedRepetitionService.getCardsForReview).toHaveBeenCalledWith(1);
+    expect(sessionId).toBe('test-session-1');
     expect(isActive).toBe(true);
+    expect(currentCard).toEqual(cards[0]);
+    expect(studyQueue).toEqual([cards[1]]);
   });
 
   it('should initialize spaced repetition data for new cards', async () => {

@@ -108,7 +108,7 @@ describe('Dexie.js Database Integration Tests', () => {
   describe('데이터베이스 설정 검증', () => {
     it('should have correct database configuration constants', () => {
       expect(DATABASE_NAME).toBe('MyAnkiDB');
-      expect(DATABASE_VERSION).toBe(2);
+      expect(DATABASE_VERSION).toBe(4);
     });
 
     it('should have database constants with correct types', () => {
@@ -124,7 +124,7 @@ describe('Dexie.js Database Integration Tests', () => {
       const typesModule = require('../../src/types/database');
       expect(typesModule).toBeDefined();
       expect(typesModule.DATABASE_NAME).toBe('MyAnkiDB');
-      expect(typesModule.DATABASE_VERSION).toBe(2);
+      expect(typesModule.DATABASE_VERSION).toBe(4);
     });
 
     it('should export Setting interface constants', () => {

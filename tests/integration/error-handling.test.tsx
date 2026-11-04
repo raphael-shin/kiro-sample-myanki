@@ -57,8 +57,8 @@ describe('Error Handling Integration', () => {
     // Verify no error state initially
     expect(screen.queryByText(/error/i)).not.toBeInTheDocument();
     
-    // Test navigation works without errors
-    const deckManagementButton = screen.getByRole('button', { name: '덱 관리' });
-    expect(deckManagementButton).toBeInTheDocument();
+    // Deck management view renders without errors (the top nav bar was removed)
+    expect(await screen.findByText('No decks found. Create your first deck to get started!')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '새 덱 만들기' })).toBeInTheDocument();
   });
 });

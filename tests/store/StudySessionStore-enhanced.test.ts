@@ -1,5 +1,6 @@
-import { useStudySessionStore, setSessionManager } from '@/store/StudySessionStore';
+import { useStudySessionStore, setSessionManager, setSpacedRepetitionService } from '@/store/StudySessionStore';
 import { ISessionManager } from '@/services/SessionManager';
+import { SpacedRepetitionService } from '@/services/SpacedRepetitionService';
 
 describe('StudySessionStore - Enhanced Features', () => {
   let mockSessionManager: jest.Mocked<ISessionManager>;
@@ -9,21 +10,8 @@ describe('StudySessionStore - Enhanced Features', () => {
     
     // Create mock SessionManager
     mockSessionManager = {
-      createSession: jest.fn().mockResolvedValue({
-        id: 'test-session-1',
-        deckId: 1,
-        startTime: new Date(),
-        status: 'active',
-        totalCards: 0,
-        completedCards: 0,
-        currentCardIndex: 0,
-        correctAnswers: 0,
-        totalResponseTime: 0,
-        qualityScores: [],
-        keyboardShortcuts: true,
-        autoAdvance: false,
-        pausedTime: 0
-      }),
+      // ISessionManager.createSession resolves to the new session id
+      createSession: jest.fn().mockResolvedValue('test-session-1'),
       getSessionData: jest.fn(),
       updateSession: jest.fn(),
       deleteSession: jest.fn(),
@@ -36,11 +24,20 @@ describe('StudySessionStore - Enhanced Features', () => {
     } as any;
     
     setSessionManager(mockSessionManager);
+
+    // startSession loads the review queue; a session only starts when cards exist
+    setSpacedRepetitionService({
+      getCardsForReview: jest.fn().mockResolvedValue([
+        { id: 1, deckId: 1, front: 'Card 1', back: 'Back 1' },
+        { id: 2, deckId: 1, front: 'Card 2', back: 'Back 2' }
+      ])
+    } as unknown as SpacedRepetitionService);
   });
 
   afterEach(() => {
     jest.clearAllMocks();
     setSessionManager(null as any);
+    setSpacedRepetitionService(null as any);
   });
 
   describe('Enhanced State Management', () => {
