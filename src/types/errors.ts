@@ -59,13 +59,13 @@ export enum ErrorCode {
  */
 export class MyAnkiError extends Error {
   public readonly code: ErrorCode;
-  public readonly details?: any;
+  public readonly details?: Record<string, unknown>;
   public readonly timestamp: Date;
 
   constructor(
     code: ErrorCode,
     message: string,
-    details?: any
+    details?: Record<string, unknown>
   ) {
     super(message);
     this.name = 'MyAnkiError';
@@ -173,7 +173,7 @@ export const ErrorFactory = {
   /**
    * 유효성 검사 에러 생성
    */
-  validation(field: string, value: any, constraint: string): MyAnkiError {
+  validation(field: string, value: unknown, constraint: string): MyAnkiError {
     return new MyAnkiError(
       ErrorCode.VALIDATION_ERROR,
       `Validation failed for field '${field}': ${constraint}`,
@@ -200,7 +200,7 @@ export const ErrorFactory = {
   /**
    * 잘못된 ID 에러 생성
    */
-  invalidId(id: any, reason?: string): MyAnkiError {
+  invalidId(id: unknown, reason?: string): MyAnkiError {
     const message = reason 
       ? `Invalid ID: ${id} (${reason})`
       : `Invalid ID: ${id}`;
@@ -340,18 +340,18 @@ export const ErrorFactory = {
 /**
  * 에러 타입 가드 함수들
  */
-export function isMyAnkiError(error: any): error is MyAnkiError {
+export function isMyAnkiError(error: unknown): error is MyAnkiError {
   return error instanceof MyAnkiError;
 }
 
-export function isValidationError(error: any): boolean {
+export function isValidationError(error: unknown): boolean {
   return isMyAnkiError(error) && error.code === ErrorCode.VALIDATION_ERROR;
 }
 
-export function isNotFoundError(error: any): boolean {
+export function isNotFoundError(error: unknown): boolean {
   return isMyAnkiError(error) && error.code === ErrorCode.NOT_FOUND;
 }
 
-export function isDatabaseError(error: any): boolean {
+export function isDatabaseError(error: unknown): boolean {
   return isMyAnkiError(error) && error.code === ErrorCode.DATABASE_ERROR;
 }

@@ -96,7 +96,7 @@ export class AICardGenerationService {
     }
   }
 
-  private async invokeWithRetry(prompt: string, maxRetries = 3): Promise<any> {
+  private async invokeWithRetry(prompt: string, maxRetries = 3): Promise<Awaited<ReturnType<BedrockClient['invokeModel']>>> {
     let lastError: Error | null = null;
     
     for (let attempt = 1; attempt <= maxRetries; attempt++) {

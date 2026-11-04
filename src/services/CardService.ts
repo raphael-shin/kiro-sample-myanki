@@ -3,6 +3,7 @@
  * 카드 관리를 위한 CRUD 작업과 비즈니스 로직을 제공
  */
 
+import type { Transaction } from 'dexie';
 import { MyAnkiDB } from '@/db/MyAnkiDB';
 import { ICardService } from './interfaces';
 import {
@@ -275,7 +276,7 @@ export class CardService implements ICardService {
   /**
    * ID 유효성 검사
    */
-  private validateId(id: any): void {
+  private validateId(id: unknown): void {
     if (typeof id !== 'number') {
       throw ErrorFactory.invalidId(id, 'ID must be a number');
     }
@@ -306,7 +307,8 @@ export class CardService implements ICardService {
    * 카드와 연관 데이터 삭제 (트랜잭션)
    */
   private async deleteCardWithRelatedData(cardId: number): Promise<void> {
-    await this.db.transaction('rw', [this.db.cards, this.db.studySessions], async (tx: any) => {
+    await this.db.transaction('rw', [this.db.cards, this.db.studySessions], async (trans) => {
+      const tx = trans as Transaction & Pick<MyAnkiDB, 'cards' | 'studySessions'>;
       // 카드의 학습 기록 삭제
       await tx.studySessions.where('cardId').equals(cardId).delete();
       

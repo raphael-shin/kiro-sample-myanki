@@ -7,7 +7,7 @@ export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 export type RequiredFields<T, K extends keyof T> = T & Required<Pick<T, K>>;
 
 // API response types
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   data: T;
   success: boolean;
   message?: string;
@@ -52,7 +52,7 @@ export interface WithTimestamps {
 // Event handler types
 export type EventHandler<T = Event> = (event: T) => void;
 export type ChangeHandler = (value: string) => void;
-export type SubmitHandler = (data: any) => void | Promise<void>;
+export type SubmitHandler = (data: unknown) => void | Promise<void>;
 
 // Loading and error states
 export interface LoadingState {

@@ -1,5 +1,5 @@
 import { useStudySessionStore } from '../StudySessionStore';
-import { StudyQuality } from '../../types/flashcard';
+import { Card, StudyQuality } from '../../types/flashcard';
 
 describe('StudySessionStore - Algorithm Integration', () => {
   beforeEach(() => {
@@ -22,7 +22,7 @@ describe('StudySessionStore - Algorithm Integration', () => {
         deckId: 1,
         front: 'Test Question',
         back: 'Test Answer'
-      } as any
+      } as Card
     });
     
     await processAnswer(StudyQuality.GOOD, 5000);

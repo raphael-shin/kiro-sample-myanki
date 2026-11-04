@@ -18,7 +18,7 @@ describe('StudySessionStore - Session Management', () => {
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn()
-    } as any;
+    } as unknown as jest.Mocked<SpacedRepetitionService>;
     
     // Inject mock service
     setSpacedRepetitionService(mockSpacedRepetitionService);
@@ -26,7 +26,7 @@ describe('StudySessionStore - Session Management', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
-    setSpacedRepetitionService(null as any);
+    setSpacedRepetitionService(null as unknown as SpacedRepetitionService);
   });
 
   it('should have startSession action', () => {

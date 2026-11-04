@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card } from '@/types/flashcard';
 import { CardService } from '@/services/CardService';
 import { db } from '@/db/MyAnkiDB';
@@ -39,13 +39,10 @@ export const CardStatsPage = ({ deckId, deckName, onBack }: CardStatsPageProps) 
   const [showTime, setShowTime] = useState(true);
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('3months');
 
-  const cardService = new CardService(db);
+  // 훅 의존성이 렌더마다 바뀌지 않도록 서비스 인스턴스는 한 번만 만든다
+  const cardService = useMemo(() => new CardService(db), []);
 
-  useEffect(() => {
-    loadCards();
-  }, [deckId]);
-
-  const loadCards = async () => {
+  const loadCards = useCallback(async () => {
     try {
       setLoading(true);
       const loadedCards = await cardService.getCardsByDeckId(deckId);
@@ -55,7 +52,11 @@ export const CardStatsPage = ({ deckId, deckName, onBack }: CardStatsPageProps) 
     } finally {
       setLoading(false);
     }
-  };
+  }, [cardService, deckId]);
+
+  useEffect(() => {
+    loadCards();
+  }, [loadCards]);
 
   // 기간별 일수 계산
   const getDaysForPeriod = (period: TimePeriod): number => {

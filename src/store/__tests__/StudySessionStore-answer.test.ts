@@ -1,5 +1,5 @@
 import { useStudySessionStore } from '../StudySessionStore';
-import { StudyQuality } from '../../types/flashcard';
+import { Card, StudyQuality } from '../../types/flashcard';
 
 describe('StudySessionStore - Answer Processing', () => {
   beforeEach(() => {
@@ -54,8 +54,8 @@ describe('StudySessionStore - Answer Processing', () => {
     // Set up a mock study queue
     useStudySessionStore.setState({
       studyQueue: [
-        { id: 1, front: 'Card 1', back: 'Answer 1' } as any,
-        { id: 2, front: 'Card 2', back: 'Answer 2' } as any
+        { id: 1, front: 'Card 1', back: 'Answer 1' } as Card,
+        { id: 2, front: 'Card 2', back: 'Answer 2' } as Card
       ]
     });
     

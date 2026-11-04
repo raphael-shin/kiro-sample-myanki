@@ -396,7 +396,7 @@ export class StudyService implements IStudyService {
     }
   }
 
-  private validateId(id: any): void {
+  private validateId(id: unknown): void {
     if (typeof id !== 'number') {
       throw ErrorFactory.invalidId(id, 'ID must be a number');
     }
@@ -471,7 +471,7 @@ export class StudyService implements IStudyService {
     const sortedSessions = sessions.sort((a, b) => b.studiedAt.getTime() - a.studiedAt.getTime());
     
     let streak = 0;
-    let currentDate = new Date(today);
+    const currentDate = new Date(today);
     currentDate.setHours(0, 0, 0, 0);
 
     for (const session of sortedSessions) {

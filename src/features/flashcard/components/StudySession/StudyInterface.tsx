@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useStudySessionStore } from '@/store/StudySessionStore';
 import { StudyQuality } from '@/types/flashcard';
 import { AnswerButtons } from './AnswerButtons';
@@ -40,6 +40,27 @@ export const StudyInterface = ({ deckId, onComplete, onExit }: StudyInterfacePro
       }
     };
   }, [deckId, startSession, endSession, isActive]);
+
+  const handleAnswer = useCallback(async (quality: StudyQuality) => {
+    const responseTime = Date.now() - (new Date().getTime());
+    
+    // 피드백 메시지 표시
+    const feedbackMessages = {
+      [StudyQuality.AGAIN]: '다시 학습합니다',
+      [StudyQuality.HARD]: '다음 복습까지 10분 후',
+      [StudyQuality.GOOD]: '다음 복습까지 1일 후',
+      [StudyQuality.EASY]: '다음 복습까지 4일 후'
+    };
+    
+    setFeedbackMessage(feedbackMessages[quality]);
+    
+    // 1초 후 다음 카드로 진행
+    setTimeout(async () => {
+      await processAnswer(quality, responseTime);
+      nextCard();
+      setFeedbackMessage('');
+    }, 1000);
+  }, [processAnswer, nextCard]);
 
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
@@ -94,28 +115,7 @@ export const StudyInterface = ({ deckId, onComplete, onExit }: StudyInterfacePro
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [keyboardShortcutsEnabled, isPaused, showAnswer, showCardAnswer]);
-
-  const handleAnswer = async (quality: StudyQuality) => {
-    const responseTime = Date.now() - (new Date().getTime());
-    
-    // 피드백 메시지 표시
-    const feedbackMessages = {
-      [StudyQuality.AGAIN]: '다시 학습합니다',
-      [StudyQuality.HARD]: '다음 복습까지 10분 후',
-      [StudyQuality.GOOD]: '다음 복습까지 1일 후',
-      [StudyQuality.EASY]: '다음 복습까지 4일 후'
-    };
-    
-    setFeedbackMessage(feedbackMessages[quality]);
-    
-    // 1초 후 다음 카드로 진행
-    setTimeout(async () => {
-      await processAnswer(quality, responseTime);
-      nextCard();
-      setFeedbackMessage('');
-    }, 1000);
-  };
+  }, [keyboardShortcutsEnabled, isPaused, showAnswer, showCardAnswer, handleAnswer]);
 
   const handlePauseResume = () => {
     if (isPaused) {

@@ -101,7 +101,7 @@ class ValidationUtils {
   /**
    * 문자열 필수 검사
    */
-  static validateRequiredString(value: any, fieldName: string): void {
+  static validateRequiredString(value: unknown, fieldName: string): void {
     if (!value || typeof value !== 'string' || value.trim() === '') {
       throw new MyAnkiError(
         ErrorCode.VALIDATION_ERROR,
@@ -127,7 +127,7 @@ class ValidationUtils {
   /**
    * ID 유효성 검사
    */
-  static validateId(id: any, fieldName: string): void {
+  static validateId(id: unknown, fieldName: string): void {
     if (!id || typeof id !== 'number' || id <= 0) {
       throw ErrorFactory.invalidId(id, `${fieldName} must be positive`);
     }

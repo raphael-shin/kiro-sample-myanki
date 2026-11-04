@@ -35,7 +35,7 @@ describe('DeckStore - CRUD Actions', () => {
   });
 
   afterEach(() => {
-    setDeckService(null as any);
+    setDeckService(null as unknown as DeckService);
   });
 
   it('should have createDeck action', () => {

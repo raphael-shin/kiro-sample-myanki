@@ -4,6 +4,9 @@
  */
 
 import { MyAnkiDB } from '@/db/MyAnkiDB';
+import { DeckService } from './DeckService';
+import { CardService } from './CardService';
+import { StudyService } from './StudyService';
 
 // 인터페이스 export
 export * from './interfaces';
@@ -18,9 +21,9 @@ export { StudyService } from './StudyService';
  * 데이터베이스 인스턴스를 받아 모든 서비스를 생성
  */
 export function createServices(db: MyAnkiDB) {
-  const deckService = new (require('./DeckService').DeckService)(db);
-  const cardService = new (require('./CardService').CardService)(db);
-  const studyService = new (require('./StudyService').StudyService)(db);
+  const deckService = new DeckService(db);
+  const cardService = new CardService(db);
+  const studyService = new StudyService(db);
 
   return {
     deckService,

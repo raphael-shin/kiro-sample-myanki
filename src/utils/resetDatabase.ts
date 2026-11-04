@@ -20,5 +20,5 @@ export const resetDatabase = async (): Promise<void> => {
 
 // 개발 환경에서만 전역으로 노출
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-  (window as any).resetDatabase = resetDatabase;
+  (window as Window & { resetDatabase?: typeof resetDatabase }).resetDatabase = resetDatabase;
 }
