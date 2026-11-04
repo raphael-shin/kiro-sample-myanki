@@ -89,7 +89,7 @@ export const DeckCard = ({ deck, cardCount, cardStats, lastStudiedAt, onSelect, 
         className={className}
         onClick={isSelectable ? handleClick : undefined}
         onKeyDown={isSelectable ? handleKeyDown : undefined}
-        role={isSelectable ? "button" : undefined}
+        role={isSelectable ? "button" : "article"}
         tabIndex={isSelectable ? 0 : undefined}
         aria-pressed={isSelectable ? isSelected : undefined}
       >
@@ -102,6 +102,12 @@ export const DeckCard = ({ deck, cardCount, cardStats, lastStudiedAt, onSelect, 
             <KebabMenu items={menuItems} />
           )}
         </div>
+
+        {deck.description && (
+          <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mb-4">
+            {deck.description}
+          </p>
+        )}
 
         {/* 하단: 카드 통계 */}
         <div className="mt-auto pt-3 border-t border-gray-200 dark:border-gray-600">

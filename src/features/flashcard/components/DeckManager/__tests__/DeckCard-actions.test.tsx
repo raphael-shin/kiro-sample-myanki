@@ -2,6 +2,11 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { DeckCard } from '../DeckCard';
 import { Deck } from '../../../../../types/flashcard';
 
+// Edit/Delete live in the kebab (•••) menu; Study is the "학습 시작" button.
+const openMenu = () => {
+  fireEvent.click(screen.getByRole('button', { name: 'More options' }));
+};
+
 describe('DeckCard Component - Action Buttons', () => {
   const mockDeck: Deck = {
     id: 1,
@@ -15,8 +20,9 @@ describe('DeckCard Component - Action Buttons', () => {
     const mockOnEdit = jest.fn();
     
     render(<DeckCard deck={mockDeck} onEdit={mockOnEdit} />);
+    openMenu();
     
-    const editButton = screen.getByRole('button', { name: /edit/i });
+    const editButton = screen.getByRole('button', { name: '카드 편집' });
     expect(editButton).toBeInTheDocument();
   });
 
@@ -25,7 +31,7 @@ describe('DeckCard Component - Action Buttons', () => {
     
     render(<DeckCard deck={mockDeck} onStudy={mockOnStudy} />);
     
-    const studyButton = screen.getByRole('button', { name: /study/i });
+    const studyButton = screen.getByRole('button', { name: '학습 시작' });
     expect(studyButton).toBeInTheDocument();
   });
 
@@ -33,8 +39,9 @@ describe('DeckCard Component - Action Buttons', () => {
     const mockOnEdit = jest.fn();
     
     render(<DeckCard deck={mockDeck} onEdit={mockOnEdit} />);
+    openMenu();
     
-    const editButton = screen.getByRole('button', { name: /edit/i });
+    const editButton = screen.getByRole('button', { name: '카드 편집' });
     fireEvent.click(editButton);
     
     expect(mockOnEdit).toHaveBeenCalledWith(mockDeck);
@@ -45,7 +52,7 @@ describe('DeckCard Component - Action Buttons', () => {
     
     render(<DeckCard deck={mockDeck} onStudy={mockOnStudy} />);
     
-    const studyButton = screen.getByRole('button', { name: /study/i });
+    const studyButton = screen.getByRole('button', { name: '학습 시작' });
     fireEvent.click(studyButton);
     
     expect(mockOnStudy).toHaveBeenCalledWith(mockDeck);
@@ -64,28 +71,34 @@ describe('DeckCard Component - Action Buttons', () => {
         onDelete={mockOnDelete}
       />
     );
+    openMenu();
     
-    expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /study/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /delete/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '카드 편집' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '학습 시작' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '덱 삭제' })).toBeInTheDocument();
   });
 
   it('should stop event propagation when action buttons are clicked', () => {
     const mockOnEdit = jest.fn();
+    const mockOnStudy = jest.fn();
     const mockOnSelect = jest.fn();
     
     render(
       <DeckCard 
         deck={mockDeck} 
         onEdit={mockOnEdit}
+        onStudy={mockOnStudy}
         onSelect={mockOnSelect}
       />
     );
+    openMenu();
     
-    const editButton = screen.getByRole('button', { name: /edit/i });
+    const editButton = screen.getByRole('button', { name: '카드 편집' });
     fireEvent.click(editButton);
+    fireEvent.click(screen.getByRole('button', { name: '학습 시작' }));
     
     expect(mockOnEdit).toHaveBeenCalledWith(mockDeck);
+    expect(mockOnStudy).toHaveBeenCalledWith(mockDeck);
     expect(mockOnSelect).not.toHaveBeenCalled();
   });
 });
