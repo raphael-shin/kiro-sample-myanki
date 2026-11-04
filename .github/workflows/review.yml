@@ -1,0 +1,199 @@
+name: AI Review
+
+# Three advisory reviews by Kiro CLI in headless mode:
+#   1. AWS Well-Architected (Opus 5.5) - skipped when the PR has no AWS-related change
+#   2. Code review (Opus 5.5)
+#   3. Code review (GPT 5.6 Sol)
+# Each review is posted as one PR comment and updated in place on every push.
+# The reviews do not block merging: a job fails only if the review itself could
+# not be produced.
+#
+# Requires the repository secret KIRO_API_KEY (an API key from app.kiro.dev).
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions: {}
+
+concurrency:
+  group: ai-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    name: detect AWS changes
+    # Secrets are not available to fork PRs, so only same-repo PRs are reviewed.
+    if: >-
+      github.event.pull_request.draft == false &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      aws: ${{ steps.detect.outputs.aws }}
+    steps:
+      - id: detect
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh pr diff "$PR" -R "$REPO" > diff.patch
+          gh pr diff "$PR" -R "$REPO" --name-only > files.txt
+          aws=false
+          # Infrastructure files.
+          if grep -Eiq '(^|/)(cdk\.json|template\.ya?ml|serverless\.ya?ml|samconfig\.toml)$|\.tf$|(^|/)(infra|cdk|cloudformation|terraform)/' files.txt; then
+            aws=true
+          fi
+          # AWS usage in added or removed lines.
+          if grep -E '^[+-][^+-]' diff.patch | grep -Eiq '@aws-sdk/|aws-sdk|aws-amplify|AWS::|bedrock|boto3|arn:aws:|AWS_(REGION|ACCESS_KEY_ID|SECRET_ACCESS_KEY|PROFILE)'; then
+            aws=true
+          fi
+          echo "aws=$aws" >> "$GITHUB_OUTPUT"
+          echo "AWS-related change: $aws"
+
+  review:
+    name: ${{ matrix.title }}
+    needs: changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - id: aws-well-architected
+            title: AWS Well-Architected Review (Opus 5.5)
+            model: claude-opus-5.5
+            prompt: aws-well-architected.md
+            needs_aws: true
+          - id: opus-code-review
+            title: Code Review (Opus 5.5)
+            model: claude-opus-5.5
+            prompt: code-review.md
+            needs_aws: false
+          - id: gpt-code-review
+            title: Code Review (GPT 5.6 Sol)
+            model: gpt-5.6-sol
+            prompt: code-review.md
+            needs_aws: false
+    env:
+      MARKER: "<!-- ai-review:${{ matrix.id }} -->"
+      TITLE: ${{ matrix.title }}
+      PR: ${{ github.event.pull_request.number }}
+      REPO: ${{ github.repository }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      SKIP: ${{ matrix.needs_aws && needs.changes.outputs.aws != 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - name: Prepare diff
+        if: env.SKIP != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .review
+          gh pr diff "$PR" -R "$REPO" > .review/diff.patch
+          gh pr diff "$PR" -R "$REPO" --name-only > .review/files.txt
+          # Keep very large diffs within a reviewable size; the model can still
+          # read any file from the checkout.
+          size=$(wc -c < .review/diff.patch)
+          if [ "$size" -gt 400000 ]; then
+            head -c 400000 .review/diff.patch > .review/diff.truncated
+            mv .review/diff.truncated .review/diff.patch
+            printf '\n\n[diff truncated at 400000 bytes; read the changed files directly]\n' >> .review/diff.patch
+          fi
+          cat .github/review-prompts/common.md ".github/review-prompts/${{ matrix.prompt }}" > .review/prompt.md
+
+      - name: Install Kiro CLI
+        if: env.SKIP != 'true'
+        run: |
+          curl -fsSL https://cli.kiro.dev/install | bash
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Run review
+        if: env.SKIP != 'true'
+        # Only the Kiro API key is passed in. The GitHub token is not, so the
+        # model cannot act on GitHub; the next step posts the comment.
+        env:
+          KIRO_API_KEY: ${{ secrets.KIRO_API_KEY }}
+          MODEL: ${{ matrix.model }}
+        run: |
+          kiro-cli --version
+          extra=()
+          if kiro-cli chat --help 2>&1 | grep -q -- '--trust-workspace'; then
+            extra+=(--trust-workspace)
+          fi
+          set +e
+          kiro-cli chat --no-interactive --model "$MODEL" \
+            --trust-tools=read,grep,glob,code "${extra[@]}" \
+            "$(cat .review/prompt.md)" > .review/raw.txt 2> .review/stderr.txt
+          status=$?
+          set -e
+          echo "kiro-cli exit status: $status"
+          # Strip terminal escape codes and keep only the final review block.
+          perl -pe 's/\e\[[0-9;?]*[a-zA-Z]//g; s/\e\].*?(\e\\|\a)//g' .review/raw.txt > .review/clean.txt
+          perl -0777 -ne 'my @m = /<<<REVIEW>>>\s*(.*?)\s*<<<END>>>/sg; print $m[-1] if @m' .review/clean.txt > .review/review.md
+          if [ ! -s .review/review.md ]; then
+            echo "::error::No review block in the output (exit status $status)."
+            tail -n 40 .review/stderr.txt || true
+            exit 1
+          fi
+
+      - name: Build comment
+        if: always()
+        id: comment
+        run: |
+          mkdir -p .review
+          short=${HEAD_SHA:0:7}
+          if [ "$SKIP" = "true" ]; then
+            {
+              echo "$MARKER"
+              echo "## $TITLE — ⏭ skipped"
+              echo
+              echo "_\`$short\`에는 AWS 관련 변경이 없어 리뷰를 건너뛰었습니다._"
+            } > .review/comment.md
+          elif [ -s .review/review.md ]; then
+            verdict=$(grep -m1 -oE 'Verdict: *(PASS|CHANGES_REQUESTED)' .review/review.md | sed 's/Verdict: *//')
+            case "$verdict" in
+              PASS) badge="✅ PASS" ;;
+              CHANGES_REQUESTED) badge="⚠️ 수정 필요" ;;
+              *) badge="❔ 판정 없음" ;;
+            esac
+            {
+              echo "$MARKER"
+              echo "## $TITLE — $badge"
+              echo
+              echo "_\`$short\` 기준 리뷰입니다. push할 때마다 이 댓글이 갱신됩니다. 머지를 막지 않습니다._"
+              echo
+              cat .review/review.md
+            } > .review/comment.md
+          else
+            {
+              echo "$MARKER"
+              echo "## $TITLE — ❌ 리뷰 실패"
+              echo
+              echo "_\`$short\` 리뷰를 만들지 못했습니다. [실행 로그](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})를 확인하세요._"
+            } > .review/comment.md
+          fi
+
+      - name: Post or update comment
+        if: always() && steps.comment.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          id=$(gh api "repos/$REPO/issues/$PR/comments" --paginate \
+            --jq ".[] | select(.user.login == \"github-actions[bot]\") | select(.body | startswith(\"$MARKER\")) | .id" | head -n1)
+          if [ -n "$id" ]; then
+            gh api -X PATCH "repos/$REPO/issues/comments/$id" -F body=@.review/comment.md > /dev/null
+          else
+            gh api -X POST "repos/$REPO/issues/$PR/comments" -F body=@.review/comment.md > /dev/null
+          fi
