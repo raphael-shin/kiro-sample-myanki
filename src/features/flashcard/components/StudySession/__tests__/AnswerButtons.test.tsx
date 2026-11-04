@@ -12,16 +12,16 @@ describe('AnswerButtons Component', () => {
   it('should render all four answer buttons', () => {
     render(<AnswerButtons onAnswer={mockOnAnswer} />);
     
-    expect(screen.getByRole('button', { name: /again/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /hard/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /good/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /easy/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /다시/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /어려움/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /보통/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /쉬움/ })).toBeInTheDocument();
   });
 
   it('should call onAnswer with AGAIN when again button clicked', () => {
     render(<AnswerButtons onAnswer={mockOnAnswer} />);
     
-    const againButton = screen.getByRole('button', { name: /again/i });
+    const againButton = screen.getByRole('button', { name: /다시/ });
     fireEvent.click(againButton);
     
     expect(mockOnAnswer).toHaveBeenCalledWith(StudyQuality.AGAIN, expect.any(Number));
@@ -30,7 +30,7 @@ describe('AnswerButtons Component', () => {
   it('should call onAnswer with HARD when hard button clicked', () => {
     render(<AnswerButtons onAnswer={mockOnAnswer} />);
     
-    const hardButton = screen.getByRole('button', { name: /hard/i });
+    const hardButton = screen.getByRole('button', { name: /어려움/ });
     fireEvent.click(hardButton);
     
     expect(mockOnAnswer).toHaveBeenCalledWith(StudyQuality.HARD, expect.any(Number));
@@ -39,7 +39,7 @@ describe('AnswerButtons Component', () => {
   it('should call onAnswer with GOOD when good button clicked', () => {
     render(<AnswerButtons onAnswer={mockOnAnswer} />);
     
-    const goodButton = screen.getByRole('button', { name: /good/i });
+    const goodButton = screen.getByRole('button', { name: /보통/ });
     fireEvent.click(goodButton);
     
     expect(mockOnAnswer).toHaveBeenCalledWith(StudyQuality.GOOD, expect.any(Number));
@@ -48,7 +48,7 @@ describe('AnswerButtons Component', () => {
   it('should call onAnswer with EASY when easy button clicked', () => {
     render(<AnswerButtons onAnswer={mockOnAnswer} />);
     
-    const easyButton = screen.getByRole('button', { name: /easy/i });
+    const easyButton = screen.getByRole('button', { name: /쉬움/ });
     fireEvent.click(easyButton);
     
     expect(mockOnAnswer).toHaveBeenCalledWith(StudyQuality.EASY, expect.any(Number));
@@ -57,10 +57,10 @@ describe('AnswerButtons Component', () => {
   it('should disable buttons when disabled prop is true', () => {
     render(<AnswerButtons onAnswer={mockOnAnswer} disabled={true} />);
     
-    const againButton = screen.getByRole('button', { name: /again/i });
-    const hardButton = screen.getByRole('button', { name: /hard/i });
-    const goodButton = screen.getByRole('button', { name: /good/i });
-    const easyButton = screen.getByRole('button', { name: /easy/i });
+    const againButton = screen.getByRole('button', { name: /다시/ });
+    const hardButton = screen.getByRole('button', { name: /어려움/ });
+    const goodButton = screen.getByRole('button', { name: /보통/ });
+    const easyButton = screen.getByRole('button', { name: /쉬움/ });
     
     expect(againButton).toBeDisabled();
     expect(hardButton).toBeDisabled();
@@ -71,7 +71,7 @@ describe('AnswerButtons Component', () => {
   it('should have disabled styling when disabled', () => {
     render(<AnswerButtons onAnswer={mockOnAnswer} disabled={true} />);
     
-    const againButton = screen.getByRole('button', { name: /again/i });
-    expect(againButton).toHaveClass('bg-gray-400', 'cursor-not-allowed');
+    const againButton = screen.getByRole('button', { name: /다시/ });
+    expect(againButton).toHaveClass('bg-gray-400', 'disabled:cursor-not-allowed');
   });
 });

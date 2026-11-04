@@ -44,7 +44,7 @@ jest.mock('dexie', () => {
 describe('Database Configuration', () => {
   test('데이터베이스 상수가 올바르게 정의되어야 함', () => {
     expect(DATABASE_NAME).toBe('MyAnkiDB');
-    expect(DATABASE_VERSION).toBe(2);
+    expect(DATABASE_VERSION).toBe(4);
   });
 
   test('Setting 인터페이스 타입이 올바르게 정의되어야 함', () => {
@@ -125,9 +125,9 @@ describe('Database Schema Extension - TDD Red Phase', () => {
     expect((db as any).schema.studySessions).toBe(expectedSchema);
   });
 
-  test('데이터베이스 버전이 2로 업데이트되어야 함', () => {
-    // 이 테스트는 실패해야 함 - 아직 버전이 1이기 때문
-    expect((db as any).versionNumber).toBe(2);
+  test('데이터베이스가 최신 스키마 버전(4)으로 정의되어야 함', () => {
+    // 마지막으로 정의된 Dexie 버전이 DATABASE_VERSION과 같아야 함
+    expect((db as any).versionNumber).toBe(DATABASE_VERSION);
   });
 
   test('새로운 테이블들에 자동 타임스탬프 훅이 설정되어야 함', () => {

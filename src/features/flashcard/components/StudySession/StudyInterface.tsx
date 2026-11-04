@@ -45,6 +45,18 @@ export const StudyInterface = ({ deckId, onComplete, onExit }: StudyInterfacePro
     const handleKeyPress = (event: KeyboardEvent) => {
       if (!keyboardShortcutsEnabled || isPaused) return;
 
+      // 입력 중인 텍스트 필드에서는 단축키를 처리하지 않는다
+      const target = event.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
       switch (event.key) {
         case ' ':
         case 'Enter':
@@ -257,13 +269,15 @@ export const StudyInterface = ({ deckId, onComplete, onExit }: StudyInterfacePro
                   onClick={showCardAnswer}
                   disabled={isPaused}
                   className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium transition-colors"
-                  title="Space 또는 Enter로 답 보기"
+                  title={keyboardShortcutsEnabled ? 'Space 또는 Enter로 답 보기' : undefined}
                 >
                   답 보기
                 </button>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Space 또는 Enter
-                </p>
+                {keyboardShortcutsEnabled && (
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Space 또는 Enter
+                  </p>
+                )}
               </div>
             ) : (
               <div className="space-y-6">
@@ -274,21 +288,25 @@ export const StudyInterface = ({ deckId, onComplete, onExit }: StudyInterfacePro
                   onAnswer={handleAnswer}
                   disabled={isPaused}
                 />
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  1: 다시, 2: 어려움, 3: 보통, 4: 쉬움
-                </p>
+                {keyboardShortcutsEnabled && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    1: 다시, 2: 어려움, 3: 보통, 4: 쉬움
+                  </p>
+                )}
               </div>
             )}
 
             {/* 카드 하단 정보 */}
             <div className="mt-8 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
               <span>카드 {progress.totalCards - progress.cardsRemaining + 1}</span>
-              <div className="flex items-center gap-2" title="키보드 단축키 사용 가능">
-                <span>Space: 답 보기, 1-4: 난이도</span>
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-              </div>
+              {keyboardShortcutsEnabled && (
+                <div className="flex items-center gap-2" title="키보드 단축키 사용 가능">
+                  <span>Space: 답 보기, 1-4: 난이도</span>
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                </div>
+              )}
             </div>
           </div>
         </div>

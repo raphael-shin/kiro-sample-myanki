@@ -216,7 +216,7 @@ describe('SM-2 알고리즘', () => {
         expect(result.interval).toBe(15); // 6 * 2.5
       });
 
-      it('"Easy" 품질 점수 처리 - 간격 1.3배 및 EF 증가해야 한다', () => {
+      it('"Easy" 품질 점수 처리 - SM-2 간격에 1.3배 보너스, EF는 유지되어야 한다', () => {
         // Given: 현재 데이터와 Easy 품질 점수
         const currentData = {
           easeFactor: 2.5,
@@ -227,9 +227,12 @@ describe('SM-2 알고리즘', () => {
         // When: Easy 품질로 다음 복습 계산
         const result = algorithm.calculateNextReview(currentData, StudyQuality.EASY);
         
-        // Then: 간격 1.3배 증가 및 EF 증가
-        expect(result.interval).toBeCloseTo(13, 1); // 10 * 1.3
-        expect(result.easeFactor).toBeGreaterThan(2.5);
+        // Then: Good 간격(10 * 2.5 = 25)에 Easy 보너스 1.3배 → 32.5 → 반올림 33
+        // EF는 calculateEaseFactor(2.5, EASY)와 같이 2.5로 유지 (위 calculateEaseFactor 테스트,
+        // src/algorithms/spaced-repetition/__tests__/SM2Algorithm-easy.test.ts와 같은 규칙)
+        expect(result.interval).toBe(33);
+        expect(result.repetitions).toBe(3);
+        expect(result.easeFactor).toBeCloseTo(2.5, 2);
       });
     });
 

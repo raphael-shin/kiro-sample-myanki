@@ -97,7 +97,7 @@ describe('Service Interaction Tests', () => {
         deckId: nonExistentDeckId,
         front: '앞면',
         back: '뒷면'
-      })).rejects.toThrow('Deck with id 999 does not exist');
+      })).rejects.toThrow('Deck with id 999 not found');
     });
   });
 

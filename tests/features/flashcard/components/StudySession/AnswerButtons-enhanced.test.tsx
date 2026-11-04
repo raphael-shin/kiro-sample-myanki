@@ -13,47 +13,47 @@ describe('AnswerButtons Enhanced Features', () => {
     it('should render 4 evaluation buttons with correct labels', () => {
       render(<AnswerButtons onAnswer={mockOnAnswer} />);
       
-      expect(screen.getByRole('button', { name: /again/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /hard/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /good/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /easy/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /다시/ })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /어려움/ })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /보통/ })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /쉬움/ })).toBeInTheDocument();
     });
 
     it('should have correct color styling for each button', () => {
       render(<AnswerButtons onAnswer={mockOnAnswer} />);
       
-      const againButton = screen.getByRole('button', { name: /again/i });
-      const hardButton = screen.getByRole('button', { name: /hard/i });
-      const goodButton = screen.getByRole('button', { name: /good/i });
-      const easyButton = screen.getByRole('button', { name: /easy/i });
+      const againButton = screen.getByRole('button', { name: /다시/ });
+      const hardButton = screen.getByRole('button', { name: /어려움/ });
+      const goodButton = screen.getByRole('button', { name: /보통/ });
+      const easyButton = screen.getByRole('button', { name: /쉬움/ });
       
-      expect(againButton).toHaveClass('bg-red-500');
-      expect(hardButton).toHaveClass('bg-orange-500');
-      expect(goodButton).toHaveClass('bg-green-500');
-      expect(easyButton).toHaveClass('bg-blue-500');
+      expect(againButton).toHaveClass('bg-red-600');
+      expect(hardButton).toHaveClass('bg-orange-600');
+      expect(goodButton).toHaveClass('bg-green-600');
+      expect(easyButton).toHaveClass('bg-blue-600');
     });
 
     it('should call onAnswer with correct StudyQuality when buttons clicked', () => {
       render(<AnswerButtons onAnswer={mockOnAnswer} />);
       
-      fireEvent.click(screen.getByRole('button', { name: /again/i }));
+      fireEvent.click(screen.getByRole('button', { name: /다시/ }));
       expect(mockOnAnswer).toHaveBeenCalledWith(StudyQuality.AGAIN, expect.any(Number));
       
-      fireEvent.click(screen.getByRole('button', { name: /hard/i }));
+      fireEvent.click(screen.getByRole('button', { name: /어려움/ }));
       expect(mockOnAnswer).toHaveBeenCalledWith(StudyQuality.HARD, expect.any(Number));
       
-      fireEvent.click(screen.getByRole('button', { name: /good/i }));
+      fireEvent.click(screen.getByRole('button', { name: /보통/ }));
       expect(mockOnAnswer).toHaveBeenCalledWith(StudyQuality.GOOD, expect.any(Number));
       
-      fireEvent.click(screen.getByRole('button', { name: /easy/i }));
+      fireEvent.click(screen.getByRole('button', { name: /쉬움/ }));
       expect(mockOnAnswer).toHaveBeenCalledWith(StudyQuality.EASY, expect.any(Number));
     });
 
     it('should have proper button layout and spacing', () => {
       render(<AnswerButtons onAnswer={mockOnAnswer} />);
       
-      const container = screen.getByRole('button', { name: /again/i }).parentElement;
-      expect(container).toHaveClass('flex', 'gap-2', 'justify-center');
+      const container = screen.getByRole('button', { name: /다시/ }).parentElement;
+      expect(container).toHaveClass('grid', 'grid-cols-2', 'gap-4');
     });
   });
 
@@ -61,33 +61,33 @@ describe('AnswerButtons Enhanced Features', () => {
     it('should disable all buttons when disabled prop is true', () => {
       render(<AnswerButtons onAnswer={mockOnAnswer} disabled={true} />);
       
-      expect(screen.getByRole('button', { name: /again/i })).toBeDisabled();
-      expect(screen.getByRole('button', { name: /hard/i })).toBeDisabled();
-      expect(screen.getByRole('button', { name: /good/i })).toBeDisabled();
-      expect(screen.getByRole('button', { name: /easy/i })).toBeDisabled();
+      expect(screen.getByRole('button', { name: /다시/ })).toBeDisabled();
+      expect(screen.getByRole('button', { name: /어려움/ })).toBeDisabled();
+      expect(screen.getByRole('button', { name: /보통/ })).toBeDisabled();
+      expect(screen.getByRole('button', { name: /쉬움/ })).toBeDisabled();
     });
 
     it('should apply disabled styling when disabled', () => {
       render(<AnswerButtons onAnswer={mockOnAnswer} disabled={true} />);
       
-      const againButton = screen.getByRole('button', { name: /again/i });
-      expect(againButton).toHaveClass('bg-gray-400', 'cursor-not-allowed');
+      const againButton = screen.getByRole('button', { name: /다시/ });
+      expect(againButton).toHaveClass('bg-gray-400', 'disabled:cursor-not-allowed');
     });
 
     it('should not call onAnswer when disabled buttons are clicked', () => {
       render(<AnswerButtons onAnswer={mockOnAnswer} disabled={true} />);
       
-      fireEvent.click(screen.getByRole('button', { name: /good/i }));
+      fireEvent.click(screen.getByRole('button', { name: /보통/ }));
       expect(mockOnAnswer).not.toHaveBeenCalled();
     });
 
     it('should enable all buttons when disabled prop is false', () => {
       render(<AnswerButtons onAnswer={mockOnAnswer} disabled={false} />);
       
-      expect(screen.getByRole('button', { name: /again/i })).not.toBeDisabled();
-      expect(screen.getByRole('button', { name: /hard/i })).not.toBeDisabled();
-      expect(screen.getByRole('button', { name: /good/i })).not.toBeDisabled();
-      expect(screen.getByRole('button', { name: /easy/i })).not.toBeDisabled();
+      expect(screen.getByRole('button', { name: /다시/ })).not.toBeDisabled();
+      expect(screen.getByRole('button', { name: /어려움/ })).not.toBeDisabled();
+      expect(screen.getByRole('button', { name: /보통/ })).not.toBeDisabled();
+      expect(screen.getByRole('button', { name: /쉬움/ })).not.toBeDisabled();
     });
   });
 
@@ -107,7 +107,7 @@ describe('AnswerButtons Enhanced Features', () => {
       // Advance time by 3 seconds
       jest.advanceTimersByTime(3000);
       
-      fireEvent.click(screen.getByRole('button', { name: /good/i }));
+      fireEvent.click(screen.getByRole('button', { name: /보통/ }));
       
       expect(mockOnAnswerWithTime).toHaveBeenCalledWith(StudyQuality.GOOD, expect.any(Number));
       
@@ -123,11 +123,11 @@ describe('AnswerButtons Enhanced Features', () => {
       
       // First answer after 2 seconds
       jest.advanceTimersByTime(2000);
-      fireEvent.click(screen.getByRole('button', { name: /hard/i }));
+      fireEvent.click(screen.getByRole('button', { name: /어려움/ }));
       
       // Second answer after additional 1 second (total 3 seconds from start)
       jest.advanceTimersByTime(1000);
-      fireEvent.click(screen.getByRole('button', { name: /easy/i }));
+      fireEvent.click(screen.getByRole('button', { name: /쉬움/ }));
       
       expect(mockOnAnswerWithTime).toHaveBeenCalledTimes(2);
       
@@ -147,8 +147,8 @@ describe('AnswerButtons Enhanced Features', () => {
       render(<AnswerButtons onAnswer={mockOnAnswerWithTime} />);
       
       // Click multiple buttons rapidly
-      fireEvent.click(screen.getByRole('button', { name: /again/i }));
-      fireEvent.click(screen.getByRole('button', { name: /good/i }));
+      fireEvent.click(screen.getByRole('button', { name: /다시/ }));
+      fireEvent.click(screen.getByRole('button', { name: /보통/ }));
       
       expect(mockOnAnswerWithTime).toHaveBeenCalledTimes(2);
       expect(mockOnAnswerWithTime).toHaveBeenNthCalledWith(1, StudyQuality.AGAIN, expect.any(Number));
@@ -161,10 +161,10 @@ describe('AnswerButtons Enhanced Features', () => {
       render(<AnswerButtons onAnswer={mockOnAnswer} />);
       
       const buttons = [
-        screen.getByRole('button', { name: /again/i }),
-        screen.getByRole('button', { name: /hard/i }),
-        screen.getByRole('button', { name: /good/i }),
-        screen.getByRole('button', { name: /easy/i })
+        screen.getByRole('button', { name: /다시/ }),
+        screen.getByRole('button', { name: /어려움/ }),
+        screen.getByRole('button', { name: /보통/ }),
+        screen.getByRole('button', { name: /쉬움/ })
       ];
       
       // All buttons should be enabled initially
@@ -177,32 +177,32 @@ describe('AnswerButtons Enhanced Features', () => {
     it('should handle hover states correctly', () => {
       render(<AnswerButtons onAnswer={mockOnAnswer} />);
       
-      const againButton = screen.getByRole('button', { name: /again/i });
-      const hardButton = screen.getByRole('button', { name: /hard/i });
-      const goodButton = screen.getByRole('button', { name: /good/i });
-      const easyButton = screen.getByRole('button', { name: /easy/i });
+      const againButton = screen.getByRole('button', { name: /다시/ });
+      const hardButton = screen.getByRole('button', { name: /어려움/ });
+      const goodButton = screen.getByRole('button', { name: /보통/ });
+      const easyButton = screen.getByRole('button', { name: /쉬움/ });
       
-      expect(againButton).toHaveClass('hover:bg-red-600');
-      expect(hardButton).toHaveClass('hover:bg-orange-600');
-      expect(goodButton).toHaveClass('hover:bg-green-600');
-      expect(easyButton).toHaveClass('hover:bg-blue-600');
+      expect(againButton).toHaveClass('hover:bg-red-700');
+      expect(hardButton).toHaveClass('hover:bg-orange-700');
+      expect(goodButton).toHaveClass('hover:bg-green-700');
+      expect(easyButton).toHaveClass('hover:bg-blue-700');
     });
 
     it('should not have hover states when disabled', () => {
       render(<AnswerButtons onAnswer={mockOnAnswer} disabled={true} />);
       
       const buttons = [
-        screen.getByRole('button', { name: /again/i }),
-        screen.getByRole('button', { name: /hard/i }),
-        screen.getByRole('button', { name: /good/i }),
-        screen.getByRole('button', { name: /easy/i })
+        screen.getByRole('button', { name: /다시/ }),
+        screen.getByRole('button', { name: /어려움/ }),
+        screen.getByRole('button', { name: /보통/ }),
+        screen.getByRole('button', { name: /쉬움/ })
       ];
       
       buttons.forEach(button => {
-        expect(button).not.toHaveClass('hover:bg-red-600');
-        expect(button).not.toHaveClass('hover:bg-orange-600');
-        expect(button).not.toHaveClass('hover:bg-green-600');
-        expect(button).not.toHaveClass('hover:bg-blue-600');
+        expect(button).not.toHaveClass('hover:bg-red-700');
+        expect(button).not.toHaveClass('hover:bg-orange-700');
+        expect(button).not.toHaveClass('hover:bg-green-700');
+        expect(button).not.toHaveClass('hover:bg-blue-700');
       });
     });
 
@@ -210,14 +210,14 @@ describe('AnswerButtons Enhanced Features', () => {
       render(<AnswerButtons onAnswer={mockOnAnswer} />);
       
       const buttons = [
-        screen.getByRole('button', { name: /again/i }),
-        screen.getByRole('button', { name: /hard/i }),
-        screen.getByRole('button', { name: /good/i }),
-        screen.getByRole('button', { name: /easy/i })
+        screen.getByRole('button', { name: /다시/ }),
+        screen.getByRole('button', { name: /어려움/ }),
+        screen.getByRole('button', { name: /보통/ }),
+        screen.getByRole('button', { name: /쉬움/ })
       ];
       
       buttons.forEach(button => {
-        expect(button).toHaveClass('px-4', 'py-2', 'text-white', 'rounded-md', 'font-medium', 'transition-colors');
+        expect(button).toHaveClass('px-4', 'py-4', 'text-white', 'rounded-xl', 'font-medium', 'transition-all');
       });
     });
   });

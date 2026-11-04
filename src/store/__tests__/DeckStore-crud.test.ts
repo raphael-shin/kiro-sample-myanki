@@ -1,8 +1,41 @@
-import { useDeckStore } from '../DeckStore';
+import { useDeckStore, setDeckService } from '../DeckStore';
+import { DeckService } from '../../services/DeckService';
+import { Deck } from '../../types/flashcard';
+
+/**
+ * In-memory DeckService stand-in. The store delegates persistence to
+ * DeckService, so these tests check the store's state transitions against a
+ * service that really stores and returns decks.
+ */
+const createInMemoryDeckService = (): DeckService => {
+  const decks = new Map<number, Deck>();
+  let nextId = 1;
+  return {
+    create: jest.fn(async (input: Omit<Deck, 'id' | 'createdAt' | 'updatedAt'>) => {
+      const id = nextId++;
+      const now = new Date();
+      decks.set(id, { ...input, id, createdAt: now, updatedAt: now });
+      return id;
+    }),
+    getById: jest.fn(async (id: number) => decks.get(id)),
+    update: jest.fn(async (id: number, updates: Partial<Deck>) => {
+      const existing = decks.get(id);
+      if (existing) decks.set(id, { ...existing, ...updates, updatedAt: new Date() });
+    }),
+    delete: jest.fn(async (id: number) => {
+      decks.delete(id);
+    })
+  } as unknown as DeckService;
+};
 
 describe('DeckStore - CRUD Actions', () => {
   beforeEach(() => {
     useDeckStore.getState().reset?.();
+    setDeckService(createInMemoryDeckService());
+  });
+
+  afterEach(() => {
+    setDeckService(null as any);
   });
 
   it('should have createDeck action', () => {

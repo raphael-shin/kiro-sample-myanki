@@ -124,14 +124,12 @@ describe('Offline Functionality Tests', () => {
       // 카드 목록 조회 Mock
       db.cards.where = jest.fn().mockReturnValue({
         equals: jest.fn().mockReturnValue({
-          orderBy: jest.fn().mockReturnValue({
-            toArray: jest.fn().mockResolvedValue([{
-              id: cardId,
-              deckId,
-              front: '오프라인 앞면',
-              back: '오프라인 뒷면'
-            }])
-          })
+          toArray: jest.fn().mockResolvedValue([{
+            id: cardId,
+            deckId,
+            front: '오프라인 앞면',
+            back: '오프라인 뒷면'
+          }])
         })
       });
 
@@ -265,9 +263,7 @@ describe('Offline Functionality Tests', () => {
 
       db.cards.where = jest.fn().mockReturnValue({
         equals: jest.fn().mockReturnValue({
-          orderBy: jest.fn().mockReturnValue({
-            toArray: jest.fn().mockResolvedValue(largeCardSet)
-          })
+          toArray: jest.fn().mockResolvedValue(largeCardSet)
         })
       });
 

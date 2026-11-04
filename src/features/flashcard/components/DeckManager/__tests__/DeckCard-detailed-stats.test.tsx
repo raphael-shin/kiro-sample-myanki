@@ -25,7 +25,10 @@ describe('DeckCard Component - Detailed Statistics', () => {
     
     expect(screen.getByText('총 25장')).toBeInTheDocument();
     expect(screen.getByText('오늘 복습 5장')).toBeInTheDocument();
-    expect(screen.getByText('신규 10 • 학습중 8 • 완료 7')).toBeInTheDocument();
+    // 신규/학습중/완료는 각각 칩으로 표시된다
+    expect(screen.getByText('신규 10')).toBeInTheDocument();
+    expect(screen.getByText('학습중 8')).toBeInTheDocument();
+    expect(screen.getByText('완료 7')).toBeInTheDocument();
   });
 
   it('should display only total when no cards due today', () => {
@@ -41,7 +44,10 @@ describe('DeckCard Component - Detailed Statistics', () => {
     
     expect(screen.getByText('총 15장')).toBeInTheDocument();
     expect(screen.queryByText(/오늘 복습/)).not.toBeInTheDocument();
-    expect(screen.getByText('신규 5 • 학습중 6 • 완료 4')).toBeInTheDocument();
+    expect(screen.getByText('오늘 학습 완료')).toBeInTheDocument();
+    expect(screen.getByText('신규 5')).toBeInTheDocument();
+    expect(screen.getByText('학습중 6')).toBeInTheDocument();
+    expect(screen.getByText('완료 4')).toBeInTheDocument();
   });
 
   it('should fall back to cardCount when cardStats is not provided', () => {
@@ -80,7 +86,8 @@ describe('DeckCard Component - Detailed Statistics', () => {
     
     expect(screen.getByText('총 10장')).toBeInTheDocument();
     expect(screen.getByText('오늘 복습 2장')).toBeInTheDocument();
-    expect(screen.getByText('학습중 5 • 완료 5')).toBeInTheDocument();
+    expect(screen.getByText('학습중 5')).toBeInTheDocument();
+    expect(screen.getByText('완료 5')).toBeInTheDocument();
     expect(screen.queryByText(/신규/)).not.toBeInTheDocument();
   });
 });

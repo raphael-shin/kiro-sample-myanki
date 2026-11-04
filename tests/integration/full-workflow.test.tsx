@@ -58,16 +58,13 @@ describe('Full Workflow Integration', () => {
       expect(screen.getByText('MyAnki')).toBeInTheDocument();
     });
 
-    // Verify initial state - deck management is active
-    const deckManagementButton = screen.getByRole('button', { name: '덱 관리' });
-    const cardEditorButton = screen.getByRole('button', { name: '카드 편집' });
-    const studySessionButton = screen.getByRole('button', { name: '학습 세션' });
-
-    expect(deckManagementButton).toHaveClass('bg-primary-600');
-    expect(cardEditorButton).toBeDisabled();
-    expect(studySessionButton).toBeDisabled();
+    // The top navigation bar (덱 관리/카드 편집/학습 세션) was removed in the deck UI renewal;
+    // the app starts on the deck management view and other views are opened from deck cards.
+    expect(screen.getByRole('heading', { name: '덱 관리' })).toBeInTheDocument();
+    expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '새 덱 만들기' })).toBeInTheDocument();
 
     // Verify deck management page content is shown
-    expect(screen.getByText('No decks found. Create your first deck to get started!')).toBeInTheDocument();
+    expect(await screen.findByText('No decks found. Create your first deck to get started!')).toBeInTheDocument();
   });
 });
