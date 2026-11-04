@@ -1,4 +1,4 @@
-import { rest } from 'msw';
+import { rest, type DefaultBodyType } from 'msw';
 
 // Mock handlers for API requests
 // Currently empty as MyAnki is a client-side only app
@@ -11,7 +11,7 @@ export const handlers = [
 ];
 
 // Export individual handler creators for testing
-export const createMockHandler = (url: string, response: any) => {
+export const createMockHandler = (url: string, response: DefaultBodyType) => {
   return rest.get(url, (_req, res, ctx) => {
     return res(ctx.json(response));
   });

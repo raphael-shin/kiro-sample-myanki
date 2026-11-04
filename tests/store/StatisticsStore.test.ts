@@ -57,14 +57,14 @@ describe('StatisticsStore', () => {
       getWeeklyTrend: jest.fn(),
       getMonthlyReport: jest.fn(),
       checkGoalAchievement: jest.fn()
-    } as any;
+    } as unknown as jest.Mocked<IStatisticsService>;
     
     setStatisticsService(mockStatisticsService);
   });
 
   afterEach(() => {
     jest.clearAllMocks();
-    setStatisticsService(null as any);
+    setStatisticsService(null as unknown as IStatisticsService);
   });
 
   describe('Basic Structure', () => {

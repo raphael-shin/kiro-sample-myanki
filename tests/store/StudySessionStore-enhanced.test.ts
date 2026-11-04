@@ -21,7 +21,7 @@ describe('StudySessionStore - Enhanced Features', () => {
       getSessionProgress: jest.fn(),
       getEstimatedTimeRemaining: jest.fn().mockResolvedValue(300000),
       getSessionSummary: jest.fn()
-    } as any;
+    } as unknown as jest.Mocked<ISessionManager>;
     
     setSessionManager(mockSessionManager);
 
@@ -36,8 +36,8 @@ describe('StudySessionStore - Enhanced Features', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
-    setSessionManager(null as any);
-    setSpacedRepetitionService(null as any);
+    setSessionManager(null as unknown as ISessionManager);
+    setSpacedRepetitionService(null as unknown as SpacedRepetitionService);
   });
 
   describe('Enhanced State Management', () => {

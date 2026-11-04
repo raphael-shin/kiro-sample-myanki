@@ -1,4 +1,5 @@
 import { StatisticsService } from '@/services/StatisticsService';
+import type { MyAnkiDB as AppDB } from '@/db/MyAnkiDB';
 
 // Mock IndexedDB
 import 'fake-indexeddb/auto';
@@ -11,12 +12,12 @@ jest.mock('@/db/MyAnkiDB', () => {
 
 describe('StatisticsService', () => {
   let statisticsService: StatisticsService;
-  let mockDb: any;
+  let mockDb: InstanceType<typeof import('../__mocks__/MyAnkiDB').MyAnkiDB>;
 
   beforeEach(() => {
     const { MyAnkiDB } = require('../__mocks__/MyAnkiDB');
     mockDb = new MyAnkiDB();
-    statisticsService = new StatisticsService(mockDb);
+    statisticsService = new StatisticsService(mockDb as unknown as AppDB);
   });
 
   afterEach(() => {

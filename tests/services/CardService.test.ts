@@ -15,36 +15,17 @@ jest.mock('@/db/MyAnkiDB', () => {
   return { MyAnkiDB };
 });
 
-// CardService를 import하려고 시도 - 아직 구현되지 않았으므로 실패할 것
-let CardService: any;
-let MyAnkiDB: any;
-
-try {
-  // 실제 CardService를 import하려고 시도
-  const cardServiceModule = require('@/services/CardService');
-  CardService = cardServiceModule.CardService;
-  
-  const dbModule = require('../__mocks__/MyAnkiDB');
-  MyAnkiDB = dbModule.MyAnkiDB;
-} catch (error) {
-  // CardService가 아직 구현되지 않았으므로 에러가 발생
-  console.log('CardService not implemented yet - this is expected for TDD Red phase');
-}
+import { CardService } from '@/services/CardService';
+import type { MyAnkiDB as AppDB } from '@/db/MyAnkiDB';
+import { MyAnkiDB } from '../__mocks__/MyAnkiDB';
 
 describe('CardService', () => {
-  let cardService: any;
-  let mockDb: any;
+  let cardService: CardService;
+  let mockDb: MyAnkiDB;
 
   beforeEach(() => {
-    // CardService가 구현되지 않았으므로 테스트는 실패할 것
-    if (CardService && MyAnkiDB) {
-      mockDb = new MyAnkiDB();
-      cardService = new CardService(mockDb);
-    } else {
-      // CardService가 구현되지 않았으므로 undefined
-      cardService = undefined;
-      mockDb = undefined;
-    }
+    mockDb = new MyAnkiDB();
+    cardService = new CardService(mockDb as unknown as AppDB);
   });
 
   afterEach(() => {
@@ -237,7 +218,7 @@ describe('CardService', () => {
       it('잘못된 deckId 타입(문자열)일 때 INVALID_ID 에러를 발생시켜야 한다', async () => {
         // Given: 문자열 deckId를 가진 카드 데이터
         const invalidCardData: CreateCardInput = {
-          deckId: 'invalid-deck-id' as any,
+          deckId: 'invalid-deck-id' as unknown as number,
           front: '앞면 내용',
           back: '뒷면 내용'
         };
@@ -394,7 +375,7 @@ describe('CardService', () => {
         // Given: front가 null인 카드 데이터
         const invalidCardData: CreateCardInput = {
           deckId: 1,
-          front: null as any,
+          front: null as unknown as string,
           back: '뒷면 내용'
         };
 
@@ -419,7 +400,7 @@ describe('CardService', () => {
         const invalidCardData: CreateCardInput = {
           deckId: 1,
           front: '앞면 내용',
-          back: null as any
+          back: null as unknown as string
         };
 
         // CardService가 구현되지 않았으므로 테스트 실패
@@ -465,7 +446,7 @@ describe('CardService', () => {
       it('deckId 속성이 null일 때 INVALID_ID 에러를 발생시켜야 한다', async () => {
         // Given: deckId가 null인 카드 데이터
         const invalidCardData: CreateCardInput = {
-          deckId: null as any,
+          deckId: null as unknown as number,
           front: '앞면 내용',
           back: '뒷면 내용'
         };
@@ -540,7 +521,7 @@ describe('CardService', () => {
 
       it('잘못된 ID 타입(문자열)으로 조회할 때 INVALID_ID 에러를 발생시켜야 한다', async () => {
         // Given: 문자열 ID
-        const invalidId = 'invalid-id' as any;
+        const invalidId = 'invalid-id' as unknown as number;
 
         // CardService가 구현되지 않았으므로 테스트 실패
         expect(cardService).toBeDefined();
@@ -773,7 +754,7 @@ describe('CardService', () => {
 
       it('잘못된 deckId 타입(문자열)으로 조회할 때 INVALID_ID 에러를 발생시켜야 한다', async () => {
         // Given: 문자열 덱 ID
-        const invalidDeckId = 'invalid-deck-id' as any;
+        const invalidDeckId = 'invalid-deck-id' as unknown as number;
 
         // CardService가 구현되지 않았으므로 테스트 실패
         expect(cardService).toBeDefined();
@@ -891,7 +872,7 @@ describe('CardService', () => {
 
       it('deckId가 undefined일 때 INVALID_ID 에러를 발생시켜야 한다', async () => {
         // Given: undefined 덱 ID
-        const undefinedDeckId = undefined as any;
+        const undefinedDeckId = undefined as unknown as number;
 
         // CardService가 구현되지 않았으므로 테스트 실패
         expect(cardService).toBeDefined();
@@ -912,7 +893,7 @@ describe('CardService', () => {
 
       it('deckId가 null일 때 INVALID_ID 에러를 발생시켜야 한다', async () => {
         // Given: null 덱 ID
-        const nullDeckId = null as any;
+        const nullDeckId = null as unknown as number;
 
         // CardService가 구현되지 않았으므로 테스트 실패
         expect(cardService).toBeDefined();
@@ -965,7 +946,7 @@ describe('CardService', () => {
 
       it('잘못된 ID 타입(문자열)으로 수정할 때 INVALID_ID 에러를 발생시켜야 한다', async () => {
         // Given: 문자열 ID와 수정 데이터
-        const invalidId = 'invalid-id' as any;
+        const invalidId = 'invalid-id' as unknown as number;
         const updateData: UpdateCardInput = {
           front: '수정된 앞면'
         };
@@ -1237,7 +1218,7 @@ describe('CardService', () => {
 
       it('잘못된 ID 타입(문자열)으로 삭제할 때 INVALID_ID 에러를 발생시켜야 한다', async () => {
         // Given: 문자열 ID
-        const invalidId = 'invalid-id' as any;
+        const invalidId = 'invalid-id' as unknown as number;
 
         // CardService가 구현되지 않았으므로 테스트 실패
         expect(cardService).toBeDefined();

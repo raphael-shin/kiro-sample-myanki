@@ -15,36 +15,17 @@ jest.mock('@/db/MyAnkiDB', () => {
   return { MyAnkiDB };
 });
 
-// StudyService를 import하려고 시도 - 아직 구현되지 않았으므로 실패할 것
-let StudyService: any;
-let MyAnkiDB: any;
-
-try {
-  // 실제 StudyService를 import하려고 시도
-  const studyServiceModule = require('@/services/StudyService');
-  StudyService = studyServiceModule.StudyService;
-  
-  const dbModule = require('../__mocks__/MyAnkiDB');
-  MyAnkiDB = dbModule.MyAnkiDB;
-} catch (error) {
-  // StudyService가 아직 구현되지 않았으므로 에러가 발생
-  console.log('StudyService not implemented yet - this is expected for TDD Red phase');
-}
+import { StudyService } from '@/services/StudyService';
+import type { MyAnkiDB as AppDB } from '@/db/MyAnkiDB';
+import { MyAnkiDB } from '../__mocks__/MyAnkiDB';
 
 describe('StudyService', () => {
-  let studyService: any;
-  let mockDb: any;
+  let studyService: StudyService;
+  let mockDb: MyAnkiDB;
 
   beforeEach(() => {
-    // StudyService가 구현되지 않았으므로 테스트는 실패할 것
-    if (StudyService && MyAnkiDB) {
-      mockDb = new MyAnkiDB();
-      studyService = new StudyService(mockDb);
-    } else {
-      // StudyService가 구현되지 않았으므로 undefined
-      studyService = undefined;
-      mockDb = undefined;
-    }
+    mockDb = new MyAnkiDB();
+    studyService = new StudyService(mockDb as unknown as AppDB);
   });
 
   afterEach(() => {
@@ -192,7 +173,7 @@ describe('StudyService', () => {
       it('잘못된 cardId 타입(문자열)일 때 INVALID_ID 에러를 발생시켜야 한다', async () => {
         // Given: 문자열 cardId를 가진 학습 세션 데이터
         const invalidStudySessionData: CreateStudySessionInput = {
-          cardId: 'invalid-card-id' as any,
+          cardId: 'invalid-card-id' as unknown as number,
           studiedAt: new Date(),
           quality: StudyQuality.GOOD,
           responseTime: 5000
@@ -295,7 +276,7 @@ describe('StudyService', () => {
       it('cardId가 null일 때 INVALID_ID 에러를 발생시켜야 한다', async () => {
         // Given: cardId가 null인 학습 세션 데이터
         const invalidStudySessionData: CreateStudySessionInput = {
-          cardId: null as any,
+          cardId: null as unknown as number,
           studiedAt: new Date(),
           quality: StudyQuality.GOOD,
           responseTime: 5000
@@ -348,7 +329,7 @@ describe('StudyService', () => {
         const invalidStudySessionData: CreateStudySessionInput = {
           cardId: 1,
           studiedAt: new Date(),
-          quality: null as any,
+          quality: null as unknown as StudyQuality,
           responseTime: 5000
         };
 
@@ -400,7 +381,7 @@ describe('StudyService', () => {
           cardId: 1,
           studiedAt: new Date(),
           quality: StudyQuality.GOOD,
-          responseTime: null as any
+          responseTime: null as unknown as number
         };
 
         // StudyService가 구현되지 않았으므로 테스트 실패
@@ -449,7 +430,7 @@ describe('StudyService', () => {
         // Given: studiedAt이 null인 학습 세션 데이터
         const invalidStudySessionData: CreateStudySessionInput = {
           cardId: 1,
-          studiedAt: null as any,
+          studiedAt: null as unknown as Date,
           quality: StudyQuality.GOOD,
           responseTime: 5000
         };
@@ -588,7 +569,7 @@ describe('StudyService', () => {
         const nextCard = await studyService.getNextCard(sessionData.id);
         
         expect(nextCard).toBeDefined();
-        expect(nextCard.deckId).toBe(deckId);
+        expect(nextCard?.deckId).toBe(deckId);
       });
 
       it('should return null when no cards available', async () => {

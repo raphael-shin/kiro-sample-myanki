@@ -8,7 +8,7 @@ import 'fake-indexeddb/auto';
 describe('Error Handling Integration', () => {
   beforeEach(() => {
     // Reset IndexedDB before each test
-    indexedDB = new IDBFactory();
+    globalThis.indexedDB = new IDBFactory();
   });
 
   it('should handle database errors gracefully', async () => {

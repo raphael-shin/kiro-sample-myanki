@@ -9,7 +9,7 @@ jest.mock('@/store/StatisticsStore');
 
 describe('DeckStats Enhanced Features', () => {
   let mockStatisticsService: jest.Mocked<IStatisticsService>;
-  let mockStoreActions: any;
+  let mockStoreActions: Record<string, jest.Mock>;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -43,7 +43,7 @@ describe('DeckStats Enhanced Features', () => {
       setDailyGoal: jest.fn(),
       getDailyGoal: jest.fn(),
       checkGoalAchievement: jest.fn()
-    } as any;
+    } as unknown as jest.Mocked<IStatisticsService>;
     
     setStatisticsService(mockStatisticsService);
 
@@ -77,7 +77,7 @@ describe('DeckStats Enhanced Features', () => {
   });
 
   afterEach(() => {
-    setStatisticsService(null as any);
+    setStatisticsService(null as unknown as IStatisticsService);
   });
 
   describe('Detailed Statistics', () => {

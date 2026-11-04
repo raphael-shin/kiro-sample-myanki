@@ -9,7 +9,7 @@ jest.mock('@/store/StatisticsStore');
 
 describe('StatsDashboard Component', () => {
   let mockStatisticsService: jest.Mocked<IStatisticsService>;
-  let mockStoreActions: any;
+  let mockStoreActions: Record<string, jest.Mock>;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -51,7 +51,7 @@ describe('StatsDashboard Component', () => {
       getMonthlyReport: jest.fn(),
       setDailyGoal: jest.fn(),
       checkGoalAchievement: jest.fn()
-    } as any;
+    } as unknown as jest.Mocked<IStatisticsService>;
     
     setStatisticsService(mockStatisticsService);
 
@@ -93,7 +93,7 @@ describe('StatsDashboard Component', () => {
   });
 
   afterEach(() => {
-    setStatisticsService(null as any);
+    setStatisticsService(null as unknown as IStatisticsService);
   });
 
   describe('Basic Structure', () => {

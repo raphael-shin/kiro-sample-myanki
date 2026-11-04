@@ -193,12 +193,8 @@ describe('Transaction Rollback Tests', () => {
           }
         };
         
-        try {
-          return await callback(tx);
-        } catch (error) {
-          // 트랜잭션 실패 시 롤백 시뮬레이션
-          throw error;
-        }
+        // 트랜잭션 실패 시 에러가 그대로 전파되어 롤백을 흉내 낸다
+        return await callback(tx);
       });
 
       // When & Then: 트랜잭션 실패로 인한 에러 발생

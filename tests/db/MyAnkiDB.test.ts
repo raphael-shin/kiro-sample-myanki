@@ -24,7 +24,7 @@ jest.mock('dexie', () => {
             this.schema = schema;
             // Create mock tables based on schema and assign them to the instance
             Object.keys(schema).forEach(tableName => {
-              (this as any)[tableName] = {
+              (this as unknown as Record<string, unknown>)[tableName] = {
                 hook: jest.fn().mockReturnThis(),
                 add: jest.fn(),
                 get: jest.fn(),
@@ -40,6 +40,9 @@ jest.mock('dexie', () => {
     Table: class MockTable {}
   };
 });
+
+// jest.mock('dexie') 의 MockDexie 가 db 인스턴스에 남기는 필드
+type MockDexieShape = { schema: Record<string, string>; versionNumber: number };
 
 describe('Database Configuration', () => {
   test('데이터베이스 상수가 올바르게 정의되어야 함', () => {
@@ -107,27 +110,27 @@ describe('Database Schema Extension - TDD Red Phase', () => {
   test('데이터베이스 스키마에 decks 테이블 정의가 포함되어야 함', () => {
     // 이 테스트는 실패해야 함 - 스키마에 decks가 정의되지 않았기 때문
     const expectedSchema = '++id, name, description, createdAt, updatedAt';
-    expect((db as any).schema).toHaveProperty('decks');
-    expect((db as any).schema.decks).toBe(expectedSchema);
+    expect((db as unknown as MockDexieShape).schema).toHaveProperty('decks');
+    expect((db as unknown as MockDexieShape).schema.decks).toBe(expectedSchema);
   });
 
   test('데이터베이스 스키마에 cards 테이블 정의가 포함되어야 함', () => {
     // 이 테스트는 실패해야 함 - 스키마에 cards가 정의되지 않았기 때문
     const expectedSchema = '++id, deckId, front, back, createdAt, updatedAt';
-    expect((db as any).schema).toHaveProperty('cards');
-    expect((db as any).schema.cards).toBe(expectedSchema);
+    expect((db as unknown as MockDexieShape).schema).toHaveProperty('cards');
+    expect((db as unknown as MockDexieShape).schema.cards).toBe(expectedSchema);
   });
 
   test('데이터베이스 스키마에 studySessions 테이블 정의가 포함되어야 함', () => {
     // 이 테스트는 실패해야 함 - 스키마에 studySessions가 정의되지 않았기 때문
     const expectedSchema = '++id, cardId, studiedAt, quality, responseTime';
-    expect((db as any).schema).toHaveProperty('studySessions');
-    expect((db as any).schema.studySessions).toBe(expectedSchema);
+    expect((db as unknown as MockDexieShape).schema).toHaveProperty('studySessions');
+    expect((db as unknown as MockDexieShape).schema.studySessions).toBe(expectedSchema);
   });
 
   test('데이터베이스가 최신 스키마 버전(4)으로 정의되어야 함', () => {
     // 마지막으로 정의된 Dexie 버전이 DATABASE_VERSION과 같아야 함
-    expect((db as any).versionNumber).toBe(DATABASE_VERSION);
+    expect((db as unknown as MockDexieShape).versionNumber).toBe(DATABASE_VERSION);
   });
 
   test('새로운 테이블들에 자동 타임스탬프 훅이 설정되어야 함', () => {

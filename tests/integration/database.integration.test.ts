@@ -5,10 +5,10 @@ jest.mock('dexie', () => {
     default: class MockDexie {
       name: string;
       verno: number;
-      settings: any;
-      decks: any;
-      cards: any;
-      studySessions: any;
+      settings: Record<string, unknown>;
+      decks: Record<string, unknown>;
+      cards: Record<string, unknown>;
+      studySessions: Record<string, unknown>;
 
       constructor(name: string) {
         this.name = name;
@@ -71,7 +71,7 @@ jest.mock('dexie', () => {
       version(v: number) {
         this.verno = v;
         return {
-          stores: (_schema: any) => {
+          stores: (_schema: Record<string, string>) => {
             // Ensure all tables are available after stores() call
             if (!this.settings) {
               this.settings = {
@@ -103,6 +103,9 @@ jest.mock('dexie', () => {
 });
 
 import { DATABASE_VERSION, DATABASE_NAME } from '../../src/types/database';
+import * as typesModule from '../../src/types/database';
+import * as dbModule from '../../src/db/MyAnkiDB';
+import { MyAnkiDB, db } from '../../src/db/MyAnkiDB';
 
 describe('Dexie.js Database Integration Tests', () => {
   describe('데이터베이스 설정 검증', () => {
@@ -121,7 +124,6 @@ describe('Dexie.js Database Integration Tests', () => {
   describe('데이터베이스 타입 정의 검증', () => {
     it('should have database types module available', () => {
       // Test that we can import from the types module
-      const typesModule = require('../../src/types/database');
       expect(typesModule).toBeDefined();
       expect(typesModule.DATABASE_NAME).toBe('MyAnkiDB');
       expect(typesModule.DATABASE_VERSION).toBe(4);
@@ -129,7 +131,6 @@ describe('Dexie.js Database Integration Tests', () => {
 
     it('should export Setting interface constants', () => {
       // TypeScript interfaces don't exist at runtime, but we can test the module structure
-      const typesModule = require('../../src/types/database');
       expect(typesModule.DATABASE_NAME).toBeDefined();
       expect(typesModule.DATABASE_VERSION).toBeDefined();
     });
@@ -137,7 +138,6 @@ describe('Dexie.js Database Integration Tests', () => {
 
   describe('데이터베이스 클래스 구조 검증', () => {
     it('should have MyAnkiDB class that can be instantiated', () => {
-      const { MyAnkiDB } = require('../../src/db/MyAnkiDB');
       expect(MyAnkiDB).toBeDefined();
       expect(typeof MyAnkiDB).toBe('function');
       
@@ -147,13 +147,11 @@ describe('Dexie.js Database Integration Tests', () => {
     });
 
     it('should have singleton database instance exported', () => {
-      const { db } = require('../../src/db/MyAnkiDB');
       expect(db).toBeDefined();
       expect(db.name).toBe('MyAnkiDB');
     });
 
     it('should have settings table configuration', () => {
-      const { db } = require('../../src/db/MyAnkiDB');
       expect(db.settings).toBeDefined();
       expect(db.settings.name).toBe('settings');
     });
@@ -161,7 +159,6 @@ describe('Dexie.js Database Integration Tests', () => {
 
   describe('데이터베이스 메서드 검증', () => {
     it('should have essential database methods', () => {
-      const { MyAnkiDB } = require('../../src/db/MyAnkiDB');
       const dbInstance = new MyAnkiDB();
       
       // Check that essential methods exist
@@ -173,7 +170,6 @@ describe('Dexie.js Database Integration Tests', () => {
     });
 
     it('should have CRUD methods on settings table', () => {
-      const { db } = require('../../src/db/MyAnkiDB');
       
       // Check that CRUD methods exist
       expect(typeof db.settings.add).toBe('function');
@@ -188,19 +184,16 @@ describe('Dexie.js Database Integration Tests', () => {
 
   describe('데이터베이스 스키마 검증', () => {
     it('should have correct version number', () => {
-      const { db } = require('../../src/db/MyAnkiDB');
       expect(db.verno).toBe(DATABASE_VERSION);
     });
 
     it('should have proper database name', () => {
-      const { db } = require('../../src/db/MyAnkiDB');
       expect(db.name).toBe(DATABASE_NAME);
     });
   });
 
   describe('모듈 통합 검증', () => {
     it('should export all required database components', () => {
-      const dbModule = require('../../src/db/MyAnkiDB');
       
       expect(dbModule.MyAnkiDB).toBeDefined();
       expect(dbModule.db).toBeDefined();
@@ -209,20 +202,18 @@ describe('Dexie.js Database Integration Tests', () => {
     });
 
     it('should have consistent naming across modules', () => {
-      const { db } = require('../../src/db/MyAnkiDB');
       expect(db.name).toBe(DATABASE_NAME);
     });
 
     it('should maintain singleton pattern', () => {
-      const { db: db1 } = require('../../src/db/MyAnkiDB');
-      const { db: db2 } = require('../../src/db/MyAnkiDB');
+      const { db: db1 } = dbModule;
+      const { db: db2 } = dbModule;
       expect(db1).toBe(db2);
     });
   });
 
   describe('데이터베이스 기능 통합 검증', () => {
     it('should have working database instance', () => {
-      const { db } = require('../../src/db/MyAnkiDB');
       
       // Test that the database instance is properly configured
       expect(db.isOpen()).toBe(true);
@@ -230,11 +221,10 @@ describe('Dexie.js Database Integration Tests', () => {
     });
 
     it('should support basic database operations', async () => {
-      const { db } = require('../../src/db/MyAnkiDB');
       
       // Mock successful operations
-      db.settings.add.mockResolvedValue(1);
-      db.settings.get.mockResolvedValue({ id: 1, key: 'test', value: 'value' });
+      jest.mocked(db.settings.add).mockResolvedValue(1);
+      jest.mocked(db.settings.get).mockResolvedValue({ id: 1, key: 'test', value: 'value' });
       
       // Test that methods can be called
       const id = await db.settings.add({ key: 'test', value: 'value' });

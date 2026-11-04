@@ -15,36 +15,17 @@ jest.mock('@/db/MyAnkiDB', () => {
   return { MyAnkiDB };
 });
 
-// DeckService를 import하려고 시도 - 아직 구현되지 않았으므로 실패할 것
-let DeckService: any;
-let MyAnkiDB: any;
-
-try {
-  // 실제 DeckService를 import하려고 시도
-  const deckServiceModule = require('@/services/DeckService');
-  DeckService = deckServiceModule.DeckService;
-  
-  const dbModule = require('../__mocks__/MyAnkiDB');
-  MyAnkiDB = dbModule.MyAnkiDB;
-} catch (error) {
-  // DeckService가 아직 구현되지 않았으므로 에러가 발생
-  console.log('DeckService not implemented yet - this is expected for TDD Red phase');
-}
+import { DeckService } from '@/services/DeckService';
+import type { MyAnkiDB as AppDB } from '@/db/MyAnkiDB';
+import { MyAnkiDB } from '../__mocks__/MyAnkiDB';
 
 describe('DeckService', () => {
-  let deckService: any;
-  let mockDb: any;
+  let deckService: DeckService;
+  let mockDb: MyAnkiDB;
 
   beforeEach(() => {
-    // DeckService가 구현되지 않았으므로 테스트는 실패할 것
-    if (DeckService && MyAnkiDB) {
-      mockDb = new MyAnkiDB();
-      deckService = new DeckService(mockDb);
-    } else {
-      // DeckService가 구현되지 않았으므로 undefined
-      deckService = undefined;
-      mockDb = undefined;
-    }
+    mockDb = new MyAnkiDB();
+    deckService = new DeckService(mockDb as unknown as AppDB);
   });
 
   afterEach(() => {
@@ -231,7 +212,7 @@ describe('DeckService', () => {
       it('name 속성이 null일 때 DECK_NAME_REQUIRED 에러를 발생시켜야 한다', async () => {
         // Given: name이 null인 덱 데이터
         const invalidDeckData: CreateDeckInput = {
-          name: null as any,
+          name: null as unknown as string,
           description: '테스트 덱'
         };
 
@@ -303,7 +284,7 @@ describe('DeckService', () => {
 
       it('잘못된 ID 타입(문자열)으로 조회할 때 INVALID_ID 에러를 발생시켜야 한다', async () => {
         // Given: 문자열 ID
-        const invalidId = 'invalid-id' as any;
+        const invalidId = 'invalid-id' as unknown as number;
 
         // DeckService가 구현되지 않았으므로 테스트 실패
         expect(deckService).toBeDefined();
@@ -754,7 +735,7 @@ describe('DeckService', () => {
 
       it('잘못된 ID 타입으로 수정할 때 INVALID_ID 에러를 발생시켜야 한다', async () => {
         // Given: 잘못된 타입의 ID
-        const invalidId = 'invalid-id' as any;
+        const invalidId = 'invalid-id' as unknown as number;
         const updateData = {
           name: '수정된 이름',
           description: '수정된 설명'
@@ -878,7 +859,7 @@ describe('DeckService', () => {
           updatedAt: new Date()
         };
         const invalidUpdateData = {
-          name: undefined as any,
+          name: undefined as unknown as string,
           description: '수정된 설명'
         };
 
@@ -911,7 +892,7 @@ describe('DeckService', () => {
           updatedAt: new Date()
         };
         const invalidUpdateData = {
-          name: null as any,
+          name: null as unknown as string,
           description: '수정된 설명'
         };
 
@@ -964,7 +945,7 @@ describe('DeckService', () => {
 
       it('잘못된 ID 타입으로 삭제할 때 INVALID_ID 에러를 발생시켜야 한다', async () => {
         // Given: 잘못된 타입의 ID
-        const invalidId = 'invalid-id' as any;
+        const invalidId = 'invalid-id' as unknown as number;
 
         expect(deckService).toBeDefined();
         expect(typeof deckService.delete).toBe('function');
