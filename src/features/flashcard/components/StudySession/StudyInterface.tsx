@@ -269,13 +269,15 @@ export const StudyInterface = ({ deckId, onComplete, onExit }: StudyInterfacePro
                   onClick={showCardAnswer}
                   disabled={isPaused}
                   className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium transition-colors"
-                  title="Space 또는 Enter로 답 보기"
+                  title={keyboardShortcutsEnabled ? 'Space 또는 Enter로 답 보기' : undefined}
                 >
                   답 보기
                 </button>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Space 또는 Enter
-                </p>
+                {keyboardShortcutsEnabled && (
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Space 또는 Enter
+                  </p>
+                )}
               </div>
             ) : (
               <div className="space-y-6">
@@ -286,9 +288,11 @@ export const StudyInterface = ({ deckId, onComplete, onExit }: StudyInterfacePro
                   onAnswer={handleAnswer}
                   disabled={isPaused}
                 />
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  1: 다시, 2: 어려움, 3: 보통, 4: 쉬움
-                </p>
+                {keyboardShortcutsEnabled && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    1: 다시, 2: 어려움, 3: 보통, 4: 쉬움
+                  </p>
+                )}
               </div>
             )}
 

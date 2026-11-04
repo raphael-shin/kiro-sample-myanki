@@ -432,6 +432,108 @@ describe('StudyInterface Enhanced Features', () => {
       expect(mockStoreActions.showCardAnswer).not.toHaveBeenCalled();
     });
 
+    it('should still handle shortcuts pressed outside input fields', async () => {
+      render(
+        <div>
+          <input data-testid="test-input" />
+          <StudyInterface 
+            deckId={1}
+            onComplete={mockOnComplete}
+            onExit={mockOnExit}
+          />
+        </div>
+      );
+
+      fireEvent.keyDown(screen.getByTestId('test-input'), { key: ' ' });
+      expect(mockStoreActions.showCardAnswer).not.toHaveBeenCalled();
+
+      fireEvent.keyDown(document.body, { key: ' ' });
+      expect(mockStoreActions.showCardAnswer).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not rate the card with number keys typed in a textarea', async () => {
+      (useStudySessionStore as unknown as jest.Mock).mockReturnValue({
+        ...(useStudySessionStore as unknown as jest.Mock)(),
+        showAnswer: true
+      });
+
+      jest.useFakeTimers();
+      render(
+        <div>
+          <textarea data-testid="test-textarea" />
+          <StudyInterface 
+            deckId={1}
+            onComplete={mockOnComplete}
+            onExit={mockOnExit}
+          />
+        </div>
+      );
+
+      fireEvent.keyDown(screen.getByTestId('test-textarea'), { key: '3' });
+      await act(async () => {
+        jest.advanceTimersByTime(1000);
+      });
+      jest.useRealTimers();
+
+      expect(mockStoreActions.processAnswer).not.toHaveBeenCalled();
+      expect(screen.queryByText('다음 복습까지 1일 후')).not.toBeInTheDocument();
+    });
+
+    it('should hide every shortcut hint when shortcuts are disabled', async () => {
+      const disabledState = {
+        ...(useStudySessionStore as unknown as jest.Mock)(),
+        keyboardShortcutsEnabled: false
+      };
+
+      // Question side: Space/Enter hint and button tooltip
+      (useStudySessionStore as unknown as jest.Mock).mockReturnValue(disabledState);
+      const { rerender } = render(
+        <StudyInterface 
+          deckId={1}
+          onComplete={mockOnComplete}
+          onExit={mockOnExit}
+        />
+      );
+      expect(screen.queryByText('Space 또는 Enter')).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '답 보기' })).not.toHaveAttribute('title');
+
+      // Answer side: number key hint
+      (useStudySessionStore as unknown as jest.Mock).mockReturnValue({ ...disabledState, showAnswer: true });
+      rerender(
+        <StudyInterface 
+          deckId={1}
+          onComplete={mockOnComplete}
+          onExit={mockOnExit}
+        />
+      );
+      expect(screen.queryByText('1: 다시, 2: 어려움, 3: 보통, 4: 쉬움')).not.toBeInTheDocument();
+    });
+
+    it('should show every shortcut hint when shortcuts are enabled', async () => {
+      const { rerender } = render(
+        <StudyInterface 
+          deckId={1}
+          onComplete={mockOnComplete}
+          onExit={mockOnExit}
+        />
+      );
+      expect(screen.getByText('Space 또는 Enter')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '답 보기' })).toHaveAttribute('title', 'Space 또는 Enter로 답 보기');
+
+      (useStudySessionStore as unknown as jest.Mock).mockReturnValue({
+        ...(useStudySessionStore as unknown as jest.Mock)(),
+        showAnswer: true
+      });
+      rerender(
+        <StudyInterface 
+          deckId={1}
+          onComplete={mockOnComplete}
+          onExit={mockOnExit}
+        />
+      );
+      expect(screen.getByText('1: 다시, 2: 어려움, 3: 보통, 4: 쉬움')).toBeInTheDocument();
+    });
+
     it('should show keyboard shortcuts help when enabled', async () => {
       render(
         <StudyInterface 
