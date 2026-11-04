@@ -40,7 +40,8 @@ describe('CardEditorPage', () => {
     // Header shows the deck being edited, then the toolbar and the card list
     expect(await screen.findByRole('heading', { name: '테스트 덱' })).toBeInTheDocument();
     expect(screen.getByPlaceholderText('카드 검색...')).toBeInTheDocument();
-    expect(screen.getByText('앞면 1')).toBeInTheDocument();
+    // The list is filled by a follow-up effect after loading ends, so wait for it
+    expect(await screen.findByText('앞면 1')).toBeInTheDocument();
     expect(mockGetCardsByDeckId).toHaveBeenCalledWith(1);
   });
 });
