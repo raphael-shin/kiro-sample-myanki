@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAppStore, selectTheme, selectIsLoading, selectThemeActions, selectLoadingActions } from './store/appStore';
+import { useAppStore, selectTheme, selectIsLoading, selectLoadingActions } from './store/appStore';
 import { ThemeToggle } from './components/common/ThemeToggle';
 import { LoadingSpinner } from './components/common/LoadingSpinner';
 import { OfflineIndicator } from './components/common/OfflineIndicator';
@@ -58,11 +58,6 @@ function App() {
     setSelectedDeckId(deck.id);
     setSelectedDeck({ name: deck.name });
     setCurrentView('card-stats');
-  };
-
-  const handleStartStudy = (deckId: number) => {
-    setSelectedDeckId(deckId);
-    setCurrentView('study-session');
   };
 
   if (isLoading) {

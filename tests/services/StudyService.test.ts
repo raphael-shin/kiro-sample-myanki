@@ -3,7 +3,7 @@
  * TDD 접근 방식으로 StudyService의 모든 기능을 테스트
  */
 
-import { CreateStudySessionInput, UpdateStudySessionInput, StudyQuality } from '@/types/flashcard';
+import { CreateStudySessionInput, StudyQuality } from '@/types/flashcard';
 import { MyAnkiError, ErrorCode } from '@/types/errors';
 
 // Dexie 모킹
@@ -628,7 +628,7 @@ describe('StudyService', () => {
         await studyService.updateSessionProgress(sessionData.id, progress);
         
         // SessionManager를 통해 직접 확인하는 대신 다른 방법 사용
-        const updatedSession = await studyService.startStudySession(deckId);
+        await studyService.startStudySession(deckId);
         expect(progress.totalCards).toBe(10);
         expect(progress.completedCards).toBe(3);
         expect(progress.currentCardIndex).toBe(2);
@@ -714,6 +714,69 @@ describe('StudyService', () => {
         expect(typeof estimatedTime).toBe('number');
         expect(estimatedTime).toBeGreaterThanOrEqual(0);
       });
+    });
+  });
+  describe('getDeckStats()', () => {
+    it('should aggregate card and session stats for a deck', async () => {
+      mockDb.cards.where = jest.fn().mockReturnValue({
+        equals: jest.fn().mockReturnValue({
+          toArray: jest.fn().mockResolvedValue([
+            { id: 1, deckId: 1, front: 'Q1', back: 'A1' },
+            { id: 2, deckId: 1, front: 'Q2', back: 'A2' },
+            { id: 3, deckId: 1, front: 'Q3', back: 'A3' }
+          ])
+        })
+      });
+      const anyOf = jest.fn().mockReturnValue({
+        toArray: jest.fn().mockResolvedValue([
+          { id: 10, cardId: 1, quality: StudyQuality.GOOD, responseTime: 1000, studiedAt: new Date('2026-01-01T00:00:00Z') },
+          { id: 11, cardId: 1, quality: StudyQuality.EASY, responseTime: 1000, studiedAt: new Date('2026-01-03T00:00:00Z') },
+          { id: 12, cardId: 2, quality: StudyQuality.HARD, responseTime: 1000, studiedAt: new Date('2026-01-02T00:00:00Z') }
+        ])
+      });
+      mockDb.studySessions.where = jest.fn().mockReturnValue({ anyOf });
+
+      const stats = await studyService.getDeckStats(1);
+
+      expect(anyOf).toHaveBeenCalledWith([1, 2, 3]);
+      expect(stats.totalCards).toBe(3);
+      expect(stats.studiedCards).toBe(2);
+      expect(stats.averageQuality).toBe(3);
+      expect(stats.lastStudiedAt).toEqual(new Date('2026-01-03T00:00:00Z'));
+    });
+
+    it('should return empty stats for a deck without cards', async () => {
+      mockDb.cards.where = jest.fn().mockReturnValue({
+        equals: jest.fn().mockReturnValue({
+          toArray: jest.fn().mockResolvedValue([])
+        })
+      });
+      mockDb.studySessions.where = jest.fn();
+
+      const stats = await studyService.getDeckStats(1);
+
+      expect(mockDb.studySessions.where).not.toHaveBeenCalled();
+      expect(stats).toEqual({ totalCards: 0, studiedCards: 0, averageQuality: 0, lastStudiedAt: undefined });
+    });
+
+    it('should reject an invalid deck id', async () => {
+      await expect(studyService.getDeckStats(0)).rejects.toThrow(MyAnkiError);
+    });
+  });
+
+  describe('getStudyHistoryByDateRange()', () => {
+    it('should query sessions between the dates inclusively', async () => {
+      const startDate = new Date('2026-01-01T00:00:00Z');
+      const endDate = new Date('2026-01-31T23:59:59Z');
+      const sessions = [{ id: 1, cardId: 1, quality: StudyQuality.GOOD, responseTime: 1000, studiedAt: new Date('2026-01-15T00:00:00Z') }];
+      const between = jest.fn().mockReturnValue({ toArray: jest.fn().mockResolvedValue(sessions) });
+      mockDb.studySessions.where = jest.fn().mockReturnValue({ between });
+
+      const result = await studyService.getStudyHistoryByDateRange(startDate, endDate);
+
+      expect(mockDb.studySessions.where).toHaveBeenCalledWith('studiedAt');
+      expect(between).toHaveBeenCalledWith(startDate, endDate, true, true);
+      expect(result).toEqual(sessions);
     });
   });
 });

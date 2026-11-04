@@ -40,7 +40,7 @@ export class MockDexie {
   hasBeenClosed = jest.fn().mockReturnValue(false);
   hasFailed = jest.fn().mockReturnValue(false);
   dynamicallyOpened = jest.fn().mockReturnValue(false);
-  transaction = jest.fn().mockImplementation(async (mode, tables, callback) => {
+  transaction = jest.fn().mockImplementation(async (_mode, _tables, callback) => {
     return await callback();
   });
   

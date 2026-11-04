@@ -20,7 +20,7 @@ const CARD_DIRECTION_OPTIONS: CardDirection[] = [
   }
 ];
 
-const DIRECTION_USE_CASES = {
+const DIRECTION_USE_CASES: Record<string, Record<string, string> | undefined> = {
   vocabulary: {
     'english-korean': '영어 단어를 보고 한국어 뜻을 떠올리는 학습',
     'korean-english': '한국어 뜻을 보고 영어 단어를 떠올리는 학습'

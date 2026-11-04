@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { CardDisplay } from '../CardDisplay';
-import { Card } from '../../../../types/flashcard';
+import { Card } from '../../../../../types/flashcard';
 
 describe('CardDisplay Component', () => {
   const mockCard: Card = {

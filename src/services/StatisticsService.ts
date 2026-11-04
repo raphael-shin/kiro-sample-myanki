@@ -1,4 +1,4 @@
-import { MyAnkiDB } from '@/db/MyAnkiDB';
+import { MyAnkiDB, db as defaultDb } from '@/db/MyAnkiDB';
 import {
   DeckStatistics,
   GlobalStatistics,
@@ -13,7 +13,8 @@ import {
   DailyProgress,
   WeeklyTrend,
   MonthlyReport,
-  GoalAchievement
+  GoalAchievement,
+  StudyQuality
 } from '@/types/flashcard';
 import { ErrorFactory } from '@/types/errors';
 
@@ -39,13 +40,8 @@ export interface IStatisticsService {
  * 통계 계산과 분석을 담당하는 서비스
  */
 export class StatisticsService implements IStatisticsService {
-  constructor(private db?: MyAnkiDB) {
-    // db가 제공되지 않으면 기본 인스턴스 사용 (실제 구현에서는 의존성 주입)
-    if (!this.db) {
-      // 간단한 구현을 위해 임시로 null 할당
-      this.db = null as any;
-    }
-  }
+  // db가 제공되지 않으면 기본 인스턴스 사용
+  constructor(private db: MyAnkiDB = defaultDb) {}
 
   /**
    * 덱 통계 조회
@@ -251,8 +247,7 @@ export class StatisticsService implements IStatisticsService {
       const sessions = await this.db.studySessions
         .where('cardId')
         .equals(cardId)
-        .orderBy('studiedAt')
-        .toArray();
+        .sortBy('studiedAt');
 
       return this.calculateCardStatistics(cardId, sessions);
     } catch (error) {
@@ -278,8 +273,7 @@ export class StatisticsService implements IStatisticsService {
       const sessions = await this.db.studySessions
         .where('cardId')
         .equals(cardId)
-        .orderBy('studiedAt')
-        .toArray();
+        .sortBy('studiedAt');
 
       return this.calculateLearningCurve(cardId, sessions);
     } catch (error) {
@@ -429,16 +423,28 @@ export class StatisticsService implements IStatisticsService {
       averageQuality >= 3.5 ? 'easy' : 
       averageQuality >= 2.5 ? 'medium' : 'hard';
 
+    const correctAnswers = sessions.filter(s => s.quality >= StudyQuality.GOOD).length;
+    const learningHistory = sessions.map((s, index) => ({
+      sessionId: String(s.id ?? index),
+      reviewedAt: s.studiedAt,
+      quality: s.quality,
+      responseTime: s.responseTime,
+      easeFactor,
+      interval: currentInterval
+    }));
+
     return {
       cardId,
       totalReviews,
+      correctAnswers,
       averageQuality,
       averageResponseTime,
       currentInterval,
       easeFactor,
       lastReviewDate,
       nextReviewDate,
-      difficultyLevel
+      difficultyLevel,
+      learningHistory
     };
   }
 
@@ -579,8 +585,8 @@ export class StatisticsService implements IStatisticsService {
    */
   private calculateMonthlyReport(
     date: Date, 
-    decks: Deck[], 
-    cards: Card[], 
+    _decks: Deck[], 
+    _cards: Card[], 
     sessions: StudySession[]
   ): MonthlyReport {
     const totalCardsStudied = new Set(sessions.map(s => s.cardId)).size;
@@ -664,7 +670,7 @@ export class StatisticsService implements IStatisticsService {
   /**
    * 트렌드 데이터 계산
    */
-  private calculateTrendData(deckId: number, timeRange: TimeRange): TrendData {
+  private calculateTrendData(_deckId: number, timeRange: TimeRange): TrendData {
     // 간단한 구현: 더미 데이터 반환
     const dataPoints = Array.from({ length: 7 }, (_, i) => ({
       date: new Date(Date.now() - i * 24 * 60 * 60 * 1000),

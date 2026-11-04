@@ -1,5 +1,4 @@
 import { SpacedRepetitionService } from '../SpacedRepetitionService';
-import { SpacedRepetitionCard } from '../../types/spaced-repetition';
 
 // Mock the database
 jest.mock('../../db/MyAnkiDB', () => ({

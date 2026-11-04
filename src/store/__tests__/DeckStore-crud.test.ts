@@ -1,5 +1,4 @@
 import { useDeckStore } from '../DeckStore';
-import { Deck } from '../../types/flashcard';
 
 describe('DeckStore - CRUD Actions', () => {
   beforeEach(() => {

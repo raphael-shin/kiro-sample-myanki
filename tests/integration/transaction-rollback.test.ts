@@ -15,14 +15,11 @@ jest.mock('@/db/MyAnkiDB', () => {
 import { MyAnkiDB } from '@/db/MyAnkiDB';
 import { DeckService } from '@/services/DeckService';
 import { CardService } from '@/services/CardService';
-import { StudyService } from '@/services/StudyService';
-import { StudyQuality } from '@/types/flashcard';
 
 describe('Transaction Rollback Tests', () => {
   let db: MyAnkiDB;
   let deckService: DeckService;
   let cardService: CardService;
-  let studyService: StudyService;
 
   beforeEach(async () => {
     db = new MyAnkiDB();
@@ -30,7 +27,6 @@ describe('Transaction Rollback Tests', () => {
     
     deckService = new DeckService(db);
     cardService = new CardService(db);
-    studyService = new StudyService(db);
 
     // Mock 초기화
     jest.clearAllMocks();
@@ -59,18 +55,11 @@ describe('Transaction Rollback Tests', () => {
         })
       });
 
-      // 카드 삭제 Mock
-      const mockCardsDelete = jest.fn().mockReturnValue({
-        equals: jest.fn().mockReturnValue({
-          delete: jest.fn().mockResolvedValue(undefined)
-        })
-      });
-
       // 덱 삭제 Mock
       db.decks.delete = jest.fn().mockResolvedValue(undefined);
 
       // 트랜잭션 Mock 설정
-      db.transaction = jest.fn().mockImplementation(async (mode, tables, callback) => {
+      db.transaction = jest.fn().mockImplementation(async (_mode, _tables, callback) => {
         const tx = {
           decks: { delete: db.decks.delete },
           cards: { 
@@ -121,7 +110,7 @@ describe('Transaction Rollback Tests', () => {
       db.cards.delete = jest.fn().mockResolvedValue(undefined);
 
       // 트랜잭션 Mock 설정
-      db.transaction = jest.fn().mockImplementation(async (mode, tables, callback) => {
+      db.transaction = jest.fn().mockImplementation(async (_mode, _tables, callback) => {
         const tx = {
           cards: { delete: db.cards.delete },
           studySessions: { where: db.studySessions.where }
@@ -184,7 +173,7 @@ describe('Transaction Rollback Tests', () => {
       db.decks.get = jest.fn().mockResolvedValue({ id: deckId, name: '테스트 덱' });
 
       // 트랜잭션 내에서 부분적 실패 시뮬레이션
-      db.transaction = jest.fn().mockImplementation(async (mode, tables, callback) => {
+      db.transaction = jest.fn().mockImplementation(async (_mode, _tables, callback) => {
         const tx = {
           decks: { delete: jest.fn().mockRejectedValue(new Error('Deck deletion failed')) },
           cards: { 

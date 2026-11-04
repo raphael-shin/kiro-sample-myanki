@@ -1,5 +1,5 @@
 import Dexie, { Table } from 'dexie';
-import { Setting, DATABASE_VERSION, DATABASE_NAME } from '../types/database';
+import { Setting, DATABASE_NAME } from '../types/database';
 import { Deck, Card, StudySession } from '../types/flashcard';
 import { SpacedRepetitionCard } from '../types/spaced-repetition';
 import { AIGenerationHistory, AWSSettings } from '../types/ai-generation';
@@ -83,12 +83,12 @@ export class MyAnkiDB extends Dexie {
 
   private setupStudySessionHooks() {
     if (this.studySessions) {
-      this.studySessions.hook('creating', function (_primKey, obj, _trans) {
+      this.studySessions.hook('creating', function (_primKey, _obj, _trans) {
         // studySessions는 studiedAt이 이미 설정되어 있으므로 createdAt/updatedAt 불필요
         // 하지만 테스트에서 훅 호출을 확인하므로 빈 함수로 설정
       });
 
-      this.studySessions.hook('updating', function (modifications, _primKey, _obj, _trans) {
+      this.studySessions.hook('updating', function (_modifications, _primKey, _obj, _trans) {
         // studySessions는 일반적으로 수정되지 않지만 훅은 설정
       });
     }

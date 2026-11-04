@@ -51,7 +51,6 @@ describe('Full Workflow Integration', () => {
   });
 
   it('should handle navigation between views', async () => {
-    const user = userEvent.setup();
     render(<App />);
 
     // Wait for app to load

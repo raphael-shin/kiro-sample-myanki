@@ -10,13 +10,6 @@ interface ProgressTrackerProps {
   onCancel?: () => void;
 }
 
-const STEP_MESSAGES = {
-  analyzing: '주제 분석 중...',
-  generating: 'AI가 카드를 생성하고 있습니다...',
-  validating: '생성된 내용을 검증하고 있습니다...',
-  complete: '카드 생성이 완료되었습니다!'
-};
-
 export function ProgressTracker({ progress, onCancel }: ProgressTrackerProps) {
   const formatTime = (seconds: number) => {
     if (seconds < 60) return `${seconds}초`;

@@ -1,6 +1,5 @@
 import { SessionManager } from '@/services/SessionManager';
 import { StudySessionData } from '@/types/flashcard';
-import { ErrorCode } from '@/types/errors';
 
 // Mock IndexedDB
 import 'fake-indexeddb/auto';

@@ -1,4 +1,4 @@
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { GoalTracker } from '@/features/flashcard/components/Statistics/GoalTracker';
 import { useStatisticsStore } from '@/store/StatisticsStore';
 

@@ -95,7 +95,9 @@ export class SpacedRepetitionService {
           interval: 0,
           repetitions: 0,
           nextReviewDate: new Date(),
-          lastReviewDate: new Date()
+          lastReviewDate: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date()
         }, quality);
         
         const createInput: CreateSpacedRepetitionCardInput = {

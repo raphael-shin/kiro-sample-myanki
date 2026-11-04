@@ -78,9 +78,7 @@ describe('IndexedDB Performance Tests', () => {
       // Mock 설정
       db.studySessions.where = jest.fn().mockReturnValue({
         equals: jest.fn().mockReturnValue({
-          orderBy: jest.fn().mockReturnValue({
-            toArray: jest.fn().mockResolvedValue(studySessions)
-          })
+          sortBy: jest.fn().mockResolvedValue(studySessions)
         })
       });
 
@@ -99,7 +97,7 @@ describe('IndexedDB Performance Tests', () => {
 
       db.decks.get = jest.fn().mockResolvedValue({ id: deckId, name: '테스트 덱' });
 
-      db.transaction = jest.fn().mockImplementation(async (mode, tables, callback) => {
+      db.transaction = jest.fn().mockImplementation(async (_mode, _tables, callback) => {
         const tx = {
           decks: { delete: jest.fn().mockResolvedValue(undefined) },
           cards: { 
@@ -166,9 +164,7 @@ describe('IndexedDB Performance Tests', () => {
 
       db.studySessions.where = jest.fn().mockReturnValue({
         equals: jest.fn().mockReturnValue({
-          orderBy: jest.fn().mockReturnValue({
-            toArray: jest.fn().mockResolvedValue(studySessions)
-          })
+          sortBy: jest.fn().mockResolvedValue(studySessions)
         })
       });
 
@@ -189,7 +185,7 @@ describe('IndexedDB Performance Tests', () => {
       const deckId = 1;
 
       db.decks.get = jest.fn().mockResolvedValue({ id: deckId, name: '테스트 덱' });
-      db.transaction = jest.fn().mockImplementation(async (mode, tables, callback) => {
+      db.transaction = jest.fn().mockImplementation(async (_mode, _tables, callback) => {
         // 트랜잭션 내에서 동시성 제어 시뮬레이션
         const tx = {
           decks: { delete: jest.fn().mockResolvedValue(undefined) },

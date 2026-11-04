@@ -1,5 +1,5 @@
 import { db } from '@/db/MyAnkiDB';
-import { AWSCredentials, AWSSettings, AIGenerationErrorCode, AIGenerationError } from '@/types/ai-generation';
+import { AWSCredentials, AIGenerationErrorCode, AIGenerationError } from '@/types/ai-generation';
 import { encryptCredentials, decryptCredentials, clearMemory } from '@/utils/encryption';
 import { BedrockClient } from './BedrockClient';
 

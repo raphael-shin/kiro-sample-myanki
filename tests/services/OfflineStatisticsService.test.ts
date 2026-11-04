@@ -18,9 +18,17 @@ jest.mock('@/db/MyAnkiDB', () => ({
   },
 }));
 
+// jest.mock 팩토리가 만든 객체의 실제 형태
+type MockedDb = {
+  studySessions: { toArray: jest.Mock; where: jest.Mock };
+  cards: { toArray: jest.Mock; where: jest.Mock };
+  decks: { toArray: jest.Mock };
+  spacedRepetitionData?: unknown;
+};
+
 describe('OfflineStatisticsService', () => {
   let service: OfflineStatisticsService;
-  const mockDb = db as jest.Mocked<typeof db>;
+  const mockDb = db as unknown as MockedDb;
 
   beforeEach(() => {
     service = new OfflineStatisticsService();

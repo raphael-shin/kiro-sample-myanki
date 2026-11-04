@@ -12,15 +12,19 @@ jest.mock('@/db/MyAnkiDB', () => {
   return { MyAnkiDB };
 });
 
-import { createDefaultServices, ServiceContainer } from '@/services';
+import { createServices, ServiceContainer } from '@/services';
+import { MyAnkiDB } from '@/db/MyAnkiDB';
 import { StudyQuality } from '@/types/flashcard';
 
 describe('Offline Functionality Tests', () => {
+  let db: MyAnkiDB;
   let services: ServiceContainer;
 
   beforeEach(async () => {
-    // 서비스 컨테이너 생성
-    services = await createDefaultServices();
+    // 서비스 컨테이너 생성 (모든 서비스가 같은 db 인스턴스를 공유)
+    db = new MyAnkiDB();
+    await db.open();
+    services = createServices(db);
     jest.clearAllMocks();
   });
 
@@ -31,13 +35,13 @@ describe('Offline Functionality Tests', () => {
       const { deckService } = services;
 
       // 덱 생성 Mock
-      deckService.db.decks.add = jest.fn().mockResolvedValue(deckId);
-      deckService.db.decks.filter = jest.fn().mockReturnValue({
+      db.decks.add = jest.fn().mockResolvedValue(deckId);
+      db.decks.filter = jest.fn().mockReturnValue({
         toArray: jest.fn().mockResolvedValue([])
       });
 
       // 덱 조회 Mock
-      deckService.db.decks.get = jest.fn().mockResolvedValue({
+      db.decks.get = jest.fn().mockResolvedValue({
         id: deckId,
         name: '오프라인 덱',
         description: '오프라인 테스트용 덱',
@@ -46,7 +50,7 @@ describe('Offline Functionality Tests', () => {
       });
 
       // 덱 목록 조회 Mock
-      deckService.db.decks.orderBy = jest.fn().mockReturnValue({
+      db.decks.orderBy = jest.fn().mockReturnValue({
         toArray: jest.fn().mockResolvedValue([{
           id: deckId,
           name: '오프라인 덱',
@@ -55,15 +59,15 @@ describe('Offline Functionality Tests', () => {
       });
 
       // 덱 수정 Mock
-      deckService.db.decks.update = jest.fn().mockResolvedValue(1);
+      db.decks.update = jest.fn().mockResolvedValue(1);
 
       // 덱 삭제 Mock
-      deckService.db.cards.where = jest.fn().mockReturnValue({
+      db.cards.where = jest.fn().mockReturnValue({
         equals: jest.fn().mockReturnValue({
           toArray: jest.fn().mockResolvedValue([])
         })
       });
-      deckService.db.transaction = jest.fn().mockImplementation(async (mode, tables, callback) => {
+      db.transaction = jest.fn().mockImplementation(async (_mode, _tables, callback) => {
         const tx = {
           decks: { delete: jest.fn().mockResolvedValue(undefined) },
           cards: { where: jest.fn().mockReturnValue({ equals: jest.fn().mockReturnValue({ toArray: jest.fn().mockResolvedValue([]), delete: jest.fn() }) }) },
@@ -90,11 +94,11 @@ describe('Offline Functionality Tests', () => {
 
       // 수정
       await deckService.update(deckId, { name: '수정된 덱' });
-      expect(deckService.db.decks.update).toHaveBeenCalled();
+      expect(db.decks.update).toHaveBeenCalled();
 
       // 삭제
       await deckService.delete(deckId);
-      expect(deckService.db.transaction).toHaveBeenCalled();
+      expect(db.transaction).toHaveBeenCalled();
     });
 
     it('네트워크 없이 카드 생성, 조회, 수정, 삭제가 가능해야 한다', async () => {
@@ -104,11 +108,11 @@ describe('Offline Functionality Tests', () => {
       const { cardService } = services;
 
       // 카드 생성 Mock
-      cardService.db.cards.add = jest.fn().mockResolvedValue(cardId);
-      cardService.db.decks.get = jest.fn().mockResolvedValue({ id: deckId, name: '테스트 덱' });
+      db.cards.add = jest.fn().mockResolvedValue(cardId);
+      db.decks.get = jest.fn().mockResolvedValue({ id: deckId, name: '테스트 덱' });
 
       // 카드 조회 Mock
-      cardService.db.cards.get = jest.fn().mockResolvedValue({
+      db.cards.get = jest.fn().mockResolvedValue({
         id: cardId,
         deckId,
         front: '오프라인 앞면',
@@ -118,7 +122,7 @@ describe('Offline Functionality Tests', () => {
       });
 
       // 카드 목록 조회 Mock
-      cardService.db.cards.where = jest.fn().mockReturnValue({
+      db.cards.where = jest.fn().mockReturnValue({
         equals: jest.fn().mockReturnValue({
           orderBy: jest.fn().mockReturnValue({
             toArray: jest.fn().mockResolvedValue([{
@@ -132,10 +136,10 @@ describe('Offline Functionality Tests', () => {
       });
 
       // 카드 수정 Mock
-      cardService.db.cards.update = jest.fn().mockResolvedValue(1);
+      db.cards.update = jest.fn().mockResolvedValue(1);
 
       // 카드 삭제 Mock
-      cardService.db.transaction = jest.fn().mockImplementation(async (mode, tables, callback) => {
+      db.transaction = jest.fn().mockImplementation(async (_mode, _tables, callback) => {
         const tx = {
           cards: { delete: jest.fn().mockResolvedValue(undefined) },
           studySessions: { where: jest.fn().mockReturnValue({ equals: jest.fn().mockReturnValue({ delete: jest.fn() }) }) }
@@ -162,11 +166,11 @@ describe('Offline Functionality Tests', () => {
 
       // 수정
       await cardService.update(cardId, { front: '수정된 앞면' });
-      expect(cardService.db.cards.update).toHaveBeenCalled();
+      expect(db.cards.update).toHaveBeenCalled();
 
       // 삭제
       await cardService.delete(cardId);
-      expect(cardService.db.transaction).toHaveBeenCalled();
+      expect(db.transaction).toHaveBeenCalled();
     });
 
     it('네트워크 없이 학습 기록 생성, 조회, 통계 계산이 가능해야 한다', async () => {
@@ -176,8 +180,8 @@ describe('Offline Functionality Tests', () => {
       const { studyService } = services;
 
       // 학습 기록 생성 Mock
-      studyService.db.studySessions.add = jest.fn().mockResolvedValue(studySessionId);
-      studyService.db.cards.get = jest.fn().mockResolvedValue({ id: cardId, front: '앞면', back: '뒷면' });
+      db.studySessions.add = jest.fn().mockResolvedValue(studySessionId);
+      db.cards.get = jest.fn().mockResolvedValue({ id: cardId, front: '앞면', back: '뒷면' });
 
       // 학습 기록 조회 Mock
       const studySessions = [
@@ -185,11 +189,9 @@ describe('Offline Functionality Tests', () => {
         { id: 2, cardId, quality: StudyQuality.EASY, responseTime: 2000, studiedAt: new Date() }
       ];
 
-      studyService.db.studySessions.where = jest.fn().mockReturnValue({
+      db.studySessions.where = jest.fn().mockReturnValue({
         equals: jest.fn().mockReturnValue({
-          orderBy: jest.fn().mockReturnValue({
-            toArray: jest.fn().mockResolvedValue(studySessions)
-          })
+          sortBy: jest.fn().mockResolvedValue(studySessions)
         })
       });
 
@@ -220,8 +222,8 @@ describe('Offline Functionality Tests', () => {
       const { deckService } = services;
 
       // 초기 데이터 생성 Mock
-      deckService.db.decks.add = jest.fn().mockResolvedValue(1);
-      deckService.db.decks.filter = jest.fn().mockReturnValue({
+      db.decks.add = jest.fn().mockResolvedValue(1);
+      db.decks.filter = jest.fn().mockReturnValue({
         toArray: jest.fn().mockResolvedValue([])
       });
 
@@ -232,10 +234,12 @@ describe('Offline Functionality Tests', () => {
       });
 
       // 서비스 재시작 시뮬레이션 (새로운 서비스 인스턴스 생성)
-      const newServices = await createDefaultServices();
+      const newDb = new MyAnkiDB();
+      await newDb.open();
+      const newServices = createServices(newDb);
 
       // 재시작 후 데이터 조회 Mock
-      newServices.deckService.db.decks.get = jest.fn().mockResolvedValue({
+      newDb.decks.get = jest.fn().mockResolvedValue({
         id: 1,
         name: '지속성 테스트 덱',
         description: '브라우저 재시작 테스트'
@@ -259,7 +263,7 @@ describe('Offline Functionality Tests', () => {
         back: `대용량 뒷면 ${i + 1}`
       }));
 
-      cardService.db.cards.where = jest.fn().mockReturnValue({
+      db.cards.where = jest.fn().mockReturnValue({
         equals: jest.fn().mockReturnValue({
           orderBy: jest.fn().mockReturnValue({
             toArray: jest.fn().mockResolvedValue(largeCardSet)
@@ -283,18 +287,18 @@ describe('Offline Functionality Tests', () => {
       const { deckService, cardService, studyService } = services;
 
       // 덱 생성
-      deckService.db.decks.add = jest.fn().mockResolvedValue(1);
-      deckService.db.decks.filter = jest.fn().mockReturnValue({
+      db.decks.add = jest.fn().mockResolvedValue(1);
+      db.decks.filter = jest.fn().mockReturnValue({
         toArray: jest.fn().mockResolvedValue([])
       });
 
       // 카드 생성
-      cardService.db.cards.add = jest.fn().mockResolvedValue(1);
-      cardService.db.decks.get = jest.fn().mockResolvedValue({ id: 1, name: '테스트 덱' });
+      db.cards.add = jest.fn().mockResolvedValue(1);
+      db.decks.get = jest.fn().mockResolvedValue({ id: 1, name: '테스트 덱' });
 
       // 학습 기록 생성
-      studyService.db.studySessions.add = jest.fn().mockResolvedValue(1);
-      studyService.db.cards.get = jest.fn().mockResolvedValue({ id: 1, front: '앞면', back: '뒷면' });
+      db.studySessions.add = jest.fn().mockResolvedValue(1);
+      db.cards.get = jest.fn().mockResolvedValue({ id: 1, front: '앞면', back: '뒷면' });
 
       // When: 전체 학습 플로우 실행
       const deckId = await deckService.create({
@@ -317,8 +321,8 @@ describe('Offline Functionality Tests', () => {
       // Then: 모든 단계가 성공적으로 완료되어야 함
       expect(deckId).toBe(1);
       expect(cardId).toBe(1);
-      expect(studySessionId).toBeUndefined(); // recordStudySession은 void 반환
-      expect(studyService.db.studySessions.add).toHaveBeenCalled();
+      expect(studySessionId).toBe(1); // recordStudySession은 생성된 학습 세션 ID 반환
+      expect(db.studySessions.add).toHaveBeenCalled();
     });
   });
 });

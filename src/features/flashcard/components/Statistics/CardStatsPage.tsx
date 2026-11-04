@@ -34,7 +34,7 @@ interface ChartData {
 }
 
 export const CardStatsPage = ({ deckId, deckName, onBack }: CardStatsPageProps) => {
-  const [cards, setCards] = useState<Card[]>([]);
+  const [, setCards] = useState<Card[]>([]);
   const [loading, setLoading] = useState(true);
   const [showTime, setShowTime] = useState(true);
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('3months');
@@ -98,7 +98,6 @@ export const CardStatsPage = ({ deckId, deckName, onBack }: CardStatsPageProps) 
     const totalDays = chartData.length;
     const studiedDays = chartData.filter(day => day.totalTime > 0).length;
     const totalMinutes = chartData.reduce((sum, day) => sum + day.totalTime, 0);
-    const totalCards = 0; // 실제 데이터가 없으므로 0
     
     return {
       daysStudied: studiedDays,

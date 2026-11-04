@@ -115,7 +115,8 @@ describe('Service Interfaces', () => {
         getCardsByDeck: async (_deckId: number): Promise<Card[]> => [],
         getCardsForStudy: async (_deckId: number): Promise<Card[]> => [],
         searchCards: async (_deckId: number, _query: string): Promise<Card[]> => [],
-        getCardCount: async (_deckId: number): Promise<number> => 0
+        getCardCount: async (_deckId: number): Promise<number> => 0,
+        getCardsByDeckId: async (_deckId: number): Promise<Card[]> => []
       };
 
       expect(typeof mockCardService.getCardsByDeck).toBe('function');
@@ -141,7 +142,8 @@ describe('Service Interfaces', () => {
         getCardsByDeck: async (_deckId: number): Promise<Card[]> => [],
         getCardsForStudy: async (_deckId: number): Promise<Card[]> => [],
         searchCards: async (_deckId: number, _query: string): Promise<Card[]> => [],
-        getCardCount: async (_deckId: number): Promise<number> => 0
+        getCardCount: async (_deckId: number): Promise<number> => 0,
+        getCardsByDeckId: async (_deckId: number): Promise<Card[]> => []
       };
 
       await mockCardService.create({

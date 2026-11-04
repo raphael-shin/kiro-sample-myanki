@@ -11,7 +11,7 @@ jest.mock('@/store/DeckStore', () => ({
 
 describe('CardEditorPage', () => {
   it('should render CardEditor page with CardForm and CardList', () => {
-    render(<CardEditorPage deckId={1} />);
+    render(<CardEditorPage deckId={1} deckName="테스트 덱" onBack={jest.fn()} />);
     
     expect(screen.getByText('카드 편집')).toBeInTheDocument();
   });
