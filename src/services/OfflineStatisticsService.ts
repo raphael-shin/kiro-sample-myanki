@@ -17,10 +17,7 @@ export interface DeckOfflineStats {
 
 export class OfflineStatisticsService {
   async calculateOfflineStats(): Promise<OfflineStats> {
-    const [sessions, cards] = await Promise.all([
-      db.studySessions.toArray(),
-      db.cards.toArray(),
-    ]);
+    const sessions = await db.studySessions.toArray();
 
     const totalSessions = sessions.length;
     const totalCardsStudied = sessions.length; // Each session represents one card studied

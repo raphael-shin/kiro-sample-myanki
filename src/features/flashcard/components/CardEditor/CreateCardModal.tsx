@@ -31,8 +31,7 @@ export const CreateCardModal = ({ deckId, onClose, onSubmit }: CreateCardModalPr
     const result = await onSubmit({
       deckId,
       front: front.trim(),
-      back: back.trim(),
-      noteType: 'basic'
+      back: back.trim()
     });
 
     setLoading(false);

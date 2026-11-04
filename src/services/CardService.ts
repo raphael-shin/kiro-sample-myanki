@@ -125,7 +125,7 @@ export class CardService implements ICardService {
         .toArray();
       
       // 메모리에서 정렬 (작은 데이터셋에 대해 효율적)
-      return cards.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+      return cards.sort((a, b) => (a.createdAt?.getTime() ?? 0) - (b.createdAt?.getTime() ?? 0));
     });
   }
 

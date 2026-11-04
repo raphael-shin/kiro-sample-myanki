@@ -210,7 +210,7 @@ export const StudyInterface = ({ deckId, onComplete, onExit }: StudyInterfacePro
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-gray-600 dark:text-gray-400">진행률</span>
             <span className="text-sm font-semibold text-gray-900 dark:text-white">
-              {progress.current}/{progress.total} ({Math.round(progress.percentage)}%)
+              {progress.totalCards - progress.cardsRemaining}/{progress.totalCards} ({Math.round(progress.percentage)}%)
             </span>
           </div>
           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
@@ -282,7 +282,7 @@ export const StudyInterface = ({ deckId, onComplete, onExit }: StudyInterfacePro
 
             {/* 카드 하단 정보 */}
             <div className="mt-8 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
-              <span>카드 {progress.current}</span>
+              <span>카드 {progress.totalCards - progress.cardsRemaining + 1}</span>
               <div className="flex items-center gap-2" title="키보드 단축키 사용 가능">
                 <span>Space: 답 보기, 1-4: 난이도</span>
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">

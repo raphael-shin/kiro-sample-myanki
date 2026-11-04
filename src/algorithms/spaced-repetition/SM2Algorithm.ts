@@ -1,4 +1,4 @@
-import { SpacedRepetitionCard, SM2_CONSTANTS } from '../../types/spaced-repetition';
+import { SpacedRepetitionCard } from '../../types/spaced-repetition';
 import { StudyQuality } from '../../types/flashcard';
 import { addDays } from '../../utils/date-utils';
 import { calculateEaseFactor } from '../sm2-algorithm';

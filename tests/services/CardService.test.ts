@@ -1315,7 +1315,7 @@ describe('CardService', () => {
         });
 
         // Mock 트랜잭션에서 학습 기록 삭제 실패하도록 설정
-        const mockTransaction = jest.fn().mockImplementation(async (mode, tables, callback) => {
+        const mockTransaction = jest.fn().mockImplementation(async (_mode, _tables, callback) => {
           const mockTx = {
             studySessions: {
               where: jest.fn().mockReturnValue({
@@ -1362,7 +1362,7 @@ describe('CardService', () => {
         });
 
         // Mock 트랜잭션에서 카드 삭제 실패하도록 설정
-        const mockTransaction = jest.fn().mockImplementation(async (mode, tables, callback) => {
+        const mockTransaction = jest.fn().mockImplementation(async (_mode, _tables, callback) => {
           const mockTx = {
             studySessions: {
               where: jest.fn().mockReturnValue({

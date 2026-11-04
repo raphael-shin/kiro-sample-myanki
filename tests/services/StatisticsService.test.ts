@@ -1,5 +1,4 @@
 import { StatisticsService } from '@/services/StatisticsService';
-import { DeckStatistics, GlobalStatistics, DailyGoals } from '@/types/flashcard';
 
 // Mock IndexedDB
 import 'fake-indexeddb/auto';
@@ -179,12 +178,10 @@ describe('StatisticsService', () => {
       // Mock study sessions for the card
       mockDb.studySessions.where = jest.fn().mockReturnValue({
         equals: jest.fn().mockReturnValue({
-          orderBy: jest.fn().mockReturnValue({
-            toArray: jest.fn().mockResolvedValue([
-              { id: 1, cardId: 1, quality: 3, responseTime: 5000, studiedAt: new Date() },
-              { id: 2, cardId: 1, quality: 4, responseTime: 3000, studiedAt: new Date() }
-            ])
-          })
+          sortBy: jest.fn().mockResolvedValue([
+            { id: 1, cardId: 1, quality: 3, responseTime: 5000, studiedAt: new Date() },
+            { id: 2, cardId: 1, quality: 4, responseTime: 3000, studiedAt: new Date() }
+          ])
         })
       });
       
@@ -223,13 +220,11 @@ describe('StatisticsService', () => {
       // Mock study sessions with progression
       mockDb.studySessions.where = jest.fn().mockReturnValue({
         equals: jest.fn().mockReturnValue({
-          orderBy: jest.fn().mockReturnValue({
-            toArray: jest.fn().mockResolvedValue([
-              { id: 1, cardId: 1, quality: 2, responseTime: 8000, studiedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
-              { id: 2, cardId: 1, quality: 3, responseTime: 5000, studiedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) },
-              { id: 3, cardId: 1, quality: 4, responseTime: 3000, studiedAt: new Date() }
-            ])
-          })
+          sortBy: jest.fn().mockResolvedValue([
+            { id: 1, cardId: 1, quality: 2, responseTime: 8000, studiedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+            { id: 2, cardId: 1, quality: 3, responseTime: 5000, studiedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) },
+            { id: 3, cardId: 1, quality: 4, responseTime: 3000, studiedAt: new Date() }
+          ])
         })
       });
       

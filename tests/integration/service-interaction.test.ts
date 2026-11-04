@@ -56,7 +56,7 @@ describe('Service Interaction Tests', () => {
         })
       });
 
-      db.transaction = jest.fn().mockImplementation(async (mode, tables, callback) => {
+      db.transaction = jest.fn().mockImplementation(async (_mode, _tables, callback) => {
         const tx = {
           decks: { delete: jest.fn().mockResolvedValue(undefined) },
           cards: { 
@@ -109,7 +109,7 @@ describe('Service Interaction Tests', () => {
       // Mock 설정
       db.cards.get = jest.fn().mockResolvedValue({ id: cardId, front: '앞면', back: '뒷면' });
 
-      db.transaction = jest.fn().mockImplementation(async (mode, tables, callback) => {
+      db.transaction = jest.fn().mockImplementation(async (_mode, _tables, callback) => {
         const tx = {
           cards: { delete: jest.fn().mockResolvedValue(undefined) },
           studySessions: { 
@@ -181,7 +181,7 @@ describe('Service Interaction Tests', () => {
         })
       });
 
-      db.transaction = jest.fn().mockImplementation(async (mode, tables, callback) => {
+      db.transaction = jest.fn().mockImplementation(async (_mode, _tables, callback) => {
         const tx = {
           decks: { delete: jest.fn().mockResolvedValue(undefined) },
           cards: { 

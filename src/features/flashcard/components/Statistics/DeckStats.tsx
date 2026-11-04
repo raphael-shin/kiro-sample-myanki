@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { useStatisticsStore } from '../../../../store/StatisticsStore';
-import { DeckStatistics } from '../../../../types/flashcard';
 
 interface DeckStatsProps {
   deckId: number;

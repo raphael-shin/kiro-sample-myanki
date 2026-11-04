@@ -3,7 +3,7 @@
  * TDD 접근 방식으로 DeckService의 모든 기능을 테스트
  */
 
-import { CreateDeckInput, UpdateDeckInput } from '@/types/flashcard';
+import { CreateDeckInput } from '@/types/flashcard';
 import { MyAnkiError, ErrorCode } from '@/types/errors';
 
 // Dexie 모킹
@@ -1040,7 +1040,7 @@ describe('DeckService', () => {
         mockDb.decks.get = jest.fn().mockResolvedValue(existingDeck);
 
         // Mock 트랜잭션 설정 - 연관 카드 삭제 중 에러 발생
-        const mockTransaction = jest.fn().mockImplementation(async (mode, tables, callback) => {
+        const mockTransaction = jest.fn().mockImplementation(async (_mode, _tables, callback) => {
           // 트랜잭션 내에서 카드 삭제 중 에러 발생
           const mockCards = {
             where: jest.fn().mockReturnValue({
@@ -1102,7 +1102,7 @@ describe('DeckService', () => {
         mockDb.decks.get = jest.fn().mockResolvedValue(existingDeck);
 
         // Mock 트랜잭션 설정 - 연관 학습 세션 삭제 중 에러 발생
-        const mockTransaction = jest.fn().mockImplementation(async (mode, tables, callback) => {
+        const mockTransaction = jest.fn().mockImplementation(async (_mode, _tables, callback) => {
           const mockCards = {
             where: jest.fn().mockReturnValue({
               equals: jest.fn().mockReturnValue({
@@ -1163,7 +1163,7 @@ describe('DeckService', () => {
         mockDb.decks.get = jest.fn().mockResolvedValue(existingDeck);
 
         // Mock 트랜잭션 설정 - 덱 삭제 중 에러 발생
-        const mockTransaction = jest.fn().mockImplementation(async (mode, tables, callback) => {
+        const mockTransaction = jest.fn().mockImplementation(async (_mode, _tables, callback) => {
           const mockCards = {
             where: jest.fn().mockReturnValue({
               equals: jest.fn().mockReturnValue({
@@ -1261,7 +1261,7 @@ describe('DeckService', () => {
         mockDb.decks.get = jest.fn().mockResolvedValue(existingDeck);
 
         // Mock 트랜잭션 설정 - 중간에 실패하여 롤백 발생
-        const mockTransaction = jest.fn().mockImplementation(async (mode, tables, callback) => {
+        const mockTransaction = jest.fn().mockImplementation(async (_mode, _tables, callback) => {
           const mockCards = {
             where: jest.fn().mockReturnValue({
               equals: jest.fn().mockReturnValue({

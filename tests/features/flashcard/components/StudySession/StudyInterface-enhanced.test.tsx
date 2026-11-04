@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { StudyInterface } from '@/features/flashcard/components/StudySession/StudyInterface';
-import { useStudySessionStore, setSessionManager, setSpacedRepetitionService } from '@/store/StudySessionStore';
+import { useStudySessionStore } from '@/store/StudySessionStore';
 import { StudyQuality } from '@/types/flashcard';
 
 // Mock the store
@@ -26,7 +26,7 @@ describe('StudyInterface Enhanced Features', () => {
     };
 
     // Mock useStudySessionStore with enhanced features
-    (useStudySessionStore as jest.Mock).mockReturnValue({
+    (useStudySessionStore as unknown as jest.Mock).mockReturnValue({
       currentCard: { id: 1, deckId: 1, front: 'Test Question', back: 'Test Answer' },
       isActive: true,
       loading: false,
@@ -47,7 +47,7 @@ describe('StudyInterface Enhanced Features', () => {
   describe('StudySessionStore Integration', () => {
     it('should start session on mount', async () => {
       // Mock initial inactive state
-      (useStudySessionStore as jest.Mock).mockReturnValue({
+      (useStudySessionStore as unknown as jest.Mock).mockReturnValue({
         currentCard: null,
         isActive: false, // Initially inactive
         loading: false,
@@ -92,7 +92,7 @@ describe('StudyInterface Enhanced Features', () => {
 
     it('should process answer and move to next card', async () => {
       // Mock showAnswer as true to show answer buttons
-      (useStudySessionStore as jest.Mock).mockReturnValue({
+      (useStudySessionStore as unknown as jest.Mock).mockReturnValue({
         currentCard: { id: 1, deckId: 1, front: 'Test Question', back: 'Test Answer' },
         isActive: true,
         loading: false,
@@ -149,7 +149,7 @@ describe('StudyInterface Enhanced Features', () => {
 
     it('should resume session when resume button clicked', async () => {
       // Mock paused state
-      (useStudySessionStore as jest.Mock).mockReturnValue({
+      (useStudySessionStore as unknown as jest.Mock).mockReturnValue({
         currentCard: { id: 1, deckId: 1, front: 'Test Question', back: 'Test Answer' },
         isActive: true,
         loading: false,
@@ -223,7 +223,7 @@ describe('StudyInterface Enhanced Features', () => {
   describe('Session Completion', () => {
     it('should call onComplete with session summary when session ends', async () => {
       // Mock showAnswer as true and simulate session completion
-      (useStudySessionStore as jest.Mock).mockReturnValue({
+      (useStudySessionStore as unknown as jest.Mock).mockReturnValue({
         currentCard: null, // No current card means session complete
         isActive: true,
         loading: false,
@@ -243,7 +243,7 @@ describe('StudyInterface Enhanced Features', () => {
       // Mock processAnswer to simulate completion
       mockStoreActions.processAnswer.mockImplementation(() => {
         // Simulate session completion by setting currentCard to null
-        (useStudySessionStore as jest.Mock).mockReturnValue({
+        (useStudySessionStore as unknown as jest.Mock).mockReturnValue({
           currentCard: null,
           isActive: true,
           loading: false,
@@ -309,7 +309,7 @@ describe('StudyInterface Enhanced Features', () => {
 
     it('should rate card with number keys when answer is shown', async () => {
       // Mock showAnswer as true
-      (useStudySessionStore as jest.Mock).mockReturnValue({
+      (useStudySessionStore as unknown as jest.Mock).mockReturnValue({
         currentCard: { id: 1, deckId: 1, front: 'Test Question', back: 'Test Answer' },
         isActive: true,
         loading: false,
@@ -350,7 +350,7 @@ describe('StudyInterface Enhanced Features', () => {
 
     it('should not trigger shortcuts when disabled', async () => {
       // Mock shortcuts disabled
-      (useStudySessionStore as jest.Mock).mockReturnValue({
+      (useStudySessionStore as unknown as jest.Mock).mockReturnValue({
         currentCard: { id: 1, deckId: 1, front: 'Test Question', back: 'Test Answer' },
         isActive: true,
         loading: false,
@@ -414,7 +414,7 @@ describe('StudyInterface Enhanced Features', () => {
 
     it('should not show keyboard shortcuts help when disabled', async () => {
       // Mock shortcuts disabled
-      (useStudySessionStore as jest.Mock).mockReturnValue({
+      (useStudySessionStore as unknown as jest.Mock).mockReturnValue({
         currentCard: { id: 1, deckId: 1, front: 'Test Question', back: 'Test Answer' },
         isActive: true,
         loading: false,
@@ -446,7 +446,7 @@ describe('StudyInterface Enhanced Features', () => {
   describe('Session Control UI', () => {
     it('should disable answer buttons when paused', async () => {
       // Mock paused state with answer shown
-      (useStudySessionStore as jest.Mock).mockReturnValue({
+      (useStudySessionStore as unknown as jest.Mock).mockReturnValue({
         currentCard: { id: 1, deckId: 1, front: 'Test Question', back: 'Test Answer' },
         isActive: true,
         loading: false,
@@ -512,7 +512,7 @@ describe('StudyInterface Enhanced Features', () => {
 
     it('should show shortcuts button as inactive when disabled', async () => {
       // Mock shortcuts disabled
-      (useStudySessionStore as jest.Mock).mockReturnValue({
+      (useStudySessionStore as unknown as jest.Mock).mockReturnValue({
         currentCard: { id: 1, deckId: 1, front: 'Test Question', back: 'Test Answer' },
         isActive: true,
         loading: false,
@@ -548,7 +548,7 @@ describe('StudyInterface Enhanced Features', () => {
       const mockNextCard = jest.fn();
 
       // Initial state with current card
-      (useStudySessionStore as jest.Mock).mockReturnValue({
+      (useStudySessionStore as unknown as jest.Mock).mockReturnValue({
         currentCard: { id: 1, deckId: 1, front: 'Last Question', back: 'Last Answer' },
         isActive: true,
         loading: false,
@@ -594,7 +594,7 @@ describe('StudyInterface Enhanced Features', () => {
 
     it('should show completion screen with return button', async () => {
       // Mock completed session state
-      (useStudySessionStore as jest.Mock).mockReturnValue({
+      (useStudySessionStore as unknown as jest.Mock).mockReturnValue({
         currentCard: null,
         isActive: true,
         loading: false,
@@ -630,7 +630,7 @@ describe('StudyInterface Enhanced Features', () => {
 
     it('should handle error state gracefully', async () => {
       // Mock error state
-      (useStudySessionStore as jest.Mock).mockReturnValue({
+      (useStudySessionStore as unknown as jest.Mock).mockReturnValue({
         currentCard: null,
         isActive: false,
         loading: false,

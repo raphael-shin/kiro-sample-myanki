@@ -1,5 +1,5 @@
 import { SM2Algorithm } from '../SM2Algorithm';
-import { SpacedRepetitionCard, SM2_CONSTANTS } from '../../../types/spaced-repetition';
+import { SpacedRepetitionCard } from '../../../types/spaced-repetition';
 import { StudyQuality } from '../../../types/flashcard';
 
 describe('SM2Algorithm - Again Quality', () => {

@@ -62,7 +62,7 @@ describe('StatsDashboard Component', () => {
     };
 
     // Mock useStatisticsStore
-    (useStatisticsStore as jest.Mock).mockReturnValue({
+    (useStatisticsStore as unknown as jest.Mock).mockReturnValue({
       globalStats: {
         totalDecks: 5,
         totalCards: 150,
@@ -117,7 +117,7 @@ describe('StatsDashboard Component', () => {
     });
 
     it('should display loading state', () => {
-      (useStatisticsStore as jest.Mock).mockReturnValue({
+      (useStatisticsStore as unknown as jest.Mock).mockReturnValue({
         globalStats: null,
         dailyGoals: null,
         loading: true,
@@ -131,7 +131,7 @@ describe('StatsDashboard Component', () => {
     });
 
     it('should display error state', () => {
-      (useStatisticsStore as jest.Mock).mockReturnValue({
+      (useStatisticsStore as unknown as jest.Mock).mockReturnValue({
         globalStats: null,
         dailyGoals: null,
         loading: false,

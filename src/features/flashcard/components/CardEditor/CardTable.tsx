@@ -108,7 +108,8 @@ export const CardTable = ({
     return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
   };
 
-  const formatDate = (date: Date) => {
+  const formatDate = (date?: Date) => {
+    if (!date) return '-';
     return new Intl.DateTimeFormat('ko-KR', {
       year: 'numeric',
       month: '2-digit',
@@ -157,7 +158,7 @@ export const CardTable = ({
 
             return (
               <div key={card.id} className="px-6 py-4">
-                {isEditing ? (
+                {isEditing && editingCard ? (
                   /* 편집 모드 */
                   <div className="space-y-4">
                     <div className="grid grid-cols-12 gap-4 items-start">

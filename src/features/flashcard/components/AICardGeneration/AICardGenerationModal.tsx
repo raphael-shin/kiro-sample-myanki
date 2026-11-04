@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { CardGenerationRequest, CardDirection } from '@/types/ai-generation';
+import { CardGenerationRequest } from '@/types/ai-generation';
 import { CardDirectionSelector } from './CardDirectionSelector';
 import { AWSSettingsModal } from './AWSSettingsModal';
 import { ProgressTracker } from './ProgressTracker';
@@ -50,7 +50,6 @@ export function AICardGenerationModal({
     checkAWSConfiguration,
     startGeneration,
     toggleCardSelection,
-    selectAllCards,
     updateCard,
     saveSelectedCards,
     clearError,

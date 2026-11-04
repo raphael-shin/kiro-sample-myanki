@@ -138,7 +138,7 @@ class ValidationUtils {
    */
   static async validateEntityExists<T>(
     entity: T | undefined, 
-    entityName: string, 
+    _entityName: string, 
     id: number,
     errorFactory: (id: number) => MyAnkiError
   ): Promise<void> {

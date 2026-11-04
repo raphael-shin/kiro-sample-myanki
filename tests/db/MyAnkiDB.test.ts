@@ -7,6 +7,10 @@ jest.mock('dexie', () => {
   return {
     __esModule: true,
     default: class MockDexie {
+      name: string;
+      versionNumber: number;
+      schema: Record<string, string>;
+
       constructor(name: string) {
         this.name = name;
         this.versionNumber = 0;

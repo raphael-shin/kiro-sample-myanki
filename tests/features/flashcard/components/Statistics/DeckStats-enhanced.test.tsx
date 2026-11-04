@@ -52,7 +52,7 @@ describe('DeckStats Enhanced Features', () => {
     };
 
     // Mock useStatisticsStore
-    (useStatisticsStore as jest.Mock).mockReturnValue({
+    (useStatisticsStore as unknown as jest.Mock).mockReturnValue({
       deckStats: new Map([[1, {
         deckId: 1,
         totalCards: 100,
@@ -260,7 +260,7 @@ describe('DeckStats Enhanced Features', () => {
 
     it('should handle edge cases for time formatting', async () => {
       // Mock data with edge case times
-      (useStatisticsStore as jest.Mock).mockReturnValue({
+      (useStatisticsStore as unknown as jest.Mock).mockReturnValue({
         deckStats: new Map([[1, {
           deckId: 1,
           totalCards: 10,
@@ -293,7 +293,7 @@ describe('DeckStats Enhanced Features', () => {
 
     it('should handle zero values gracefully', async () => {
       // Mock data with zero values
-      (useStatisticsStore as jest.Mock).mockReturnValue({
+      (useStatisticsStore as unknown as jest.Mock).mockReturnValue({
         deckStats: new Map([[1, {
           deckId: 1,
           totalCards: 0,
@@ -344,7 +344,7 @@ describe('DeckStats Enhanced Features', () => {
     });
 
     it('should handle missing deck statistics gracefully', () => {
-      (useStatisticsStore as jest.Mock).mockReturnValue({
+      (useStatisticsStore as unknown as jest.Mock).mockReturnValue({
         deckStats: new Map(), // Empty map - no stats for any deck
         loading: false,
         error: null,

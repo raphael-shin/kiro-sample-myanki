@@ -52,7 +52,7 @@ describe('DeckStats', () => {
     };
 
     // Mock useStatisticsStore
-    (useStatisticsStore as jest.Mock).mockReturnValue({
+    (useStatisticsStore as unknown as jest.Mock).mockReturnValue({
       deckStats: new Map([[1, {
         deckId: 1,
         totalCards: 20,
@@ -113,7 +113,7 @@ describe('DeckStats', () => {
   });
 
   it('should display loading state', () => {
-    (useStatisticsStore as jest.Mock).mockReturnValue({
+    (useStatisticsStore as unknown as jest.Mock).mockReturnValue({
       deckStats: new Map(),
       loading: true,
       error: null,
@@ -126,7 +126,7 @@ describe('DeckStats', () => {
   });
 
   it('should display error state', () => {
-    (useStatisticsStore as jest.Mock).mockReturnValue({
+    (useStatisticsStore as unknown as jest.Mock).mockReturnValue({
       deckStats: new Map(),
       loading: false,
       error: 'Failed to load statistics',

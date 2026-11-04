@@ -1,7 +1,7 @@
 import { CardGenerationRequest, GeneratedCard, CardDirection, AIGenerationErrorCode, AIGenerationError } from '@/types/ai-generation';
 
 export class PromptBuilder {
-  private static readonly PROMPT_TEMPLATES = {
+  private static readonly PROMPT_TEMPLATES: Record<string, Record<string, string> | undefined> = {
     vocabulary: {
       'english-korean': `
 You are an English language learning expert. Generate {count} vocabulary flashcards for the topic "{topic}" at {difficulty} level.

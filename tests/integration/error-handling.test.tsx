@@ -47,7 +47,6 @@ describe('Error Handling Integration', () => {
   });
 
   it('should show user-friendly error messages', async () => {
-    const user = userEvent.setup();
     render(<App />);
 
     // Wait for app to load

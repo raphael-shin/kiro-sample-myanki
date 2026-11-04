@@ -1,5 +1,8 @@
 import { useStudySessionStore, setSpacedRepetitionService } from '../StudySessionStore';
 import { SpacedRepetitionService } from '../../services/SpacedRepetitionService';
+import { Card } from '../../types/flashcard';
+
+const mockCards: Card[] = [1, 2, 3].map(id => ({ id, deckId: 123, front: `Q${id}`, back: `A${id}` }));
 
 describe('StudySessionStore - Session Management', () => {
   let mockSpacedRepetitionService: jest.Mocked<SpacedRepetitionService>;
@@ -35,7 +38,7 @@ describe('StudySessionStore - Session Management', () => {
   it('should set isActive to true when startSession is called', async () => {
     const { startSession } = useStudySessionStore.getState();
     
-    mockSpacedRepetitionService.getCardsForReview.mockResolvedValue([1, 2, 3]);
+    mockSpacedRepetitionService.getCardsForReview.mockResolvedValue(mockCards);
     
     await startSession(123);
     
@@ -51,7 +54,7 @@ describe('StudySessionStore - Session Management', () => {
   it('should set isActive to false when endSession is called', async () => {
     const { startSession, endSession } = useStudySessionStore.getState();
     
-    mockSpacedRepetitionService.getCardsForReview.mockResolvedValue([1, 2, 3]);
+    mockSpacedRepetitionService.getCardsForReview.mockResolvedValue(mockCards);
     
     // First start a session
     await startSession(123);

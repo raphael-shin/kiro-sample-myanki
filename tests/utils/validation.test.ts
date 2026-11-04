@@ -14,7 +14,7 @@ import {
   CreateStudySessionInput, 
   StudyQuality 
 } from '@/types/flashcard';
-import { MyAnkiError, ErrorCode } from '@/types/errors';
+import { ErrorCode } from '@/types/errors';
 
 // Mock 데이터베이스 - 중복 검사를 위해 필요
 const mockDb = {

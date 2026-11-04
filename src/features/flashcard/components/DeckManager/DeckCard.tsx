@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Deck } from '../../../../types/flashcard';
-import { CardStats, formatCardStats } from '../../../../utils/cardStats';
+import { CardStats } from '../../../../utils/cardStats';
 import { KebabMenu } from '../../../../components/ui/KebabMenu';
 import { DeleteConfirmModal } from '../../../../components/ui/DeleteConfirmModal';
 import { MultiColorProgressBar } from '../../../../components/ui/MultiColorProgressBar';

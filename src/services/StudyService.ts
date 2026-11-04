@@ -12,6 +12,7 @@ import {
   UpdateStudySessionInput,
   StudyQuality,
   StudyStats,
+  DeckStats,
   StudySessionData,
   SessionSummary,
   SessionProgressUpdate,
@@ -20,7 +21,6 @@ import {
 } from '@/types/flashcard';
 import {
   MyAnkiError,
-  ErrorCode,
   ErrorFactory
 } from '@/types/errors';
 
@@ -54,7 +54,7 @@ export class StudyService implements IStudyService {
    */
   async endStudySession(sessionId: string): Promise<SessionSummary> {
     try {
-      const sessionData = await this.sessionManager.getSessionData(sessionId);
+      await this.sessionManager.getSessionData(sessionId);
       await this.sessionManager.updateSession(sessionId, { 
         endTime: new Date(),
         status: 'completed'
@@ -270,8 +270,7 @@ export class StudyService implements IStudyService {
       return await this.db.studySessions
         .where('cardId')
         .equals(cardId)
-        .orderBy('studiedAt')
-        .toArray();
+        .sortBy('studiedAt');
     } catch (error) {
       throw ErrorFactory.database('get study history', error as Error);
     }
@@ -302,9 +301,9 @@ export class StudyService implements IStudyService {
   /**
    * 학습 세션 기록 (편의 메서드)
    */
-  async recordStudySession(cardId: number, quality: StudyQuality, responseTime: number): Promise<void> {
+  async recordStudySession(cardId: number, quality: StudyQuality, responseTime: number): Promise<number> {
     try {
-      await this.create({
+      return await this.create({
         cardId,
         quality,
         responseTime,
@@ -315,6 +314,55 @@ export class StudyService implements IStudyService {
         throw error;
       }
       throw ErrorFactory.database('record study session', error as Error);
+    }
+  }
+
+  /**
+   * 덱의 학습 통계 계산
+   */
+  async getDeckStats(deckId: number): Promise<DeckStats> {
+    try {
+      this.validateId(deckId);
+
+      const cards = await this.db.cards.where('deckId').equals(deckId).toArray();
+      const cardIds = cards.map(card => card.id).filter((id): id is number => id !== undefined);
+      const sessions = cardIds.length > 0
+        ? await this.db.studySessions.where('cardId').anyOf(cardIds).toArray()
+        : [];
+
+      const studiedCards = new Set(sessions.map(session => session.cardId)).size;
+      const averageQuality = sessions.length > 0
+        ? sessions.reduce((sum, session) => sum + session.quality, 0) / sessions.length
+        : 0;
+      const lastStudiedAt = sessions.length > 0
+        ? new Date(Math.max(...sessions.map(session => new Date(session.studiedAt).getTime())))
+        : undefined;
+
+      return {
+        totalCards: cards.length,
+        studiedCards,
+        averageQuality,
+        lastStudiedAt
+      };
+    } catch (error) {
+      if (error instanceof MyAnkiError) {
+        throw error;
+      }
+      throw ErrorFactory.database('get deck stats', error as Error);
+    }
+  }
+
+  /**
+   * 특정 기간의 학습 기록 조회 (시작·종료 날짜 포함)
+   */
+  async getStudyHistoryByDateRange(startDate: Date, endDate: Date): Promise<StudySession[]> {
+    try {
+      return await this.db.studySessions
+        .where('studiedAt')
+        .between(startDate, endDate, true, true)
+        .toArray();
+    } catch (error) {
+      throw ErrorFactory.database('get study history by date range', error as Error);
     }
   }
 

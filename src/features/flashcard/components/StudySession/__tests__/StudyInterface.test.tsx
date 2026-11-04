@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { StudyInterface } from '../StudyInterface';
 import { useStudySessionStore, setSessionManager, setSpacedRepetitionService } from '../../../../../store/StudySessionStore';
 import { ISessionManager } from '../../../../../services/SessionManager';
@@ -58,7 +58,7 @@ describe('StudyInterface Component', () => {
     setSpacedRepetitionService(mockSpacedRepetitionService);
 
     // Mock useStudySessionStore
-    (useStudySessionStore as jest.Mock).mockReturnValue({
+    (useStudySessionStore as unknown as jest.Mock).mockReturnValue({
       currentCard: { id: 1, deckId: 1, front: 'Front 1', back: 'Back 1' },
       isActive: true,
       loading: false,
@@ -103,7 +103,7 @@ describe('StudyInterface Component', () => {
   });
 
   it('should show loading state initially', () => {
-    (useStudySessionStore as jest.Mock).mockReturnValue({
+    (useStudySessionStore as unknown as jest.Mock).mockReturnValue({
       currentCard: null,
       isActive: false,
       loading: true,
@@ -139,7 +139,7 @@ describe('StudyInterface Component', () => {
   });
 
   it('should show error state when error occurs', () => {
-    (useStudySessionStore as jest.Mock).mockReturnValue({
+    (useStudySessionStore as unknown as jest.Mock).mockReturnValue({
       currentCard: null,
       isActive: false,
       loading: false,
@@ -176,7 +176,7 @@ describe('StudyInterface Component', () => {
   });
 
   it('should show session complete when no current card', () => {
-    (useStudySessionStore as jest.Mock).mockReturnValue({
+    (useStudySessionStore as unknown as jest.Mock).mockReturnValue({
       currentCard: null,
       isActive: true,
       loading: false,

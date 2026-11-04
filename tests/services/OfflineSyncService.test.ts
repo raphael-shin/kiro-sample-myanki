@@ -13,9 +13,15 @@ jest.mock('@/db/MyAnkiDB', () => ({
   },
 }));
 
+// jest.mock 팩토리가 만든 객체의 실제 형태
+type MockedDb = {
+  offlineQueue: { add: jest.Mock; toArray: jest.Mock; clear: jest.Mock; count?: jest.Mock };
+  transaction: jest.Mock;
+};
+
 describe('OfflineSyncService', () => {
   let service: OfflineSyncService;
-  const mockDb = db as jest.Mocked<typeof db>;
+  const mockDb = db as unknown as MockedDb;
 
   beforeEach(() => {
     service = new OfflineSyncService();
@@ -59,7 +65,7 @@ describe('OfflineSyncService', () => {
       ];
 
       mockDb.offlineQueue.toArray.mockResolvedValue(mockActions);
-      mockDb.transaction.mockImplementation((mode, tables, callback) => 
+      mockDb.transaction.mockImplementation((_mode, _tables, callback) => 
         callback({} as any)
       );
 

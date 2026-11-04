@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Card, StudyQuality, StudySessionData, SessionProgress } from '../types/flashcard';
+import { Card, StudyQuality } from '../types/flashcard';
 import { SpacedRepetitionService } from '../services/SpacedRepetitionService';
 import { SessionManager, ISessionManager } from '../services/SessionManager';
 
@@ -52,6 +52,9 @@ interface EnhancedStudySessionState {
   processAnswer: (quality: StudyQuality, responseTime: number) => Promise<void>;
   nextCard: () => void;
   showCardAnswer: () => void;
+
+  // 설정 액션
+  enableKeyboardShortcuts: (enabled: boolean) => void;
   
   // 진행률 추적 액션 (그룹화)
   getProgress: () => ProgressInfo;
@@ -257,6 +260,11 @@ export const useStudySessionStore = create<EnhancedStudySessionState>((set, get)
 
     showCardAnswer: () => {
       set({ showAnswer: true });
+    },
+
+    // 설정 액션
+    enableKeyboardShortcuts: (enabled: boolean) => {
+      set({ keyboardShortcutsEnabled: enabled });
     },
     
     // 진행률 추적 액션들
