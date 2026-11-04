@@ -120,6 +120,18 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
 
+      # kiro-cli reports a missing agent as a generic internal error, so check for
+      # the file here instead and name what is wrong.
+      - name: Check the reviewer agent exists
+        if: env.SKIP != 'true'
+        env:
+          AGENT: ${{ matrix.agent }}
+        run: |
+          if [ ! -f ".kiro/agents/$AGENT.json" ]; then
+            echo "::error::.kiro/agents/$AGENT.json is missing in this checkout, so kiro-cli cannot load the reviewer. Restore the agent definition."
+            exit 1
+          fi
+
       - name: Prepare diff
         if: env.SKIP != 'true'
         env:
