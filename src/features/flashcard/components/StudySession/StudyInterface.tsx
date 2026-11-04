@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useStudySessionStore } from '@/store/StudySessionStore';
 import { StudyQuality } from '@/types/flashcard';
 import { AnswerButtons } from './AnswerButtons';
@@ -11,6 +11,17 @@ interface StudyInterfaceProps {
 
 export const StudyInterface = ({ deckId, onComplete, onExit }: StudyInterfaceProps) => {
   const [feedbackMessage, setFeedbackMessage] = useState<string>('');
+  // 피드백 표시 중 예약된 답 처리 타이머. 값이 있으면 답을 처리하는 중이다
+  const pendingAnswerTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (pendingAnswerTimeoutRef.current !== null) {
+        clearTimeout(pendingAnswerTimeoutRef.current);
+        pendingAnswerTimeoutRef.current = null;
+      }
+    };
+  }, []);
   
   const {
     currentCard,
@@ -42,6 +53,9 @@ export const StudyInterface = ({ deckId, onComplete, onExit }: StudyInterfacePro
   }, [deckId, startSession, endSession, isActive]);
 
   const handleAnswer = useCallback(async (quality: StudyQuality) => {
+    // 이전 답을 처리하는 중이면 추가 입력을 무시한다
+    if (pendingAnswerTimeoutRef.current !== null) return;
+
     const responseTime = Date.now() - (new Date().getTime());
     
     // 피드백 메시지 표시
@@ -55,10 +69,14 @@ export const StudyInterface = ({ deckId, onComplete, onExit }: StudyInterfacePro
     setFeedbackMessage(feedbackMessages[quality]);
     
     // 1초 후 다음 카드로 진행
-    setTimeout(async () => {
-      await processAnswer(quality, responseTime);
-      nextCard();
-      setFeedbackMessage('');
+    pendingAnswerTimeoutRef.current = setTimeout(async () => {
+      try {
+        await processAnswer(quality, responseTime);
+        nextCard();
+        setFeedbackMessage('');
+      } finally {
+        pendingAnswerTimeoutRef.current = null;
+      }
     }, 1000);
   }, [processAnswer, nextCard]);
 

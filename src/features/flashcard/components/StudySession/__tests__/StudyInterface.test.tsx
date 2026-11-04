@@ -1,5 +1,6 @@
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import { StudyInterface } from '../StudyInterface';
+import { StudyQuality } from '@/types/flashcard';
 import { useStudySessionStore, setSessionManager, setSpacedRepetitionService } from '../../../../../store/StudySessionStore';
 import { ISessionManager } from '../../../../../services/SessionManager';
 import { SpacedRepetitionService } from '../../../../../services/SpacedRepetitionService';
@@ -240,6 +241,66 @@ describe('StudyInterface Component', () => {
     
     await waitFor(() => {
       expect(screen.getByText('Space: 답 보기, 1-4: 난이도')).toBeInTheDocument();
+    });
+  });
+
+  describe('answer while feedback is shown', () => {
+    let processAnswer: jest.Mock;
+    let nextCard: jest.Mock;
+
+    beforeEach(() => {
+      jest.useFakeTimers();
+      processAnswer = jest.fn().mockResolvedValue(undefined);
+      nextCard = jest.fn();
+      const state = (useStudySessionStore as unknown as jest.Mock)();
+      (useStudySessionStore as unknown as jest.Mock).mockReturnValue({
+        ...state,
+        showAnswer: true,
+        processAnswer,
+        nextCard
+      });
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('processes only the first answer when a number key is pressed twice within 1 second', async () => {
+      render(<StudyInterface deckId={1} />);
+
+      act(() => {
+        fireEvent.keyDown(window, { key: '3' });
+      });
+      act(() => {
+        jest.advanceTimersByTime(500);
+      });
+      act(() => {
+        fireEvent.keyDown(window, { key: '1' });
+      });
+
+      await act(async () => {
+        jest.advanceTimersByTime(2000);
+      });
+
+      expect(processAnswer).toHaveBeenCalledTimes(1);
+      expect(processAnswer).toHaveBeenCalledWith(StudyQuality.GOOD, expect.any(Number));
+      expect(nextCard).toHaveBeenCalledTimes(1);
+    });
+
+    it('cancels the pending answer when the component unmounts', async () => {
+      const { unmount } = render(<StudyInterface deckId={1} />);
+
+      act(() => {
+        fireEvent.keyDown(window, { key: '3' });
+      });
+      unmount();
+
+      await act(async () => {
+        jest.advanceTimersByTime(2000);
+      });
+
+      expect(processAnswer).not.toHaveBeenCalled();
+      expect(nextCard).not.toHaveBeenCalled();
     });
   });
 });
