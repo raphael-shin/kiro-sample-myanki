@@ -12,7 +12,7 @@ import * as route53Targets from 'aws-cdk-lib/aws-route53-targets';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
-import { CloudFrontOriginFacingPrefixList } from './cloudfront-prefix-list';
+import { CLOUDFRONT_ORIGIN_FACING_PREFIX_LIST, ManagedPrefixList } from './managed-prefix-list';
 import { MyAnkiConfig, OriginVerifySlot } from './config';
 import { REPOSITORY_NAME } from './ecr-stack';
 
@@ -92,7 +92,9 @@ export class MyAnkiAppStack extends Stack {
     });
     // The managed prefix list counts as many rules against the security group
     // quota. Do not add other ingress rules to this group.
-    const cloudFrontPrefixList = new CloudFrontOriginFacingPrefixList(this, 'CloudFrontPrefixList');
+    const cloudFrontPrefixList = new ManagedPrefixList(this, 'CloudFrontPrefixList', {
+      prefixListName: CLOUDFRONT_ORIGIN_FACING_PREFIX_LIST,
+    });
     albSecurityGroup.addIngressRule(
       ec2.Peer.prefixList(cloudFrontPrefixList.prefixListId),
       ec2.Port.tcp(443),

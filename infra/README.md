@@ -27,7 +27,7 @@ MyAnki 정적 빌드(`dist/`)를 ECS Fargate에서 nginx로 서빙하고, 사용
 
 ### prefix list 조회 방식
 
-prefix list ID는 리전마다 달라서 하드코딩할 수 없고, `fromLookup` 계열은 `cdk synth` 때 AWS 자격 증명이 필요합니다. 그래서 `lib/cloudfront-prefix-list.ts`의 `AwsCustomResource`가 CloudFormation 배포 중에 `ec2:DescribeManagedPrefixLists`(필터 `prefix-list-name`)를 호출하고, 응답의 `PrefixLists.0.PrefixListId`를 보안 그룹 규칙에 넣습니다. 이 custom resource의 IAM 정책은 그 API 하나뿐입니다. 이 API는 리소스 수준 권한을 지원하지 않아 `Resource: "*"`입니다.
+prefix list ID는 리전마다 달라서 하드코딩할 수 없고, `fromLookup` 계열은 `cdk synth` 때 AWS 자격 증명이 필요합니다. 그래서 `lib/managed-prefix-list.ts`의 `AwsCustomResource`가 CloudFormation 배포 중에 `ec2:DescribeManagedPrefixLists`(필터 `prefix-list-name`)를 호출하고, 응답의 `PrefixLists.0.PrefixListId`를 보안 그룹 규칙에 넣습니다. 이 custom resource의 IAM 정책은 그 API 하나뿐입니다. 이 API는 리소스 수준 권한을 지원하지 않아 `Resource: "*"`입니다.
 
 이 prefix list는 보안 그룹 규칙 할당량을 여러 개 차지합니다. ALB 보안 그룹에는 다른 인바운드 규칙을 추가하지 마세요.
 

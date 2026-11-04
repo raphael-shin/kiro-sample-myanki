@@ -2,7 +2,7 @@ import { App } from 'aws-cdk-lib';
 import { Match, Template } from 'aws-cdk-lib/assertions';
 import { RegionInfo } from 'aws-cdk-lib/region-info';
 import { AwsSolutionsChecks } from 'cdk-nag';
-import { CLOUDFRONT_ORIGIN_FACING_PREFIX_LIST } from '../lib/cloudfront-prefix-list';
+import { CLOUDFRONT_ORIGIN_FACING_PREFIX_LIST } from '../lib/managed-prefix-list';
 import { createMyAnkiStacks } from '../lib/myanki';
 
 // Placeholder values only: the all-zero account and IDs are not real.
@@ -134,7 +134,7 @@ describe('ALB protection', () => {
     const rules = ingressRulesOf(template, albSecurityGroupId(template));
     expect(rules).toHaveLength(1);
 
-    const [lookupId, lookup] = onlyResource(template, 'Custom::CloudFrontOriginFacingPrefixList');
+    const [lookupId, lookup] = onlyResource(template, 'Custom::ManagedPrefixListLookup');
     expect(rules[0]).toEqual({
       Description: expect.any(String),
       GroupId: expect.anything(),
@@ -158,7 +158,7 @@ describe('ALB protection', () => {
 
   test('the prefix list lookup may only call ec2:DescribeManagedPrefixLists', () => {
     const { template } = build();
-    const [, lookup] = onlyResource(template, 'Custom::CloudFrontOriginFacingPrefixList');
+    const [, lookup] = onlyResource(template, 'Custom::ManagedPrefixListLookup');
     const [policyId] = (lookup as unknown as { DependsOn: string[] }).DependsOn;
     const policy = template.findResources('AWS::IAM::Policy')[policyId];
     expect(policy.Properties.PolicyDocument.Statement).toEqual([

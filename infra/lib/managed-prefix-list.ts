@@ -11,33 +11,41 @@ import { Construct } from 'constructs';
 
 export const CLOUDFRONT_ORIGIN_FACING_PREFIX_LIST = 'com.amazonaws.global.cloudfront.origin-facing';
 
+/** Name of the AWS-managed prefix list for the S3 gateway endpoint in `region`. */
+export const s3PrefixListName = (region: string): string => `com.amazonaws.${region}.s3`;
+
+export interface ManagedPrefixListProps {
+  /** AWS-managed prefix list name, e.g. `com.amazonaws.global.cloudfront.origin-facing`. */
+  readonly prefixListName: string;
+}
+
 /**
- * Resolves the ID of the AWS-managed CloudFront origin-facing prefix list at
- * deploy time.
+ * Resolves the ID of an AWS-managed prefix list at deploy time.
  *
- * The ID differs per region, so it is not hardcoded. `fromLookup` would need
- * AWS credentials during `cdk synth`, so the lookup runs in CloudFormation
- * instead: a custom resource calls `ec2:DescribeManagedPrefixLists` (and
- * nothing else) on create and on every update.
+ * Managed prefix list IDs differ per region, so they are not hardcoded.
+ * `fromLookup` would need AWS credentials during `cdk synth`, so the lookup
+ * runs in CloudFormation instead: a custom resource calls
+ * `ec2:DescribeManagedPrefixLists` (and nothing else) on create and on every
+ * update.
  */
-export class CloudFrontOriginFacingPrefixList extends Construct {
+export class ManagedPrefixList extends Construct {
   public readonly prefixListId: string;
 
-  constructor(scope: Construct, id: string) {
+  constructor(scope: Construct, id: string, props: ManagedPrefixListProps) {
     super(scope, id);
 
     const describe: AwsSdkCall = {
       service: 'EC2',
       action: 'describeManagedPrefixLists',
       parameters: {
-        Filters: [{ Name: 'prefix-list-name', Values: [CLOUDFRONT_ORIGIN_FACING_PREFIX_LIST] }],
+        Filters: [{ Name: 'prefix-list-name', Values: [props.prefixListName] }],
       },
-      physicalResourceId: PhysicalResourceId.of(CLOUDFRONT_ORIGIN_FACING_PREFIX_LIST),
+      physicalResourceId: PhysicalResourceId.of(props.prefixListName),
       outputPaths: ['PrefixLists.0.PrefixListId'],
     };
 
     const lookup = new AwsCustomResource(this, 'Lookup', {
-      resourceType: 'Custom::CloudFrontOriginFacingPrefixList',
+      resourceType: 'Custom::ManagedPrefixListLookup',
       onCreate: describe,
       onUpdate: describe,
       policy: AwsCustomResourcePolicy.fromStatements([
