@@ -132,6 +132,15 @@ jobs:
           fi
           cat .github/review-prompts/common.md ".github/review-prompts/${{ matrix.prompt }}" > .review/prompt.md
 
+      # The AWS IaC MCP server runs through uvx. Installing it here keeps its
+      # start-up inside the MCP connection timeout.
+      - name: Install uv and the AWS IaC MCP server
+        if: env.SKIP != 'true' && matrix.agent == 'aws-reviewer'
+        uses: astral-sh/setup-uv@v6
+      - name: Cache the AWS IaC MCP server
+        if: env.SKIP != 'true' && matrix.agent == 'aws-reviewer'
+        run: uv tool install awslabs.aws-iac-mcp-server@latest
+
       - name: Install Kiro CLI
         if: env.SKIP != 'true'
         run: |
