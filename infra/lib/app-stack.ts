@@ -12,7 +12,7 @@ import * as route53Targets from 'aws-cdk-lib/aws-route53-targets';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
-import { CLOUDFRONT_ORIGIN_FACING_PREFIX_LIST, ManagedPrefixList } from './managed-prefix-list';
+import { CLOUDFRONT_ORIGIN_FACING_PREFIX_LIST, ManagedPrefixList, s3PrefixListName } from './managed-prefix-list';
 import { MyAnkiConfig, OriginVerifySlot } from './config';
 import { REPOSITORY_NAME } from './ecr-stack';
 
@@ -71,12 +71,6 @@ export class MyAnkiAppStack extends Stack {
         { name: 'Public', subnetType: ec2.SubnetType.PUBLIC, cidrMask: 24, mapPublicIpOnLaunch: false },
         { name: 'App', subnetType: ec2.SubnetType.PRIVATE_ISOLATED, cidrMask: 24 },
       ],
-      gatewayEndpoints: {
-        S3: {
-          service: ec2.GatewayVpcEndpointAwsService.S3,
-          subnets: [{ subnetType: ec2.SubnetType.PRIVATE_ISOLATED }],
-        },
-      },
       flowLogs: {
         all: {
           destination: ec2.FlowLogDestination.toCloudWatchLogs(flowLogGroup),
@@ -101,12 +95,13 @@ export class MyAnkiAppStack extends Stack {
       'HTTPS from CloudFront origin-facing servers',
     );
 
+    // Tasks only need HTTPS to the interface endpoints (ECR API/DKR, Logs) and
+    // to S3 through the gateway endpoint (ECR image layers). DNS to the VPC
+    // resolver is not filtered by security groups.
     const taskSecurityGroup = new ec2.SecurityGroup(this, 'TaskSecurityGroup', {
       vpc,
       description: 'MyAnki tasks: port 8080 from the ALB only',
-      // Egress has nowhere to go but the VPC endpoints: the subnets have no
-      // NAT gateway and no internet gateway route.
-      allowAllOutbound: true,
+      allowAllOutbound: false,
     });
 
     const endpointSecurityGroup = new ec2.SecurityGroup(this, 'EndpointSecurityGroup', {
@@ -114,20 +109,40 @@ export class MyAnkiAppStack extends Stack {
       description: 'MyAnki interface endpoints: HTTPS from tasks only',
       allowAllOutbound: false,
     });
-    endpointSecurityGroup.addIngressRule(taskSecurityGroup, ec2.Port.tcp(443), 'HTTPS from MyAnki tasks');
+    taskSecurityGroup.connections.allowTo(
+      endpointSecurityGroup,
+      ec2.Port.tcp(443),
+      'HTTPS between MyAnki tasks and interface endpoints',
+    );
+    const s3PrefixList = new ManagedPrefixList(this, 'S3PrefixList', {
+      prefixListName: s3PrefixListName(this.region),
+    });
+    taskSecurityGroup.addEgressRule(
+      ec2.Peer.prefixList(s3PrefixList.prefixListId),
+      ec2.Port.tcp(443),
+      'HTTPS to S3 through the gateway endpoint (ECR image layers)',
+    );
 
+    const endpoints: Construct[] = [
+      vpc.addGatewayEndpoint('S3', {
+        service: ec2.GatewayVpcEndpointAwsService.S3,
+        subnets: [{ subnetType: ec2.SubnetType.PRIVATE_ISOLATED }],
+      }),
+    ];
     for (const [id, service] of [
       ['EcrApiEndpoint', ec2.InterfaceVpcEndpointAwsService.ECR],
       ['EcrDockerEndpoint', ec2.InterfaceVpcEndpointAwsService.ECR_DOCKER],
       ['LogsEndpoint', ec2.InterfaceVpcEndpointAwsService.CLOUDWATCH_LOGS],
     ] as const) {
-      vpc.addInterfaceEndpoint(id, {
-        service,
-        subnets: { subnetType: ec2.SubnetType.PRIVATE_ISOLATED },
-        privateDnsEnabled: true,
-        securityGroups: [endpointSecurityGroup],
-        open: false,
-      });
+      endpoints.push(
+        vpc.addInterfaceEndpoint(id, {
+          service,
+          subnets: { subnetType: ec2.SubnetType.PRIVATE_ISOLATED },
+          privateDnsEnabled: true,
+          securityGroups: [endpointSecurityGroup],
+          open: false,
+        }),
+      );
     }
 
     // ------------------------------------------------------ origin secret
@@ -202,6 +217,9 @@ export class MyAnkiAppStack extends Stack {
       securityGroups: [taskSecurityGroup],
       circuitBreaker: { rollback: true },
     });
+    // Tasks in isolated subnets cannot pull the image or ship logs until the
+    // endpoints exist.
+    service.node.addDependency(...endpoints);
 
     // --------------------------------------------------------------- ALB
     const alb = new elbv2.ApplicationLoadBalancer(this, 'Alb', {

@@ -2,7 +2,7 @@ import { App } from 'aws-cdk-lib';
 import { Match, Template } from 'aws-cdk-lib/assertions';
 import { RegionInfo } from 'aws-cdk-lib/region-info';
 import { AwsSolutionsChecks } from 'cdk-nag';
-import { CLOUDFRONT_ORIGIN_FACING_PREFIX_LIST } from '../lib/managed-prefix-list';
+import { CLOUDFRONT_ORIGIN_FACING_PREFIX_LIST, s3PrefixListName } from '../lib/managed-prefix-list';
 import { createMyAnkiStacks } from '../lib/myanki';
 
 // Placeholder values only: the all-zero account and IDs are not real.
@@ -51,6 +51,26 @@ function ingressRulesOf(template: Template, groupLogicalId: string): Array<Recor
     .map(([, rule]) => rule.Properties)
     .filter((rule) => JSON.stringify(rule.GroupId) === JSON.stringify({ 'Fn::GetAtt': [groupLogicalId, 'GroupId'] }));
   return [...inline, ...standalone];
+}
+
+/** Standalone egress rules of `groupLogicalId` (CDK writes token peers as standalone rules). */
+function egressRulesOf(template: Template, groupLogicalId: string): Array<Record<string, CfnJson>> {
+  const [, group] = resourcesOfType(template, 'AWS::EC2::SecurityGroup').find(
+    ([id]) => id === groupLogicalId,
+  ) as [string, Resource];
+  expect(group.Properties.SecurityGroupEgress).toBeUndefined();
+  return resourcesOfType(template, 'AWS::EC2::SecurityGroupEgress')
+    .map(([, rule]) => rule.Properties)
+    .filter((rule) => JSON.stringify(rule.GroupId) === JSON.stringify({ 'Fn::GetAtt': [groupLogicalId, 'GroupId'] }));
+}
+
+/** The custom resource that looks up `prefixListName` at deploy time. */
+function prefixListLookup(template: Template, prefixListName: string): [string, Resource] {
+  const found = resourcesOfType(template, 'Custom::ManagedPrefixListLookup').filter(
+    ([, lookup]) => JSON.parse(lookup.Properties.Create).parameters.Filters[0].Values[0] === prefixListName,
+  );
+  expect(found).toHaveLength(1);
+  return found[0];
 }
 
 function albSecurityGroupId(template: Template): string {
@@ -134,7 +154,7 @@ describe('ALB protection', () => {
     const rules = ingressRulesOf(template, albSecurityGroupId(template));
     expect(rules).toHaveLength(1);
 
-    const [lookupId, lookup] = onlyResource(template, 'Custom::ManagedPrefixListLookup');
+    const [lookupId, lookup] = prefixListLookup(template, CLOUDFRONT_ORIGIN_FACING_PREFIX_LIST);
     expect(rules[0]).toEqual({
       Description: expect.any(String),
       GroupId: expect.anything(),
@@ -156,27 +176,22 @@ describe('ALB protection', () => {
     expect(JSON.stringify(template.toJSON())).not.toMatch(/"pl-[0-9a-f]+"/);
   });
 
-  test('the prefix list lookup may only call ec2:DescribeManagedPrefixLists', () => {
+  test('prefix list lookups may only call ec2:DescribeManagedPrefixLists', () => {
     const { template } = build();
-    const [, lookup] = onlyResource(template, 'Custom::ManagedPrefixListLookup');
-    const [policyId] = (lookup as unknown as { DependsOn: string[] }).DependsOn;
-    const policy = template.findResources('AWS::IAM::Policy')[policyId];
-    expect(policy.Properties.PolicyDocument.Statement).toEqual([
-      { Action: 'ec2:DescribeManagedPrefixLists', Effect: 'Allow', Resource: '*' },
-    ]);
+    const lookups = resourcesOfType(template, 'Custom::ManagedPrefixListLookup');
+    expect(lookups).toHaveLength(2);
+    for (const [, lookup] of lookups) {
+      const [policyId] = (lookup as unknown as { DependsOn: string[] }).DependsOn;
+      const policy = template.findResources('AWS::IAM::Policy')[policyId];
+      expect(policy.Properties.PolicyDocument.Statement).toEqual([
+        { Action: 'ec2:DescribeManagedPrefixLists', Effect: 'Allow', Resource: '*' },
+      ]);
+    }
   });
 
   test('the ALB security group can only send 8080 to the task security group', () => {
     const { template } = build();
-    const albGroup = albSecurityGroupId(template);
-    const [, group] = resourcesOfType(template, 'AWS::EC2::SecurityGroup').find(([id]) => id === albGroup) as [
-      string,
-      Resource,
-    ];
-    expect(group.Properties.SecurityGroupEgress).toBeUndefined();
-    const egress = resourcesOfType(template, 'AWS::EC2::SecurityGroupEgress')
-      .map(([, rule]) => rule.Properties)
-      .filter((rule) => JSON.stringify(rule.GroupId) === JSON.stringify({ 'Fn::GetAtt': [albGroup, 'GroupId'] }));
+    const egress = egressRulesOf(template, albSecurityGroupId(template));
     expect(egress).toEqual([
       {
         Description: expect.any(String),
@@ -200,6 +215,12 @@ describe('ALB protection', () => {
     for (const rule of allIngress) {
       expect(rule.CidrIp).not.toBe('0.0.0.0/0');
       expect(rule.CidrIpv6).not.toBe('::/0');
+    }
+    // No group in this stack allows all outbound traffic either.
+    for (const [, group] of resourcesOfType(template, 'AWS::EC2::SecurityGroup')) {
+      for (const rule of group.Properties.SecurityGroupEgress ?? []) {
+        expect(rule.CidrIp).not.toBe('0.0.0.0/0');
+      }
     }
   });
 
@@ -259,6 +280,49 @@ describe('tasks', () => {
       ToPort: 8080,
       SourceSecurityGroupId: { 'Fn::GetAtt': [albGroup, 'GroupId'] },
     });
+  });
+
+  test('tasks can only send HTTPS to the interface endpoints and the S3 prefix list', () => {
+    const { template } = build();
+    const egress = egressRulesOf(template, taskSecurityGroupId(template));
+    const endpointGroups = resourcesOfType(template, 'AWS::EC2::VPCEndpoint')
+      .filter(([, endpoint]) => endpoint.Properties.VpcEndpointType === 'Interface')
+      .map(([, endpoint]) => JSON.stringify(endpoint.Properties.SecurityGroupIds));
+    expect(new Set(endpointGroups).size).toBe(1);
+    const [endpointGroup] = JSON.parse(endpointGroups[0]);
+    const [s3LookupId] = prefixListLookup(template, s3PrefixListName(CONTEXT.region));
+
+    expect(egress).toHaveLength(2);
+    expect(egress).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ IpProtocol: 'tcp', FromPort: 443, ToPort: 443, DestinationSecurityGroupId: endpointGroup }),
+        expect.objectContaining({
+          IpProtocol: 'tcp',
+          FromPort: 443,
+          ToPort: 443,
+          DestinationPrefixListId: { 'Fn::GetAtt': [s3LookupId, 'PrefixLists.0.PrefixListId'] },
+        }),
+      ]),
+    );
+    // The interface endpoints accept HTTPS from tasks only.
+    const endpointGroupId = endpointGroup['Fn::GetAtt'][0];
+    expect(ingressRulesOf(template, endpointGroupId)).toEqual([
+      expect.objectContaining({
+        IpProtocol: 'tcp',
+        FromPort: 443,
+        ToPort: 443,
+        SourceSecurityGroupId: { 'Fn::GetAtt': [taskSecurityGroupId(template), 'GroupId'] },
+      }),
+    ]);
+  });
+
+  test('the service is created after the VPC endpoints it needs', () => {
+    const { template } = build();
+    const [, service] = onlyResource(template, 'AWS::ECS::Service');
+    const dependsOn = (service as unknown as { DependsOn: string[] }).DependsOn;
+    const endpointIds = resourcesOfType(template, 'AWS::EC2::VPCEndpoint').map(([id]) => id);
+    expect(endpointIds).toHaveLength(4);
+    expect(dependsOn).toEqual(expect.arrayContaining(endpointIds));
   });
 
   test('the task definition runs as non-root with a read-only root filesystem', () => {

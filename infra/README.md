@@ -15,7 +15,8 @@ MyAnki 정적 빌드(`dist/`)를 ECS Fargate에서 nginx로 서빙하고, 사용
 | --- | --- |
 | 스택 | `MyAnkiEcr`(ECR 저장소), `MyAnkiApp`(나머지 전부). 이미지를 먼저 push해야 서비스가 뜨므로 둘로 나눴습니다. |
 | VPC | AZ 2개. public subnet(ALB)과 isolated subnet(태스크). NAT Gateway 없음. VPC Flow Logs → CloudWatch Logs(30일). |
-| VPC 엔드포인트 | ECR API·ECR DKR·CloudWatch Logs는 interface, S3는 gateway. interface 엔드포인트 보안 그룹은 태스크 보안 그룹에서 오는 443만 받습니다. |
+| VPC 엔드포인트 | ECR API·ECR DKR·CloudWatch Logs는 interface, S3는 gateway. interface 엔드포인트 보안 그룹은 태스크 보안 그룹에서 오는 443만 받습니다. ECS 서비스는 엔드포인트가 모두 만들어진 뒤에 생성됩니다. |
+| 태스크 보안 그룹 | 인바운드는 ALB 보안 그룹에서 오는 8080만. 아웃바운드는 interface 엔드포인트 보안 그룹으로 443, S3 gateway prefix list(`com.amazonaws.<region>.s3`)로 443 두 개뿐입니다. |
 | ALB 보호 1: 네트워크 | ALB 보안 그룹 인바운드는 `com.amazonaws.global.cloudfront.origin-facing` prefix list에서 오는 443 하나뿐입니다. prefix list ID는 배포할 때 custom resource가 `ec2:DescribeManagedPrefixLists`로 조회합니다(아래 참고). |
 | ALB 보호 2: 헤더 | 리스너 기본 동작은 `403` 고정 응답입니다. `X-Origin-Verify` 값이 시크릿 A 또는 B와 일치하는 요청만 대상 그룹으로 갑니다. CloudFront는 그중 활성 슬롯 값을 origin 요청에 붙입니다. |
 | TLS | CloudFront 뷰어: HTTPS 리다이렉트, 최소 `TLSv1.2_2021`, us-east-1 ACM 인증서. CloudFront → ALB: `HTTPS_ONLY`, TLSv1.2. ALB 리스너 443, `ELBSecurityPolicy-TLS13-1-2-2021-06`. |
@@ -27,7 +28,7 @@ MyAnki 정적 빌드(`dist/`)를 ECS Fargate에서 nginx로 서빙하고, 사용
 
 ### prefix list 조회 방식
 
-prefix list ID는 리전마다 달라서 하드코딩할 수 없고, `fromLookup` 계열은 `cdk synth` 때 AWS 자격 증명이 필요합니다. 그래서 `lib/managed-prefix-list.ts`의 `AwsCustomResource`가 CloudFormation 배포 중에 `ec2:DescribeManagedPrefixLists`(필터 `prefix-list-name`)를 호출하고, 응답의 `PrefixLists.0.PrefixListId`를 보안 그룹 규칙에 넣습니다. 이 custom resource의 IAM 정책은 그 API 하나뿐입니다. 이 API는 리소스 수준 권한을 지원하지 않아 `Resource: "*"`입니다.
+prefix list ID는 리전마다 달라서 하드코딩할 수 없고, `fromLookup` 계열은 `cdk synth` 때 AWS 자격 증명이 필요합니다. 그래서 `lib/managed-prefix-list.ts`의 `AwsCustomResource`가 CloudFormation 배포 중에 `ec2:DescribeManagedPrefixLists`(필터 `prefix-list-name`)를 호출하고, 응답의 `PrefixLists.0.PrefixListId`를 보안 그룹 규칙에 넣습니다. CloudFront origin-facing(ALB 인바운드)과 S3 gateway(태스크 아웃바운드) 두 목록을 이렇게 조회합니다. custom resource의 IAM 정책은 그 API 하나뿐입니다. 이 API는 리소스 수준 권한을 지원하지 않아 `Resource: "*"`입니다.
 
 이 prefix list는 보안 그룹 규칙 할당량을 여러 개 차지합니다. ALB 보안 그룹에는 다른 인바운드 규칙을 추가하지 마세요.
 
