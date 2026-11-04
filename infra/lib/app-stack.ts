@@ -264,6 +264,10 @@ export class MyAnkiAppStack extends Stack {
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD,
         cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+        // AWS-managed SecurityHeadersPolicy: HSTS, nosniff, frame options,
+        // referrer policy. A Content-Security-Policy needs the app's real
+        // connect/style sources and is left to a separate change.
+        responseHeadersPolicy: cloudfront.ResponseHeadersPolicy.SECURITY_HEADERS,
         compress: true,
       },
     });

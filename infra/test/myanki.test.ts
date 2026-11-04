@@ -105,6 +105,15 @@ describe('context', () => {
     );
   });
 
+  test('opt-in regions are rejected because CloudFront logging cannot reach them', () => {
+    expect(() =>
+      build({
+        region: 'ap-east-1',
+        albCertificateArn: CONTEXT.albCertificateArn.replace('ap-northeast-2', 'ap-east-1'),
+      }),
+    ).toThrow(/region "ap-east-1" is an opt-in region/);
+  });
+
   test('the domain must be inside the hosted zone', () => {
     expect(() => build({ domainName: 'myanki.example.org' })).toThrow(/domainName must be inside hostedZoneName/);
   });
@@ -154,6 +163,29 @@ describe('ALB protection', () => {
     const policy = template.findResources('AWS::IAM::Policy')[policyId];
     expect(policy.Properties.PolicyDocument.Statement).toEqual([
       { Action: 'ec2:DescribeManagedPrefixLists', Effect: 'Allow', Resource: '*' },
+    ]);
+  });
+
+  test('the ALB security group can only send 8080 to the task security group', () => {
+    const { template } = build();
+    const albGroup = albSecurityGroupId(template);
+    const [, group] = resourcesOfType(template, 'AWS::EC2::SecurityGroup').find(([id]) => id === albGroup) as [
+      string,
+      Resource,
+    ];
+    expect(group.Properties.SecurityGroupEgress).toBeUndefined();
+    const egress = resourcesOfType(template, 'AWS::EC2::SecurityGroupEgress')
+      .map(([, rule]) => rule.Properties)
+      .filter((rule) => JSON.stringify(rule.GroupId) === JSON.stringify({ 'Fn::GetAtt': [albGroup, 'GroupId'] }));
+    expect(egress).toEqual([
+      {
+        Description: expect.any(String),
+        GroupId: expect.anything(),
+        IpProtocol: 'tcp',
+        FromPort: 8080,
+        ToPort: 8080,
+        DestinationSecurityGroupId: { 'Fn::GetAtt': [taskSecurityGroupId(template), 'GroupId'] },
+      },
     ]);
   });
 
@@ -312,6 +344,15 @@ describe('CloudFront', () => {
       MinimumProtocolVersion: 'TLSv1.2_2021',
       SslSupportMethod: 'sni-only',
     });
+  });
+
+  test('adds the AWS-managed security headers policy to responses', () => {
+    const { template } = build();
+    const [, distribution] = onlyResource(template, 'AWS::CloudFront::Distribution');
+    expect(distribution.Properties.DistributionConfig.DefaultCacheBehavior.ResponseHeadersPolicyId).toBe(
+      // Managed-SecurityHeadersPolicy
+      '67f7725c-6f97-4210-82d7-5512b31e9d03',
+    );
   });
 
   test('sends the active origin-verify secret as a dynamic reference, never the value', () => {

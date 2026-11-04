@@ -1,3 +1,5 @@
+import { RegionInfo } from 'aws-cdk-lib/region-info';
+
 /**
  * Deployment parameters for the MyAnki stacks.
  *
@@ -83,6 +85,10 @@ export function loadConfig(read: ContextReader): MyAnkiConfig {
   const problems: string[] = [];
   if (!/^[a-z]{2}(-[a-z]+)+-\d$/.test(region)) {
     problems.push(`region "${region}" is not an AWS region name`);
+  } else if (RegionInfo.get(region).isOptInRegion) {
+    // The access log bucket lives in this region, and CloudFront standard
+    // logging (legacy) cannot deliver to buckets in opt-in regions.
+    problems.push(`region "${region}" is an opt-in region; CloudFront standard logging cannot deliver there`);
   }
   if (domainName !== hostedZoneName && !domainName.endsWith(`.${hostedZoneName}`)) {
     problems.push('domainName must be inside hostedZoneName');

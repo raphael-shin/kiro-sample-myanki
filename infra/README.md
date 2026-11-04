@@ -19,6 +19,7 @@ MyAnki 정적 빌드(`dist/`)를 ECS Fargate에서 nginx로 서빙하고, 사용
 | ALB 보호 1: 네트워크 | ALB 보안 그룹 인바운드는 `com.amazonaws.global.cloudfront.origin-facing` prefix list에서 오는 443 하나뿐입니다. prefix list ID는 배포할 때 custom resource가 `ec2:DescribeManagedPrefixLists`로 조회합니다(아래 참고). |
 | ALB 보호 2: 헤더 | 리스너 기본 동작은 `403` 고정 응답입니다. `X-Origin-Verify` 값이 시크릿 A 또는 B와 일치하는 요청만 대상 그룹으로 갑니다. CloudFront는 그중 활성 슬롯 값을 origin 요청에 붙입니다. |
 | TLS | CloudFront 뷰어: HTTPS 리다이렉트, 최소 `TLSv1.2_2021`, us-east-1 ACM 인증서. CloudFront → ALB: `HTTPS_ONLY`, TLSv1.2. ALB 리스너 443, `ELBSecurityPolicy-TLS13-1-2-2021-06`. |
+| 응답 헤더 | CloudFront 관리형 `SecurityHeadersPolicy`(HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`). Content-Security-Policy는 앱이 실제로 쓰는 출처를 확인한 뒤 별도로 추가합니다. |
 | ECS | Fargate, X86_64, 태스크 2개. uid `101:101`, `readonlyRootFilesystem: true`, 쓰기 경로는 `/tmp` 볼륨 하나. 헬스 체크 `/healthz`(ALB 대상 그룹과 컨테이너 둘 다). 태스크 역할에는 권한이 없습니다. |
 | 로그 | ALB·CloudFront 액세스 로그는 S3 버킷 하나(`alb/`, `cloudfront/` 접두사). Block Public Access 4개, SSL 강제, SSE-S3, 90일 만료. 앱·Flow Logs·custom resource 로그 그룹은 30일 보존. |
 | ECR | 푸시 시 스캔, 태그 변경 불가(immutable), 최근 30개 이미지 보관. |
@@ -43,7 +44,7 @@ prefix list ID는 리전마다 달라서 하드코딩할 수 없고, `fromLookup
 
 | 키 | 필수 | 예시 | 설명 |
 | --- | --- | --- | --- |
-| `region` | 예 | `ap-northeast-2` | ALB·ECS·VPC 리전 |
+| `region` | 예 | `ap-northeast-2` | ALB·ECS·VPC·로그 버킷 리전. opt-in 리전(예: `ap-east-1`, `me-south-1`)은 CloudFront 표준 로깅(legacy)이 지원하지 않아 synth가 거부합니다 |
 | `domainName` | 예 | `myanki.example.com` | 사용자가 접속하는 이름. `hostedZoneName` 안에 있어야 합니다 |
 | `hostedZoneId` | 예 | `Z0000000000EXAMPLE` | Route 53 hosted zone ID. lookup 없이 그대로 씁니다 |
 | `hostedZoneName` | 예 | `example.com` | hosted zone 이름 |
@@ -124,7 +125,15 @@ npx cdk destroy MyAnkiApp $CONTEXT
 npx cdk destroy MyAnkiEcr $CONTEXT
 ```
 
-액세스 로그 버킷과 ECR 저장소는 `RETAIN`이라 스택을 지워도 남습니다. 필요 없으면 내용을 확인한 뒤 직접 지우세요. 시크릿은 스택과 함께 삭제 예약됩니다(Secrets Manager 기본 복구 기간 적용).
+액세스 로그 버킷과 ECR 저장소는 `RETAIN`이라 스택을 지워도 남습니다. 필요 없으면 내용을 확인한 뒤 직접 지우세요.
+
+origin-verify 시크릿 두 개는 스택과 함께 **삭제 예약**됩니다(Secrets Manager 복구 기간, 기본 30일). 그동안 이름 `MyAnkiApp/origin-verify/a`, `/b`가 점유되어 있어, 복구 기간 안에 `MyAnkiApp`을 다시 배포하면 시크릿 생성에서 실패하고 스택이 롤백됩니다. 복구 기간 안에 다시 배포하려면 먼저 두 시크릿을 즉시 삭제하세요. 재배포하면 새 값이 생성됩니다.
+
+```bash
+for slot in a b; do
+  aws secretsmanager delete-secret --secret-id "MyAnkiApp/origin-verify/$slot" --force-delete-without-recovery
+done
+```
 
 ## X-Origin-Verify 교체 절차
 
