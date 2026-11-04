@@ -32,8 +32,8 @@ MyAnki는 SM-2 간격 반복(Spaced Repetition) 알고리즘을 활용한 플래
 
 ```bash
 # 프로젝트 클론
-git clone <repository-url>
-cd myanki
+git clone https://github.com/raphael-shin/kiro-sample-myanki.git
+cd kiro-sample-myanki
 
 # 의존성 설치
 npm install
@@ -78,7 +78,7 @@ npm run test:watch
 ## 📁 프로젝트 구조
 
 ```
-myanki/
+kiro-sample-myanki/
 ├── public/                 # 정적 자산
 ├── src/                    # 소스 코드
 │   ├── components/         # 재사용 가능한 UI 컴포넌트
