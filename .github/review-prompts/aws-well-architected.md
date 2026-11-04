@@ -16,6 +16,13 @@ the AWS Well-Architected Framework:
   configuration kept out of code.
 - **Sustainability**: unnecessary repeated work.
 
+Use the AWS Knowledge MCP server (`aws-knowledge-mcp-server`) to ground each
+finding in official guidance: `search_documentation` for the relevant
+Well-Architected best practice or service documentation, and `read_documentation`
+to confirm it. Cite the page you relied on with its URL at the end of the finding.
+If that server's tools are not available in this session, say so in one line under
+참고 and review from your own knowledge.
+
 Name the pillar in each finding's title, for example
 `**src/services/X.ts:10 — [Security] ...**`. Ignore non-AWS code unless it directly
 affects how AWS is used.

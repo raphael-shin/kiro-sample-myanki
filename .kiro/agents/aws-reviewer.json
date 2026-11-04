@@ -1,0 +1,51 @@
+{
+  "name": "aws-reviewer",
+  "description": "Read-only AWS Well-Architected reviewer used by the AI Review workflow, with the AWS Knowledge MCP server for official AWS guidance.",
+  "prompt": "You review pull requests against the AWS Well-Architected Framework. You only read files and query AWS documentation; you never modify anything or run commands.",
+  "tools": [
+    "@aws-knowledge-mcp-server",
+    "code",
+    "glob",
+    "grep",
+    "read"
+  ],
+  "allowedTools": [
+    "read",
+    "grep",
+    "glob",
+    "code",
+    "@aws-knowledge-mcp-server"
+  ],
+  "mcpServers": {
+    "aws-knowledge-mcp-server": {
+      "type": "http",
+      "url": "https://knowledge-mcp.global.api.aws"
+    }
+  },
+  "includeMcpJson": false,
+  "resources": [],
+  "permissions": {
+    "rules": [
+      {
+        "capability": "fs_read",
+        "effect": "allow"
+      },
+      {
+        "capability": "mcp",
+        "match": [
+          "aws-knowledge-mcp-server/*"
+        ],
+        "effect": "allow"
+      },
+      {
+        "capability": "skill",
+        "effect": "allow"
+      }
+    ]
+  },
+  "kiroUpgrade": {
+    "revision": 2,
+    "fingerprint": "sha256:789f327ba3d79f1e8997c8f77f4ec0dda24980092ab2a5fd2be2d521d8f71916",
+    "source": "sha256:4eaa262b1a019065a11751f7b05e88a103f4dac255ee60a896ace50258aae807"
+  }
+}

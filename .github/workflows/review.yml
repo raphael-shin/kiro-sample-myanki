@@ -40,17 +40,33 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          gh pr diff "$PR" -R "$REPO" > diff.patch
-          gh pr diff "$PR" -R "$REPO" --name-only > files.txt
+          pattern='@aws-sdk/|aws-sdk|aws-amplify|AWS::|bedrock|boto3|arn:aws:|AWS_(REGION|ACCESS_KEY_ID|SECRET_ACCESS_KEY|PROFILE)'
+          # The review setup itself (.github/, .kiro/) mentions AWS terms, so it
+          # is left out; otherwise every change to it would trigger this review.
+          gh pr diff "$PR" -R "$REPO" --name-only | grep -Ev '^(\.github|\.kiro)/' > files.txt || true
           aws=false
-          # Infrastructure files.
+          # 1. Infrastructure files.
           if grep -Eiq '(^|/)(cdk\.json|template\.ya?ml|serverless\.ya?ml|samconfig\.toml)$|\.tf$|(^|/)(infra|cdk|cloudformation|terraform)/' files.txt; then
             aws=true
           fi
-          # AWS usage in added or removed lines.
-          if grep -E '^[+-][^+-]' diff.patch | grep -Eiq '@aws-sdk/|aws-sdk|aws-amplify|AWS::|bedrock|boto3|arn:aws:|AWS_(REGION|ACCESS_KEY_ID|SECRET_ACCESS_KEY|PROFILE)'; then
-            aws=true
+          # 2. Changed files that use AWS anywhere in their content, so a change to
+          #    timeouts or response handling in an AWS client still counts.
+          while IFS= read -r f; do
+            content=$(gh api "repos/$REPO/contents/$f?ref=$HEAD_SHA" --jq .content 2>/dev/null | base64 -d 2>/dev/null || true)
+            if printf '%s' "$content" | grep -Eiq "$pattern"; then
+              echo "AWS usage in $f"
+              aws=true
+              break
+            fi
+          done < files.txt
+          # 3. AWS usage in removed lines (a file that dropped its AWS code).
+          if [ "$aws" = false ] && [ -s files.txt ]; then
+            gh pr diff "$PR" -R "$REPO" > diff.patch
+            if grep -E '^-' diff.patch | grep -Ev '^--- ' | grep -Eiq "$pattern"; then
+              aws=true
+            fi
           fi
           echo "aws=$aws" >> "$GITHUB_OUTPUT"
           echo "AWS-related change: $aws"
@@ -71,16 +87,19 @@ jobs:
             title: AWS Well-Architected Review (Opus 5.5)
             model: claude-opus-5.5
             prompt: aws-well-architected.md
+            agent: aws-reviewer
             needs_aws: true
           - id: opus-code-review
             title: Code Review (Opus 5.5)
             model: claude-opus-5.5
             prompt: code-review.md
+            agent: pr-reviewer
             needs_aws: false
           - id: gpt-code-review
             title: Code Review (GPT 5.6 Sol)
             model: gpt-5.6-sol
             prompt: code-review.md
+            agent: pr-reviewer
             needs_aws: false
     env:
       MARKER: "<!-- ai-review:${{ matrix.id }} -->"
@@ -126,15 +145,19 @@ jobs:
         env:
           KIRO_API_KEY: ${{ secrets.KIRO_API_KEY }}
           MODEL: ${{ matrix.model }}
+          AGENT: ${{ matrix.agent }}
         run: |
           kiro-cli --version
+          # The agent (.kiro/agents/<name>.json) fixes the tool set: read-only
+          # tools, plus the AWS Knowledge MCP server for the AWS review.
           extra=()
           if kiro-cli chat --help 2>&1 | grep -q -- '--trust-workspace'; then
             extra+=(--trust-workspace)
           fi
+          # Give remote MCP servers time to connect before the first turn.
+          kiro-cli settings mcp.noInteractiveTimeout 30000 || true
           set +e
-          kiro-cli chat --no-interactive --model "$MODEL" \
-            --trust-tools=read,grep,glob,code "${extra[@]}" \
+          kiro-cli chat --no-interactive --model "$MODEL" --agent "$AGENT" "${extra[@]}" \
             "$(cat .review/prompt.md)" > .review/raw.txt 2> .review/stderr.txt
           status=$?
           set -e
@@ -149,7 +172,7 @@ jobs:
           fi
 
       - name: Build comment
-        if: always()
+        if: ${{ !cancelled() }}
         id: comment
         run: |
           mkdir -p .review
@@ -186,7 +209,7 @@ jobs:
           fi
 
       - name: Post or update comment
-        if: always() && steps.comment.outcome == 'success'
+        if: ${{ !cancelled() && steps.comment.outcome == 'success' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
