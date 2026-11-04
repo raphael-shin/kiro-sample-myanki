@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { StudyInterface } from '../StudyInterface';
 import { useStudySessionStore, setSessionManager, setSpacedRepetitionService } from '../../../../../store/StudySessionStore';
 import { ISessionManager } from '../../../../../services/SessionManager';
@@ -135,7 +135,7 @@ describe('StudyInterface Component', () => {
       />
     );
     
-    expect(screen.getByText('Loading study session...')).toBeInTheDocument();
+    expect(screen.getByText('학습 세션을 준비하고 있습니다...')).toBeInTheDocument();
   });
 
   it('should show error state when error occurs', () => {
@@ -171,8 +171,10 @@ describe('StudyInterface Component', () => {
       />
     );
     
-    expect(screen.getByText('Error')).toBeInTheDocument();
     expect(screen.getByText('Failed to load session')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: '돌아가기' }));
+    expect(mockOnExit).toHaveBeenCalled();
   });
 
   it('should show session complete when no current card', () => {
@@ -208,8 +210,9 @@ describe('StudyInterface Component', () => {
       />
     );
     
-    expect(screen.getByText('Session Complete!')).toBeInTheDocument();
-    expect(screen.getByText('Return to Deck')).toBeInTheDocument();
+    expect(screen.getByText('학습 완료!')).toBeInTheDocument();
+    expect(screen.getByText('총 2장의 카드를 학습했습니다.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '완료' })).toBeInTheDocument();
   });
 
   it('should show pause/resume button', async () => {
@@ -222,7 +225,7 @@ describe('StudyInterface Component', () => {
     );
     
     await waitFor(() => {
-      expect(screen.getByText('Pause')).toBeInTheDocument();
+      expect(screen.getByTitle('일시정지')).toBeInTheDocument();
     });
   });
 
@@ -236,7 +239,7 @@ describe('StudyInterface Component', () => {
     );
     
     await waitFor(() => {
-      expect(screen.getByText(/Shortcuts: Space/)).toBeInTheDocument();
+      expect(screen.getByText('Space: 답 보기, 1-4: 난이도')).toBeInTheDocument();
     });
   });
 });

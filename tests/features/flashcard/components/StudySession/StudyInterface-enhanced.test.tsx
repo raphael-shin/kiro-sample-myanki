@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { StudyInterface } from '@/features/flashcard/components/StudySession/StudyInterface';
 import { useStudySessionStore } from '@/store/StudySessionStore';
 import { StudyQuality } from '@/types/flashcard';
@@ -84,7 +84,7 @@ describe('StudyInterface Enhanced Features', () => {
         />
       );
       
-      const showAnswerButton = screen.getByText('Show Answer');
+      const showAnswerButton = screen.getByRole('button', { name: '답 보기' });
       fireEvent.click(showAnswerButton);
       
       expect(mockStoreActions.showCardAnswer).toHaveBeenCalled();
@@ -109,6 +109,7 @@ describe('StudyInterface Enhanced Features', () => {
         ...mockStoreActions
       });
 
+      jest.useFakeTimers();
       render(
         <StudyInterface 
           deckId={1}
@@ -117,8 +118,16 @@ describe('StudyInterface Enhanced Features', () => {
         />
       );
       
-      const goodButton = screen.getByText('Good');
+      const goodButton = screen.getByRole('button', { name: /보통/ });
       fireEvent.click(goodButton);
+
+      // 답변 후 피드백 메시지를 1초 보여준 뒤 다음 카드로 넘어간다
+      expect(screen.getByText('다음 복습까지 1일 후')).toBeInTheDocument();
+      expect(mockStoreActions.processAnswer).not.toHaveBeenCalled();
+      await act(async () => {
+        jest.advanceTimersByTime(1000);
+      });
+      jest.useRealTimers();
       
       // Wait for async operations
       await waitFor(() => {
@@ -141,7 +150,7 @@ describe('StudyInterface Enhanced Features', () => {
         />
       );
       
-      const pauseButton = screen.getByText('Pause');
+      const pauseButton = screen.getByTitle('일시정지');
       fireEvent.click(pauseButton);
       
       expect(mockStoreActions.pauseSession).toHaveBeenCalled();
@@ -174,25 +183,39 @@ describe('StudyInterface Enhanced Features', () => {
         />
       );
       
-      const resumeButton = screen.getByText('Resume');
+      const resumeButton = screen.getByTitle('재개');
       fireEvent.click(resumeButton);
       
       expect(mockStoreActions.resumeSession).toHaveBeenCalled();
     });
 
-    it('should toggle keyboard shortcuts', async () => {
-      render(
+    it('should stop handling shortcuts when keyboard shortcuts are turned off', async () => {
+      // 단축키 토글 버튼은 제거되었고(기본 활성화), 스토어의 keyboardShortcutsEnabled가 동작을 결정한다
+      const { rerender } = render(
         <StudyInterface 
           deckId={1}
           onComplete={mockOnComplete}
           onExit={mockOnExit}
         />
       );
-      
-      const shortcutsButton = screen.getByText('Shortcuts');
-      fireEvent.click(shortcutsButton);
-      
-      expect(mockStoreActions.enableKeyboardShortcuts).toHaveBeenCalledWith(false);
+
+      fireEvent.keyDown(document, { key: ' ' });
+      expect(mockStoreActions.showCardAnswer).toHaveBeenCalledTimes(1);
+
+      (useStudySessionStore as unknown as jest.Mock).mockReturnValue({
+        ...(useStudySessionStore as unknown as jest.Mock)(),
+        keyboardShortcutsEnabled: false
+      });
+      rerender(
+        <StudyInterface 
+          deckId={1}
+          onComplete={mockOnComplete}
+          onExit={mockOnExit}
+        />
+      );
+
+      fireEvent.keyDown(document, { key: ' ' });
+      expect(mockStoreActions.showCardAnswer).toHaveBeenCalledTimes(1);
     });
 
     it('should show exit confirmation and end session', async () => {
@@ -208,10 +231,10 @@ describe('StudyInterface Enhanced Features', () => {
         />
       );
       
-      const exitButton = screen.getByText('Exit');
+      const exitButton = screen.getByTitle('종료');
       fireEvent.click(exitButton);
       
-      expect(window.confirm).toHaveBeenCalledWith('Are you sure you want to exit? Your progress will be saved.');
+      expect(window.confirm).toHaveBeenCalledWith('학습을 종료하시겠습니까? 진행률은 저장됩니다.');
       expect(mockStoreActions.endSession).toHaveBeenCalled();
       expect(mockOnExit).toHaveBeenCalled();
 
@@ -221,7 +244,7 @@ describe('StudyInterface Enhanced Features', () => {
   });
 
   describe('Session Completion', () => {
-    it('should call onComplete with session summary when session ends', async () => {
+    it('should call onComplete when the session complete button is clicked', async () => {
       // Mock showAnswer as true and simulate session completion
       (useStudySessionStore as unknown as jest.Mock).mockReturnValue({
         currentCard: null, // No current card means session complete
@@ -270,7 +293,11 @@ describe('StudyInterface Enhanced Features', () => {
       );
       
       // Should show session complete screen
-      expect(screen.getByText('Session Complete!')).toBeInTheDocument();
+      expect(screen.getByText('학습 완료!')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: '완료' }));
+      expect(mockStoreActions.endSession).toHaveBeenCalled();
+      expect(mockOnComplete).toHaveBeenCalled();
     });
   });
 
@@ -287,7 +314,7 @@ describe('StudyInterface Enhanced Features', () => {
       // Progress component should be rendered with correct props
       await waitFor(() => {
         // The StudyProgress component should receive the progress data
-        expect(screen.getByText('25%')).toBeInTheDocument();
+        expect(screen.getByText('1/4 (25%)')).toBeInTheDocument();
       });
     });
   });
@@ -326,6 +353,7 @@ describe('StudyInterface Enhanced Features', () => {
         ...mockStoreActions
       });
 
+      jest.useFakeTimers();
       render(
         <StudyInterface 
           deckId={1}
@@ -334,18 +362,22 @@ describe('StudyInterface Enhanced Features', () => {
         />
       );
       
-      // Test all rating keys
-      fireEvent.keyDown(document, { key: '1' });
-      expect(mockStoreActions.processAnswer).toHaveBeenCalledWith(StudyQuality.AGAIN, expect.any(Number));
-      
-      fireEvent.keyDown(document, { key: '2' });
-      expect(mockStoreActions.processAnswer).toHaveBeenCalledWith(StudyQuality.HARD, expect.any(Number));
-      
-      fireEvent.keyDown(document, { key: '3' });
-      expect(mockStoreActions.processAnswer).toHaveBeenCalledWith(StudyQuality.GOOD, expect.any(Number));
-      
-      fireEvent.keyDown(document, { key: '4' });
-      expect(mockStoreActions.processAnswer).toHaveBeenCalledWith(StudyQuality.EASY, expect.any(Number));
+      // Test all rating keys (each answer is processed after the 1s feedback message)
+      const keys: Array<[string, StudyQuality]> = [
+        ['1', StudyQuality.AGAIN],
+        ['2', StudyQuality.HARD],
+        ['3', StudyQuality.GOOD],
+        ['4', StudyQuality.EASY]
+      ];
+      for (const [key, quality] of keys) {
+        fireEvent.keyDown(document, { key });
+        await act(async () => {
+          jest.advanceTimersByTime(1000);
+        });
+        expect(mockStoreActions.processAnswer).toHaveBeenLastCalledWith(quality, expect.any(Number));
+      }
+      expect(mockStoreActions.processAnswer).toHaveBeenCalledTimes(4);
+      jest.useRealTimers();
     });
 
     it('should not trigger shortcuts when disabled', async () => {
@@ -409,7 +441,7 @@ describe('StudyInterface Enhanced Features', () => {
         />
       );
       
-      expect(screen.getByText(/Shortcuts: Space/)).toBeInTheDocument();
+      expect(screen.getByText('Space: 답 보기, 1-4: 난이도')).toBeInTheDocument();
     });
 
     it('should not show keyboard shortcuts help when disabled', async () => {
@@ -439,7 +471,7 @@ describe('StudyInterface Enhanced Features', () => {
         />
       );
       
-      expect(screen.queryByText(/Shortcuts: Space/)).not.toBeInTheDocument();
+      expect(screen.queryByText('Space: 답 보기, 1-4: 난이도')).not.toBeInTheDocument();
     });
   });
 
@@ -471,7 +503,7 @@ describe('StudyInterface Enhanced Features', () => {
         />
       );
       
-      const goodButton = screen.getByText('Good');
+      const goodButton = screen.getByRole('button', { name: /보통/ });
       expect(goodButton).toBeDisabled();
     });
 
@@ -487,17 +519,17 @@ describe('StudyInterface Enhanced Features', () => {
         />
       );
       
-      const exitButton = screen.getByText('Exit');
+      const exitButton = screen.getByTitle('종료');
       fireEvent.click(exitButton);
       
-      expect(window.confirm).toHaveBeenCalledWith('Are you sure you want to exit? Your progress will be saved.');
+      expect(window.confirm).toHaveBeenCalledWith('학습을 종료하시겠습니까? 진행률은 저장됩니다.');
       expect(mockStoreActions.endSession).not.toHaveBeenCalled();
       expect(mockOnExit).not.toHaveBeenCalled();
 
       window.confirm = originalConfirm;
     });
 
-    it('should show shortcuts button with correct state', async () => {
+    it('should show the shortcut hint when shortcuts are enabled', async () => {
       render(
         <StudyInterface 
           deckId={1}
@@ -506,11 +538,10 @@ describe('StudyInterface Enhanced Features', () => {
         />
       );
       
-      const shortcutsButton = screen.getByText('Shortcuts');
-      expect(shortcutsButton).toHaveClass('text-blue-600', 'border-blue-600');
+      expect(screen.getByTitle('키보드 단축키 사용 가능')).toHaveTextContent('Space: 답 보기, 1-4: 난이도');
     });
 
-    it('should show shortcuts button as inactive when disabled', async () => {
+    it('should hide the shortcut hint when shortcuts are disabled', async () => {
       // Mock shortcuts disabled
       (useStudySessionStore as unknown as jest.Mock).mockReturnValue({
         currentCard: { id: 1, deckId: 1, front: 'Test Question', back: 'Test Answer' },
@@ -537,8 +568,7 @@ describe('StudyInterface Enhanced Features', () => {
         />
       );
       
-      const shortcutsButton = screen.getByText('Shortcuts');
-      expect(shortcutsButton).toHaveClass('text-gray-600', 'border-gray-300');
+      expect(screen.queryByTitle('키보드 단축키 사용 가능')).not.toBeInTheDocument();
     });
   });
 
@@ -572,6 +602,7 @@ describe('StudyInterface Enhanced Features', () => {
         enableKeyboardShortcuts: mockStoreActions.enableKeyboardShortcuts
       });
 
+      jest.useFakeTimers();
       render(
         <StudyInterface 
           deckId={1}
@@ -580,8 +611,12 @@ describe('StudyInterface Enhanced Features', () => {
         />
       );
       
-      const goodButton = screen.getByText('Good');
+      const goodButton = screen.getByRole('button', { name: /보통/ });
       fireEvent.click(goodButton);
+      await act(async () => {
+        jest.advanceTimersByTime(1000);
+      });
+      jest.useRealTimers();
       
       await waitFor(() => {
         expect(mockProcessAnswer).toHaveBeenCalledWith(StudyQuality.GOOD, expect.any(Number));
@@ -619,13 +654,15 @@ describe('StudyInterface Enhanced Features', () => {
         />
       );
       
-      expect(screen.getByText('Session Complete!')).toBeInTheDocument();
-      expect(screen.getByText("You've finished studying all available cards.")).toBeInTheDocument();
+      expect(screen.getByText('학습 완료!')).toBeInTheDocument();
+      expect(screen.getByText('총 4장의 카드를 학습했습니다.')).toBeInTheDocument();
       
-      const returnButton = screen.getByText('Return to Deck');
+      const returnButton = screen.getByRole('button', { name: '완료' });
       fireEvent.click(returnButton);
       
-      expect(mockOnExit).toHaveBeenCalled();
+      // 완료 버튼은 세션을 끝내고 onComplete로 덱 화면에 돌아간다
+      expect(mockStoreActions.endSession).toHaveBeenCalled();
+      expect(mockOnComplete).toHaveBeenCalled();
     });
 
     it('should handle error state gracefully', async () => {
@@ -655,10 +692,9 @@ describe('StudyInterface Enhanced Features', () => {
         />
       );
       
-      expect(screen.getByText('Error')).toBeInTheDocument();
       expect(screen.getByText('Failed to load study session')).toBeInTheDocument();
       
-      const goBackButton = screen.getByText('Go Back');
+      const goBackButton = screen.getByRole('button', { name: '돌아가기' });
       fireEvent.click(goBackButton);
       
       expect(mockOnExit).toHaveBeenCalled();
