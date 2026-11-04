@@ -1,5 +1,5 @@
 import { useStudySessionStore, setSpacedRepetitionService, setSessionManager } from '../StudySessionStore';
-import { StudyQuality } from '../../types/flashcard';
+import { Card, StudyQuality } from '../../types/flashcard';
 import { SpacedRepetitionService } from '../../services/SpacedRepetitionService';
 import { ISessionManager } from '../../services/SessionManager';
 
@@ -18,7 +18,7 @@ describe('StudySessionStore - SM2 Algorithm Integration', () => {
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn()
-    } as any;
+    } as unknown as jest.Mocked<SpacedRepetitionService>;
     
     // Create mock SessionManager
     mockSessionManager = {
@@ -33,7 +33,7 @@ describe('StudySessionStore - SM2 Algorithm Integration', () => {
       getSessionProgress: jest.fn(),
       getEstimatedTimeRemaining: jest.fn(),
       getSessionSummary: jest.fn()
-    } as any;
+    } as unknown as jest.Mocked<ISessionManager>;
     
     // Inject mock services
     setSpacedRepetitionService(mockSpacedRepetitionService);
@@ -43,8 +43,8 @@ describe('StudySessionStore - SM2 Algorithm Integration', () => {
   afterEach(() => {
     jest.clearAllMocks();
     // Reset to null to use default services
-    setSpacedRepetitionService(null as any);
-    setSessionManager(null as any);
+    setSpacedRepetitionService(null as unknown as SpacedRepetitionService);
+    setSessionManager(null as unknown as ISessionManager);
   });
 
   it('should call SpacedRepetitionService.processStudyResult when processAnswer is called', async () => {
@@ -57,7 +57,7 @@ describe('StudySessionStore - SM2 Algorithm Integration', () => {
         deckId: 1,
         front: 'Test Question',
         back: 'Test Answer'
-      } as any
+      } as Card
     });
     
     mockSpacedRepetitionService.processStudyResult.mockResolvedValue();
@@ -76,7 +76,7 @@ describe('StudySessionStore - SM2 Algorithm Integration', () => {
         deckId: 1,
         front: 'Test Question',
         back: 'Test Answer'
-      } as any
+      } as Card
     });
     
     mockSpacedRepetitionService.processStudyResult.mockResolvedValue();
@@ -99,7 +99,7 @@ describe('StudySessionStore - SM2 Algorithm Integration', () => {
       { id: 1, deckId: 1, front: 'Q1', back: 'A1' },
       { id: 2, deckId: 1, front: 'Q2', back: 'A2' }
     ];
-    mockSpacedRepetitionService.getCardsForReview.mockResolvedValue(cards as any);
+    mockSpacedRepetitionService.getCardsForReview.mockResolvedValue(cards as Card[]);
     
     await startSession(1);
     
@@ -132,7 +132,7 @@ describe('StudySessionStore - SM2 Algorithm Integration', () => {
         deckId: 1,
         front: 'Test Question',
         back: 'Test Answer'
-      } as any
+      } as Card
     });
     
     mockSpacedRepetitionService.processStudyResult.mockRejectedValue(new Error('Database error'));

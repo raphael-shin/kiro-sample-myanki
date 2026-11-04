@@ -20,13 +20,13 @@ import { db } from '../../db/MyAnkiDB';
 
 describe('SpacedRepetitionService - Algorithm Integration', () => {
   let service: SpacedRepetitionService;
-  let mockDb: any;
-  let mockCards: any;
+  let mockDb: Record<string, jest.Mock>;
+  let mockCards: Record<string, jest.Mock>;
 
   beforeEach(() => {
     service = new SpacedRepetitionService();
-    mockDb = db.spacedRepetitionData;
-    mockCards = db.cards;
+    mockDb = db.spacedRepetitionData as unknown as Record<string, jest.Mock>;
+    mockCards = db.cards as unknown as Record<string, jest.Mock>;
     jest.clearAllMocks();
     mockCards.update.mockResolvedValue(1);
   });

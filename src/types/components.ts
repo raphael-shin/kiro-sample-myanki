@@ -51,17 +51,17 @@ export interface DropdownProps extends BaseComponentProps {
 }
 
 // Table component types
-export interface TableColumn<T = any> {
+export interface TableColumn<T = Record<string, unknown>> {
   key: string;
   title: string;
   dataIndex?: keyof T;
-  render?: (value: any, record: T, index: number) => React.ReactNode;
+  render?: (value: unknown, record: T, index: number) => React.ReactNode;
   sortable?: boolean;
   width?: string | number;
   align?: 'left' | 'center' | 'right';
 }
 
-export interface TableProps<T = any> extends BaseComponentProps {
+export interface TableProps<T = Record<string, unknown>> extends BaseComponentProps {
   columns: TableColumn<T>[];
   data: T[];
   loading?: boolean;

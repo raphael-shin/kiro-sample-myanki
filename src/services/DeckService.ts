@@ -3,6 +3,7 @@
  * 덱 관리를 위한 CRUD 작업과 비즈니스 로직을 제공
  */
 
+import type { Transaction } from 'dexie';
 import { MyAnkiDB } from '@/db/MyAnkiDB';
 import { IDeckService } from './interfaces';
 import {
@@ -131,33 +132,22 @@ export class DeckService implements IDeckService {
       }
 
       // 트랜잭션으로 연관 데이터 삭제
-      await this.db.transaction('rw', [this.db.decks, this.db.cards, this.db.studySessions], async (tx: any) => {
+      await this.db.transaction('rw', [this.db.decks, this.db.cards, this.db.studySessions], async (trans) => {
+        const tx = trans as Transaction & Pick<MyAnkiDB, 'decks' | 'cards' | 'studySessions'>;
         // 해당 덱의 모든 카드 조회
         const cards: Card[] = await tx.cards.where('deckId').equals(id).toArray();
         const cardIds = cards.map(card => card.id!);
 
         // 카드들의 학습 기록 삭제
         if (cardIds.length > 0) {
-          try {
-            await tx.studySessions.where('cardId').anyOf(cardIds).delete();
-          } catch (error) {
-            throw error; // 원본 에러를 그대로 전달
-          }
+          await tx.studySessions.where('cardId').anyOf(cardIds).delete();
         }
 
         // 카드들 삭제
-        try {
-          await tx.cards.where('deckId').equals(id).delete();
-        } catch (error) {
-          throw error; // 원본 에러를 그대로 전달
-        }
+        await tx.cards.where('deckId').equals(id).delete();
 
         // 덱 삭제
-        try {
-          await tx.decks.delete(id);
-        } catch (error) {
-          throw error; // 원본 에러를 그대로 전달
-        }
+        await tx.decks.delete(id);
       });
     } catch (error) {
       if (error instanceof MyAnkiError) {
@@ -283,7 +273,7 @@ export class DeckService implements IDeckService {
   /**
    * ID 유효성 검사
    */
-  private validateId(id: any): void {
+  private validateId(id: unknown): void {
     if (typeof id !== 'number') {
       throw ErrorFactory.invalidId(id, 'ID must be a number');
     }

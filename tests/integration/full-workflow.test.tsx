@@ -8,7 +8,7 @@ import 'fake-indexeddb/auto';
 describe('Full Workflow Integration', () => {
   beforeEach(() => {
     // Reset IndexedDB before each test
-    indexedDB = new IDBFactory();
+    globalThis.indexedDB = new IDBFactory();
   });
 
   it('should complete basic workflow: create deck modal opens', async () => {

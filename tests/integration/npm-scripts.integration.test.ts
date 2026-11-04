@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'fs';
+import { existsSync, readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
 
 describe('NPM Scripts Integration Tests', () => {
@@ -18,7 +18,15 @@ describe('NPM Scripts Integration Tests', () => {
   });
 
   describe('package.json 설정 검증', () => {
-    let packageJson: any;
+    let packageJson: {
+      name: string;
+      version: string;
+      description: string;
+      type: string;
+      scripts: Record<string, string>;
+      dependencies: Record<string, string>;
+      devDependencies: Record<string, string>;
+    };
 
     beforeAll(() => {
       const packageJsonContent = readFileSync(packageJsonPath, 'utf8');
@@ -143,7 +151,7 @@ describe('NPM Scripts Integration Tests', () => {
       // Tailwind config should be valid (build includes CSS)
       const assetsDir = join(buildDir, 'assets');
       if (existsSync(assetsDir)) {
-        const files = require('fs').readdirSync(assetsDir);
+        const files = readdirSync(assetsDir);
         const cssFiles = files.filter((file: string) => file.endsWith('.css'));
         expect(cssFiles.length).toBeGreaterThan(0);
       }

@@ -15,6 +15,7 @@ import {
   StudyQuality 
 } from '@/types/flashcard';
 import { ErrorCode } from '@/types/errors';
+import type { MyAnkiDB } from '@/db/MyAnkiDB';
 
 // Mock 데이터베이스 - 중복 검사를 위해 필요
 const mockDb = {
@@ -37,7 +38,7 @@ describe('Validation Utils', () => {
           description: '테스트 덱'
         };
 
-        await expect(validateDeck(invalidDeckData, mockDb as any))
+        await expect(validateDeck(invalidDeckData, mockDb as unknown as MyAnkiDB))
           .rejects
           .toMatchObject({
             code: ErrorCode.DECK_NAME_REQUIRED
@@ -51,7 +52,7 @@ describe('Validation Utils', () => {
           description: '테스트 덱'
         };
 
-        await expect(validateDeck(invalidDeckData, mockDb as any))
+        await expect(validateDeck(invalidDeckData, mockDb as unknown as MyAnkiDB))
           .rejects
           .toMatchObject({
             code: ErrorCode.DECK_NAME_TOO_LONG
@@ -68,7 +69,7 @@ describe('Validation Utils', () => {
           toArray: jest.fn().mockResolvedValue([{ id: 1, name: '기존 덱' }])
         });
 
-        await expect(validateDeck(duplicateDeckData, mockDb as any))
+        await expect(validateDeck(duplicateDeckData, mockDb as unknown as MyAnkiDB))
           .rejects
           .toMatchObject({
             code: ErrorCode.DECK_NAME_DUPLICATE
@@ -89,7 +90,7 @@ describe('Validation Utils', () => {
           description: '유효한 설명'
         };
 
-        await expect(validateDeck(validDeckData, mockDb as any))
+        await expect(validateDeck(validDeckData, mockDb as unknown as MyAnkiDB))
           .resolves
           .not
           .toThrow();
@@ -106,7 +107,7 @@ describe('Validation Utils', () => {
           back: '뒷면 내용'
         };
 
-        await expect(validateCard(invalidCardData, mockDb as any))
+        await expect(validateCard(invalidCardData, mockDb as unknown as MyAnkiDB))
           .rejects
           .toMatchObject({
             code: ErrorCode.CARD_FRONT_REQUIRED
@@ -120,7 +121,7 @@ describe('Validation Utils', () => {
           back: ''
         };
 
-        await expect(validateCard(invalidCardData, mockDb as any))
+        await expect(validateCard(invalidCardData, mockDb as unknown as MyAnkiDB))
           .rejects
           .toMatchObject({
             code: ErrorCode.CARD_BACK_REQUIRED
@@ -136,7 +137,7 @@ describe('Validation Utils', () => {
 
         mockDb.decks.get = jest.fn().mockResolvedValue(undefined);
 
-        await expect(validateCard(invalidCardData, mockDb as any))
+        await expect(validateCard(invalidCardData, mockDb as unknown as MyAnkiDB))
           .rejects
           .toMatchObject({
             code: ErrorCode.CARD_INVALID_DECK
@@ -156,7 +157,7 @@ describe('Validation Utils', () => {
           back: '뒷면 내용'
         };
 
-        await expect(validateCard(validCardData, mockDb as any))
+        await expect(validateCard(validCardData, mockDb as unknown as MyAnkiDB))
           .resolves
           .not
           .toThrow();
@@ -174,7 +175,7 @@ describe('Validation Utils', () => {
           responseTime: 5000
         };
 
-        await expect(validateStudySession(invalidStudySessionData, mockDb as any))
+        await expect(validateStudySession(invalidStudySessionData, mockDb as unknown as MyAnkiDB))
           .rejects
           .toMatchObject({
             code: ErrorCode.STUDY_QUALITY_INVALID
@@ -189,7 +190,7 @@ describe('Validation Utils', () => {
           responseTime: -1000
         };
 
-        await expect(validateStudySession(invalidStudySessionData, mockDb as any))
+        await expect(validateStudySession(invalidStudySessionData, mockDb as unknown as MyAnkiDB))
           .rejects
           .toMatchObject({
             code: ErrorCode.STUDY_RESPONSE_TIME_INVALID
@@ -206,7 +207,7 @@ describe('Validation Utils', () => {
 
         mockDb.cards.get = jest.fn().mockResolvedValue(undefined);
 
-        await expect(validateStudySession(invalidStudySessionData, mockDb as any))
+        await expect(validateStudySession(invalidStudySessionData, mockDb as unknown as MyAnkiDB))
           .rejects
           .toMatchObject({
             code: ErrorCode.STUDY_INVALID_CARD
@@ -227,7 +228,7 @@ describe('Validation Utils', () => {
           responseTime: 5000
         };
 
-        await expect(validateStudySession(validStudySessionData, mockDb as any))
+        await expect(validateStudySession(validStudySessionData, mockDb as unknown as MyAnkiDB))
           .resolves
           .not
           .toThrow();

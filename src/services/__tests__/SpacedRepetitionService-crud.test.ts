@@ -14,11 +14,11 @@ import { db } from '../../db/MyAnkiDB';
 
 describe('SpacedRepetitionService - CRUD Operations', () => {
   let service: SpacedRepetitionService;
-  let mockDb: any;
+  let mockDb: Record<string, jest.Mock>;
 
   beforeEach(() => {
     service = new SpacedRepetitionService();
-    mockDb = db.spacedRepetitionData;
+    mockDb = db.spacedRepetitionData as unknown as Record<string, jest.Mock>;
     jest.clearAllMocks();
   });
 

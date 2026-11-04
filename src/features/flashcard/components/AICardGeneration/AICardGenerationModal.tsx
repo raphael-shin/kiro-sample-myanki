@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { CardGenerationRequest } from '@/types/ai-generation';
+import { AWSCredentials, CardGenerationRequest } from '@/types/ai-generation';
 import { CardDirectionSelector } from './CardDirectionSelector';
 import { AWSSettingsModal } from './AWSSettingsModal';
 import { ProgressTracker } from './ProgressTracker';
@@ -89,7 +89,7 @@ export function AICardGenerationModal({
     }
   };
 
-  const handleAWSCredentialsSaved = async (credentials: any) => {
+  const handleAWSCredentialsSaved = async (credentials: AWSCredentials) => {
     try {
       await setAWSCredentials(credentials);
       setShowAWSSettings(false);
@@ -169,7 +169,7 @@ export function AICardGenerationModal({
             <label className="block text-sm font-medium mb-1">카드 유형</label>
             <select
               value={formData.cardType}
-              onChange={(e) => setFormData(prev => ({ ...prev, cardType: e.target.value as any }))}
+              onChange={(e) => setFormData(prev => ({ ...prev, cardType: e.target.value as CardGenerationRequest['cardType'] }))}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="vocabulary">단어</option>
@@ -184,7 +184,7 @@ export function AICardGenerationModal({
           <label className="block text-sm font-medium mb-1">난이도</label>
           <select
             value={formData.difficulty}
-            onChange={(e) => setFormData(prev => ({ ...prev, difficulty: e.target.value as any }))}
+            onChange={(e) => setFormData(prev => ({ ...prev, difficulty: e.target.value as CardGenerationRequest['difficulty'] }))}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="beginner">초급</option>

@@ -48,7 +48,7 @@ export const CreateCardModal = ({ deckId, onClose, onSubmit }: CreateCardModalPr
       onClose();
     } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
-      handleSubmit(e as any);
+      handleSubmit(e);
     }
   };
 

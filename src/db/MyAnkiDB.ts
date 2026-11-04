@@ -7,7 +7,7 @@ import { AIGenerationHistory, AWSSettings } from '../types/ai-generation';
 export interface OfflineAction {
   id?: number;
   type: 'CREATE_CARD' | 'UPDATE_CARD' | 'DELETE_CARD' | 'CREATE_DECK' | 'UPDATE_DECK' | 'DELETE_DECK' | 'STUDY_SESSION';
-  data: any;
+  data: unknown;
   timestamp: Date;
 }
 
@@ -68,15 +68,16 @@ export class MyAnkiDB extends Dexie {
     this.setupAIGenerationHistoryHooks();
   }
 
-  private setupTimestampHooks(table: Table<any>) {
+  private setupTimestampHooks<T>(table: Table<T>) {
     if (table) {
       table.hook('creating', function (_primKey, obj, _trans) {
-        obj.createdAt = new Date();
-        obj.updatedAt = new Date();
+        const record = obj as T & { createdAt?: Date; updatedAt?: Date };
+        record.createdAt = new Date();
+        record.updatedAt = new Date();
       });
 
       table.hook('updating', function (modifications, _primKey, _obj, _trans) {
-        (modifications as any).updatedAt = new Date();
+        (modifications as { updatedAt?: Date }).updatedAt = new Date();
       });
     }
   }

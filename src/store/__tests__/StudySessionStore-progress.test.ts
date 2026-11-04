@@ -1,4 +1,5 @@
 import { useStudySessionStore } from '../StudySessionStore';
+import { Card } from '../../types/flashcard';
 
 describe('StudySessionStore - Progress Tracking', () => {
   beforeEach(() => {
@@ -18,9 +19,9 @@ describe('StudySessionStore - Progress Tracking', () => {
     useStudySessionStore.setState({
       sessionStats: { cardsStudied: 2, correctAnswers: 1, totalTime: 10000 },
       studyQueue: [
-        { id: 3, front: 'Card 3' } as any,
-        { id: 4, front: 'Card 4' } as any,
-        { id: 5, front: 'Card 5' } as any
+        { id: 3, front: 'Card 3' } as Card,
+        { id: 4, front: 'Card 4' } as Card,
+        { id: 5, front: 'Card 5' } as Card
       ]
     });
     

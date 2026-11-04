@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { DeckList } from './DeckList';
 import { CreateDeckModal } from '../CreateDeckModal/CreateDeckModal';
 import { useDeckStore } from '@/store/DeckStore';
@@ -19,7 +19,8 @@ export const DeckManagerPage: React.FC<DeckManagerPageProps> = ({ onDeckSelect, 
   const [cardCounts, setCardCounts] = useState<Record<number, number>>({});
   const [cardStats, setCardStats] = useState<Record<number, CardStats>>({});
   const { decks, loading, error, createDeck, loadDecks, deleteDeck } = useDeckStore();
-  const cardService = new CardService(db);
+  // 훅 의존성이 렌더마다 바뀌지 않도록 서비스 인스턴스는 한 번만 만든다
+  const cardService = useMemo(() => new CardService(db), []);
 
   const handleDeckDelete = async (deckId: number) => {
     try {
@@ -64,7 +65,7 @@ export const DeckManagerPage: React.FC<DeckManagerPageProps> = ({ onDeckSelect, 
     if (decks.length > 0) {
       loadCardData();
     }
-  }, [decks]);
+  }, [decks, cardService]);
 
   return (
     <div className="container mx-auto px-4 py-6">

@@ -1,5 +1,6 @@
 import { useDeckStore, setDeckService } from '../DeckStore';
 import { DeckService } from '../../services/DeckService';
+import { Deck } from '../../types/flashcard';
 
 describe('DeckStore - Service Integration', () => {
   let mockDeckService: jest.Mocked<DeckService>;
@@ -16,7 +17,7 @@ describe('DeckStore - Service Integration', () => {
       delete: jest.fn(),
       getDeckWithStats: jest.fn(),
       searchDecks: jest.fn()
-    } as any;
+    } as unknown as jest.Mocked<DeckService>;
     
     // Inject mock service
     setDeckService(mockDeckService);
@@ -25,7 +26,7 @@ describe('DeckStore - Service Integration', () => {
   afterEach(() => {
     jest.clearAllMocks();
     // Reset to null to use default service
-    setDeckService(null as any);
+    setDeckService(null as unknown as DeckService);
   });
 
   it('should call DeckService.getAll when loadDecks is called', async () => {
@@ -34,7 +35,7 @@ describe('DeckStore - Service Integration', () => {
       { id: 2, name: 'Test Deck 2', description: 'Description 2' }
     ];
     
-    mockDeckService.getAll.mockResolvedValue(mockDecks as any);
+    mockDeckService.getAll.mockResolvedValue(mockDecks as Deck[]);
     
     const { loadDecks } = useDeckStore.getState();
     await loadDecks();
@@ -48,7 +49,7 @@ describe('DeckStore - Service Integration', () => {
     const createdDeck = { id: 1, ...newDeckData, createdAt: new Date(), updatedAt: new Date() };
     
     mockDeckService.create.mockResolvedValue(1);
-    mockDeckService.getById.mockResolvedValue(createdDeck as any);
+    mockDeckService.getById.mockResolvedValue(createdDeck as Deck);
     
     const { createDeck } = useDeckStore.getState();
     await createDeck(newDeckData);
@@ -62,7 +63,7 @@ describe('DeckStore - Service Integration', () => {
     const updatedDeck = { id: 1, name: 'Updated Name', description: 'Description' };
     
     mockDeckService.update.mockResolvedValue();
-    mockDeckService.getById.mockResolvedValue(updatedDeck as any);
+    mockDeckService.getById.mockResolvedValue(updatedDeck as Deck);
     
     const { updateDeck } = useDeckStore.getState();
     await updateDeck(1, updates);

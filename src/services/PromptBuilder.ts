@@ -108,7 +108,7 @@ Generate {count} English idioms related to "{topic}" at {difficulty} level.
         throw new Error('Invalid response format');
       }
 
-      return parsed.map((card: any, index: number) => ({
+      return parsed.map((card: { front: string; back: string }, index: number) => ({
         id: `generated-${Date.now()}-${index}`,
         front: card.front.trim(),
         back: card.back.trim(),

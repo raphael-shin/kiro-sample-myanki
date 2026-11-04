@@ -2,6 +2,7 @@
  * 데이터베이스 공통 유틸리티 함수
  */
 
+import type { Table, Transaction } from 'dexie';
 import { MyAnkiDB } from '@/db/MyAnkiDB';
 
 /**
@@ -38,8 +39,8 @@ export async function initializeDatabase(): Promise<MyAnkiDB> {
  */
 export async function withTransaction<T>(
   db: MyAnkiDB,
-  tables: any[],
-  callback: (tx: any) => Promise<T>
+  tables: Table[],
+  callback: (tx: Transaction) => Promise<T>
 ): Promise<T> {
   return await db.transaction('rw', tables, callback);
 }

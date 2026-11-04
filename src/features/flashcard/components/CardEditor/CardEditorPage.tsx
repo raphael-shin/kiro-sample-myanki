@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CreateCardInput, UpdateCardInput } from '@/types/flashcard';
 import { AIGenerationHistory } from '@/types/ai-generation';
 import { CardService } from '@/services/CardService';
@@ -33,30 +33,16 @@ export const CardEditorPage = ({ deckId, deckName, onBack }: CardEditorPageProps
   const [aiGenerationHistory, setAIGenerationHistory] = useState<AIGenerationHistory[]>([]);
   const [error, setError] = useState<string>('');
 
-  const cardService = new CardService(db);
-  const aiService = new AICardGenerationService();
+  // 훅 의존성이 렌더마다 바뀌지 않도록 서비스 인스턴스는 한 번만 만든다
+  const cardService = useMemo(() => new CardService(db), []);
+  const aiService = useMemo(() => new AICardGenerationService(), []);
 
   // 카드 통계 계산
   const cardStats = useMemo(() => {
     return calculateCardStats(cards);
   }, [cards]);
 
-  // 초기 데이터 로드
-  useEffect(() => {
-    loadCards();
-    loadAIGenerationHistory();
-  }, [deckId]);
-
-  // 검색 및 필터링
-  useEffect(() => {
-    if (searchQuery.trim()) {
-      searchCards();
-    } else {
-      applyFiltersAndSort();
-    }
-  }, [searchQuery, statusFilter, sortField, sortOrder, cards]);
-
-  const loadCards = async () => {
+  const loadCards = useCallback(async () => {
     try {
       setLoading(true);
       const loadedCards = await cardService.getCardsByDeckId(deckId);
@@ -68,9 +54,9 @@ export const CardEditorPage = ({ deckId, deckName, onBack }: CardEditorPageProps
     } finally {
       setLoading(false);
     }
-  };
+  }, [cardService, deckId]);
 
-  const loadAIGenerationHistory = async () => {
+  const loadAIGenerationHistory = useCallback(async () => {
     try {
       const history = await aiService.getGenerationHistory();
       const deckHistory = history.filter(h => h.deckId === deckId).slice(0, 5);
@@ -78,23 +64,9 @@ export const CardEditorPage = ({ deckId, deckName, onBack }: CardEditorPageProps
     } catch (err) {
       console.error('Failed to load AI generation history:', err);
     }
-  };
+  }, [aiService, deckId]);
 
-  const searchCards = async () => {
-    try {
-      const results = await cardService.searchCards(deckId, searchQuery.trim());
-      setFilteredCards(applySortAndFilter(results));
-    } catch (err) {
-      setError('검색에 실패했습니다.');
-      console.error('Search failed:', err);
-    }
-  };
-
-  const applyFiltersAndSort = () => {
-    setFilteredCards(applySortAndFilter(cards));
-  };
-
-  const applySortAndFilter = (cardList: Card[]) => {
+  const applySortAndFilter = useCallback((cardList: Card[]) => {
     let filtered = [...cardList];
 
     // 상태 필터 적용
@@ -113,7 +85,7 @@ export const CardEditorPage = ({ deckId, deckName, onBack }: CardEditorPageProps
 
     // 정렬 적용
     filtered.sort((a, b) => {
-      let aValue: any, bValue: any;
+      let aValue: string | Date, bValue: string | Date;
       
       switch (sortField) {
         case 'front':
@@ -139,7 +111,36 @@ export const CardEditorPage = ({ deckId, deckName, onBack }: CardEditorPageProps
     });
 
     return filtered;
-  };
+  }, [statusFilter, sortField, sortOrder]);
+
+  const searchCards = useCallback(async () => {
+    try {
+      const results = await cardService.searchCards(deckId, searchQuery.trim());
+      setFilteredCards(applySortAndFilter(results));
+    } catch (err) {
+      setError('검색에 실패했습니다.');
+      console.error('Search failed:', err);
+    }
+  }, [cardService, deckId, searchQuery, applySortAndFilter]);
+
+  const applyFiltersAndSort = useCallback(() => {
+    setFilteredCards(applySortAndFilter(cards));
+  }, [applySortAndFilter, cards]);
+
+  // 초기 데이터 로드
+  useEffect(() => {
+    loadCards();
+    loadAIGenerationHistory();
+  }, [loadCards, loadAIGenerationHistory]);
+
+  // 검색 및 필터링
+  useEffect(() => {
+    if (searchQuery.trim()) {
+      searchCards();
+    } else {
+      applyFiltersAndSort();
+    }
+  }, [searchQuery, searchCards, applyFiltersAndSort]);
 
   const handleCardUpdate = async (cardId: number, updates: UpdateCardInput) => {
     try {

@@ -23,13 +23,14 @@ export function decryptCredentials(encryptedData: string): string {
   }
 }
 
-export function clearMemory(obj: any): void {
+export function clearMemory(obj: unknown): void {
   if (typeof obj === 'object' && obj !== null) {
-    Object.keys(obj).forEach(key => {
-      if (typeof obj[key] === 'string') {
-        obj[key] = '';
-      } else if (typeof obj[key] === 'object') {
-        clearMemory(obj[key]);
+    const record = obj as Record<string, unknown>;
+    Object.keys(record).forEach(key => {
+      if (typeof record[key] === 'string') {
+        record[key] = '';
+      } else if (typeof record[key] === 'object') {
+        clearMemory(record[key]);
       }
     });
   }

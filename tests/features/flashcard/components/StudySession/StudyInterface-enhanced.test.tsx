@@ -9,7 +9,7 @@ jest.mock('@/store/StudySessionStore');
 describe('StudyInterface Enhanced Features', () => {
   const mockOnComplete = jest.fn();
   const mockOnExit = jest.fn();
-  let mockStoreActions: any;
+  let mockStoreActions: Record<string, jest.Mock>;
 
   beforeEach(() => {
     jest.clearAllMocks();

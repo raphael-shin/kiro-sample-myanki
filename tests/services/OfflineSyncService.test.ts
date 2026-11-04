@@ -66,7 +66,7 @@ describe('OfflineSyncService', () => {
 
       mockDb.offlineQueue.toArray.mockResolvedValue(mockActions);
       mockDb.transaction.mockImplementation((_mode, _tables, callback) => 
-        callback({} as any)
+        callback({})
       );
 
       await service.syncPendingActions();

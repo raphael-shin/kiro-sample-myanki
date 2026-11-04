@@ -103,7 +103,10 @@ export class SM2Algorithm {
    * @param quality 품질 점수
    * @returns 업데이트된 간격 반복 데이터
    */
-  calculateNextReview(currentData: any, quality: StudyQuality): any {
+  calculateNextReview<T extends { easeFactor: number; interval: number; repetitions: number }>(
+    currentData: T,
+    quality: StudyQuality
+  ): T {
     const { easeFactor, interval, repetitions } = currentData;
     
     if (quality === StudyQuality.AGAIN) {

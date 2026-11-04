@@ -42,7 +42,7 @@ describe('StudyInterface Component', () => {
       getSessionProgress: jest.fn(),
       getEstimatedTimeRemaining: jest.fn(),
       getSessionSummary: jest.fn()
-    } as any;
+    } as unknown as jest.Mocked<ISessionManager>;
 
     // Mock SpacedRepetitionService
     mockSpacedRepetitionService = {
@@ -52,7 +52,7 @@ describe('StudyInterface Component', () => {
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn()
-    } as any;
+    } as unknown as jest.Mocked<SpacedRepetitionService>;
 
     setSessionManager(mockSessionManager);
     setSpacedRepetitionService(mockSpacedRepetitionService);
@@ -84,8 +84,8 @@ describe('StudyInterface Component', () => {
   });
 
   afterEach(() => {
-    setSessionManager(null as any);
-    setSpacedRepetitionService(null as any);
+    setSessionManager(null as unknown as ISessionManager);
+    setSpacedRepetitionService(null as unknown as SpacedRepetitionService);
   });
 
   it('should render study interface with current card', async () => {

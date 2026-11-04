@@ -52,7 +52,7 @@ describe('OfflineStatisticsService', () => {
       mockDb.cards.toArray.mockResolvedValue([]);
       mockDb.spacedRepetitionData = {
         toArray: jest.fn().mockResolvedValue(mockSpacedRepData),
-      } as any;
+      };
 
       const result = await service.calculateOfflineStats();
 
@@ -69,7 +69,7 @@ describe('OfflineStatisticsService', () => {
       mockDb.cards.toArray.mockResolvedValue([]);
       mockDb.spacedRepetitionData = {
         toArray: jest.fn().mockResolvedValue([]),
-      } as any;
+      };
 
       const result = await service.calculateOfflineStats();
 
@@ -115,7 +115,7 @@ describe('OfflineStatisticsService', () => {
             toArray: jest.fn().mockResolvedValue(mockSpacedRepData),
           }),
         }),
-      } as any;
+      };
 
       const result = await service.getDeckOfflineStats(deckId);
 
