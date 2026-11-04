@@ -403,7 +403,16 @@ describe('CloudFront', () => {
       OriginSSLProtocols: ['TLSv1.2'],
     });
     expect(config.DefaultCacheBehavior.ViewerProtocolPolicy).toBe('redirect-to-https');
-    expect(config.CacheBehaviors).toBeUndefined();
+    // The only extra behavior is the uncached health check, on the same origin.
+    expect(config.CacheBehaviors).toEqual([
+      expect.objectContaining({
+        PathPattern: '/healthz',
+        TargetOriginId: config.DefaultCacheBehavior.TargetOriginId,
+        ViewerProtocolPolicy: 'redirect-to-https',
+        // Managed-CachingDisabled
+        CachePolicyId: '4135ea2d-6df8-44a3-9df3-4b5a84be39ad',
+      }),
+    ]);
     expect(config.ViewerCertificate).toMatchObject({
       MinimumProtocolVersion: 'TLSv1.2_2021',
       SslSupportMethod: 'sni-only',
@@ -413,10 +422,11 @@ describe('CloudFront', () => {
   test('adds the AWS-managed security headers policy to responses', () => {
     const { template } = build();
     const [, distribution] = onlyResource(template, 'AWS::CloudFront::Distribution');
-    expect(distribution.Properties.DistributionConfig.DefaultCacheBehavior.ResponseHeadersPolicyId).toBe(
+    const config = distribution.Properties.DistributionConfig;
+    for (const behavior of [config.DefaultCacheBehavior, ...config.CacheBehaviors]) {
       // Managed-SecurityHeadersPolicy
-      '67f7725c-6f97-4210-82d7-5512b31e9d03',
-    );
+      expect(behavior.ResponseHeadersPolicyId).toBe('67f7725c-6f97-4210-82d7-5512b31e9d03');
+    }
   });
 
   test('sends the active origin-verify secret as a dynamic reference, never the value', () => {

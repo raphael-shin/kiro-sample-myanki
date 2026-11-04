@@ -266,6 +266,20 @@ export class MyAnkiAppStack extends Stack {
     });
 
     // -------------------------------------------------------- CloudFront
+    const albOrigin = new origins.HttpOrigin(config.originDomainName, {
+      protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
+      originSslProtocols: [cloudfront.OriginSslPolicy.TLS_V1_2],
+      customHeaders: { [ORIGIN_VERIFY_HEADER]: originVerifyValue(config.originVerifyActive) },
+    });
+    const behaviorDefaults = {
+      origin: albOrigin,
+      viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+      allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD,
+      // AWS-managed SecurityHeadersPolicy: HSTS, nosniff, frame options,
+      // referrer policy. A Content-Security-Policy needs the app's real
+      // connect/style sources and is left to a separate change.
+      responseHeadersPolicy: cloudfront.ResponseHeadersPolicy.SECURITY_HEADERS,
+    };
     const distribution = new cloudfront.Distribution(this, 'Distribution', {
       comment: 'MyAnki',
       domainNames: [config.domainName],
@@ -276,19 +290,14 @@ export class MyAnkiAppStack extends Stack {
       logBucket,
       logFilePrefix: 'cloudfront/',
       defaultBehavior: {
-        origin: new origins.HttpOrigin(config.originDomainName, {
-          protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
-          originSslProtocols: [cloudfront.OriginSslPolicy.TLS_V1_2],
-          customHeaders: { [ORIGIN_VERIFY_HEADER]: originVerifyValue(config.originVerifyActive) },
-        }),
-        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD,
+        ...behaviorDefaults,
         cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
-        // AWS-managed SecurityHeadersPolicy: HSTS, nosniff, frame options,
-        // referrer policy. A Content-Security-Policy needs the app's real
-        // connect/style sources and is left to a separate change.
-        responseHeadersPolicy: cloudfront.ResponseHeadersPolicy.SECURITY_HEADERS,
         compress: true,
+      },
+      additionalBehaviors: {
+        // Never cached, so a check through CloudFront sees the origin's
+        // current state.
+        [HEALTH_CHECK_PATH]: { ...behaviorDefaults, cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED },
       },
     });
     Validations.of(distribution).acknowledge(
