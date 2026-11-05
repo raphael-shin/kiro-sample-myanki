@@ -1,0 +1,12 @@
+.git
+.github
+.kiro
+node_modules
+dist
+coverage
+infra
+Dockerfile
+.dockerignore
+.env
+.env.*
+*.log
