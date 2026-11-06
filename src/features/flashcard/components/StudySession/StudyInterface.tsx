@@ -31,6 +31,7 @@ export const StudyInterface = ({ deckId, onComplete, onExit }: StudyInterfacePro
     sessionStats,
     showAnswer,
     isPaused,
+    answerStartTime,
     keyboardShortcutsEnabled,
     startSession,
     endSession,
@@ -56,7 +57,8 @@ export const StudyInterface = ({ deckId, onComplete, onExit }: StudyInterfacePro
     // 이전 답을 처리하는 중이면 추가 입력을 무시한다
     if (pendingAnswerTimeoutRef.current !== null) return;
 
-    const responseTime = Date.now() - (new Date().getTime());
+    // 카드 앞면이 표시된 시각부터 답을 고른 지금까지의 시간. 일시정지 시간도 포함한다
+    const responseTime = answerStartTime ? Date.now() - answerStartTime.getTime() : 0;
     
     // 피드백 메시지 표시
     const feedbackMessages = {
@@ -78,7 +80,7 @@ export const StudyInterface = ({ deckId, onComplete, onExit }: StudyInterfacePro
         pendingAnswerTimeoutRef.current = null;
       }
     }, 1000);
-  }, [processAnswer, nextCard]);
+  }, [processAnswer, nextCard, answerStartTime]);
 
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {

@@ -303,4 +303,48 @@ describe('StudyInterface Component', () => {
       expect(nextCard).not.toHaveBeenCalled();
     });
   });
+
+  describe('response time measurement', () => {
+    let processAnswer: jest.Mock;
+    let nextCard: jest.Mock;
+
+    beforeEach(() => {
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date('2024-01-01T00:00:00.000Z'));
+      processAnswer = jest.fn().mockResolvedValue(undefined);
+      nextCard = jest.fn();
+      const state = (useStudySessionStore as unknown as jest.Mock)();
+      (useStudySessionStore as unknown as jest.Mock).mockReturnValue({
+        ...state,
+        showAnswer: true,
+        // 카드 앞면이 표시된 시각
+        answerStartTime: new Date(),
+        processAnswer,
+        nextCard
+      });
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('records the time waited before answering as responseTime', async () => {
+      render(<StudyInterface deckId={1} />);
+
+      // 사용자가 답을 고르기 전 3초 기다린다
+      act(() => {
+        jest.advanceTimersByTime(3000);
+      });
+      act(() => {
+        fireEvent.keyDown(window, { key: '3' });
+      });
+
+      await act(async () => {
+        jest.advanceTimersByTime(1000);
+      });
+
+      expect(processAnswer).toHaveBeenCalledTimes(1);
+      expect(processAnswer).toHaveBeenCalledWith(StudyQuality.GOOD, 3000);
+    });
+  });
 });

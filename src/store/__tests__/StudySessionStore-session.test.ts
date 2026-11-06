@@ -45,6 +45,16 @@ describe('StudySessionStore - Session Management', () => {
     expect(useStudySessionStore.getState().isActive).toBe(true);
   });
 
+  it('should set answerStartTime for the first card when startSession is called', async () => {
+    const { startSession } = useStudySessionStore.getState();
+
+    mockSpacedRepetitionService.getCardsForReview.mockResolvedValue(mockCards);
+
+    await startSession(123);
+
+    expect(useStudySessionStore.getState().answerStartTime).toBeInstanceOf(Date);
+  });
+
   it('should have endSession action', () => {
     const state = useStudySessionStore.getState();
     
