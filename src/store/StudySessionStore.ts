@@ -154,6 +154,7 @@ export const useStudySessionStore = create<EnhancedStudySessionState>((set, get)
           currentCard: firstCard,
           studyQueue: remainingCards,
           showAnswer: false,
+          answerStartTime: new Date(),
           sessionStats: { cardsStudied: 0, correctAnswers: 0, totalTime: 0 }
         });
       } catch (error) {

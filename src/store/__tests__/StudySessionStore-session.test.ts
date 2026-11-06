@@ -80,4 +80,15 @@ describe('StudySessionStore - Session Management', () => {
     expect(stats.correctAnswers).toBe(0);
     expect(stats.totalTime).toBe(0);
   });
+
+  // 이슈 #16: 첫 카드의 표시 시각이 기록되어야 responseTime을 잴 수 있다
+  it('should set answerStartTime for the first card when startSession is called', async () => {
+    const { startSession } = useStudySessionStore.getState();
+
+    mockSpacedRepetitionService.getCardsForReview.mockResolvedValue(mockCards);
+
+    await startSession(123);
+
+    expect(useStudySessionStore.getState().answerStartTime).toBeInstanceOf(Date);
+  });
 });
