@@ -303,4 +303,45 @@ describe('StudyInterface Component', () => {
       expect(nextCard).not.toHaveBeenCalled();
     });
   });
+
+  // 이슈 #16: 카드 표시 시각(answerStartTime)부터 답까지의 실제 경과 시간을 responseTime으로 넘긴다
+  describe('response time measurement (issue #16)', () => {
+    let processAnswer: jest.Mock;
+    let nextCard: jest.Mock;
+
+    beforeEach(() => {
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date('2024-01-01T00:00:03.000Z'));
+      processAnswer = jest.fn().mockResolvedValue(undefined);
+      nextCard = jest.fn();
+      const state = (useStudySessionStore as unknown as jest.Mock)();
+      (useStudySessionStore as unknown as jest.Mock).mockReturnValue({
+        ...state,
+        showAnswer: true,
+        // 카드는 3초 전에 표시되었다
+        answerStartTime: new Date('2024-01-01T00:00:00.000Z'),
+        processAnswer,
+        nextCard
+      });
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('passes the elapsed time since the card was shown as responseTime', async () => {
+      render(<StudyInterface deckId={1} />);
+
+      act(() => {
+        fireEvent.keyDown(window, { key: '3' });
+      });
+
+      await act(async () => {
+        jest.advanceTimersByTime(1000);
+      });
+
+      expect(processAnswer).toHaveBeenCalledTimes(1);
+      expect(processAnswer).toHaveBeenCalledWith(StudyQuality.GOOD, 3000);
+    });
+  });
 });
